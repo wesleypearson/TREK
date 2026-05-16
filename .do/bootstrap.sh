@@ -41,7 +41,14 @@ echo "============================================================"
 
 export DEBIAN_FRONTEND=noninteractive
 
-echo "[1/6] apt update + install"
+echo "[1/6] disable unattended-upgrades (prevents apt-lock stall) + apt install"
+# Ubuntu 24.04 auto-starts unattended-upgrades on first boot, holding the apt
+# lock for 5–15 min. Disable it before any apt operation.
+systemctl stop unattended-upgrades.service apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service 2>/dev/null || true
+systemctl mask unattended-upgrades.service apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service 2>/dev/null || true
+pkill -9 -f unattended-upgrade 2>/dev/null || true
+rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock 2>/dev/null || true
+
 apt-get update -y
 apt-get install -y --no-install-recommends \
   ca-certificates curl gnupg ufw openssl \

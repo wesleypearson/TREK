@@ -6,25 +6,29 @@
 #    1. Edit the four lines marked "EDIT ME" inside the runcmd: block below.
 #    2. Paste this entire file into the DigitalOcean Droplet creation form,
 #       under "Advanced Options → Add Initialization scripts (cloud-init)".
-#    3. Create the Droplet. ~3 minutes later, TREK is live at https://<your domain>.
+#    3. Make sure your DNS A record is pointing at the Droplet's IP BEFORE
+#       Caddy first tries to get a Let's Encrypt cert. The cleanest way:
+#       set DNS first, then create the Droplet.
+#    4. Create the Droplet. ~5 minutes later TREK is live at https://<your domain>.
 #
-#  Provisions: Docker + docker compose + UFW firewall + Caddy (auto Let's Encrypt
-#  TLS, including WebSocket proxying for /ws) + TREK in front of a real persistent
-#  disk at /opt/trek/{data,uploads}. Generated admin credentials are written to
-#  /root/trek-credentials.txt (mode 0600) and echoed to the cloud-init log.
+#  Provisions: Docker + docker compose + UFW firewall + Caddy (auto Let's
+#  Encrypt TLS, including WebSocket proxying for /ws) + TREK in front of a
+#  real persistent disk at /opt/trek/{data,uploads}. Generated admin
+#  credentials are written to /root/trek-credentials.txt (mode 0600).
+#
+#  Recommended Droplet size: s-1vcpu-2gb ($12/mo). The cheaper 1GB plan
+#  works but is tight for Node + Docker + Caddy under load.
 # =============================================================================
 
-package_update: true
-package_upgrade: true
-
-packages:
-  - ca-certificates
-  - curl
-  - gnupg
-  - ufw
-  - openssl
-  - docker.io
-  - docker-compose-v2
+# CRITICAL — run BEFORE any apt operation. Ubuntu 24.04 ships with
+# unattended-upgrades auto-starting on first boot, which holds the apt lock
+# for 5–15 min and causes cloud-init's packages: directive to silently
+# stall. We hard-disable it.
+bootcmd:
+  - [bash, -c, "systemctl stop unattended-upgrades.service apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service 2>/dev/null || true"]
+  - [bash, -c, "systemctl mask unattended-upgrades.service apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service 2>/dev/null || true"]
+  - [bash, -c, "pkill -9 -f unattended-upgrade 2>/dev/null || true"]
+  - [bash, -c, "rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock 2>/dev/null || true"]
 
 write_files:
   - path: /opt/trek/docker-compose.yml
@@ -37,16 +41,10 @@ write_files:
           read_only: true
           security_opt:
             - no-new-privileges:true
-          cap_drop:
-            - ALL
-          cap_add:
-            - CHOWN
-            - SETUID
-            - SETGID
-          tmpfs:
-            - /tmp:noexec,nosuid,size=64m
-          expose:
-            - "3000"
+          cap_drop: [ALL]
+          cap_add: [CHOWN, SETUID, SETGID]
+          tmpfs: ["/tmp:noexec,nosuid,size=64m"]
+          expose: ["3000"]
           env_file: .env
           environment:
             - NODE_ENV=production
@@ -64,22 +62,17 @@ write_files:
             timeout: 10s
             retries: 3
             start_period: 20s
-
         caddy:
           image: caddy:2-alpine
           container_name: caddy
-          ports:
-            - "80:80"
-            - "443:443"
+          ports: ["80:80", "443:443"]
           env_file: .env
           volumes:
             - ./Caddyfile:/etc/caddy/Caddyfile:ro
             - caddy_data:/data
             - caddy_config:/config
           restart: unless-stopped
-          depends_on:
-            - app
-
+          depends_on: [app]
       volumes:
         caddy_data:
         caddy_config:
@@ -124,7 +117,7 @@ runcmd:
     TZ="UTC"
     # =========================================================================
 
-    mkdir -p /opt/trek/data /opt/trek/uploads
+    mkdir -p /opt/trek/data /opt/trek/uploads /var/log/trek
 
     ENCRYPTION_KEY="$(openssl rand -hex 32)"
     ADMIN_PASSWORD="$(openssl rand -base64 18 | tr -d '=+/' | cut -c1-20)"
@@ -143,18 +136,19 @@ runcmd:
 
     cat > /root/trek-credentials.txt <<EOF
     ============================================================
-     TREK is now provisioning at:
-       https://${DOMAIN_NAME}
+     TREK travel planner
+    ============================================================
+     URL:      https://${DOMAIN_NAME}
+     Admin:    ${ADMIN_EMAIL}
+     Password: ${ADMIN_PASSWORD}
 
-     First-boot admin login:
-       Email:    ${ADMIN_EMAIL}
-       Password: ${ADMIN_PASSWORD}
+     ENCRYPTION_KEY (DO NOT LOSE — needed to decrypt stored secrets):
+       ${ENCRYPTION_KEY}
 
-     Files on this Droplet:
-       /root/trek-credentials.txt   (this file — keep private)
-       /opt/trek/.env               (full config, including ENCRYPTION_KEY)
-       /opt/trek/data/              (SQLite database — back this up)
-       /opt/trek/uploads/           (user uploads — back this up)
+     Files:
+       /opt/trek/.env       (full config)
+       /opt/trek/data/      (SQLite DB — back this up)
+       /opt/trek/uploads/   (user uploads — back this up)
 
      Common commands:
        systemctl status trek
@@ -164,12 +158,22 @@ runcmd:
     EOF
     chmod 600 /root/trek-credentials.txt
 
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y -qq
+    apt-get install -y -qq --no-install-recommends \
+      docker.io docker-compose-v2 ufw openssl ca-certificates curl
+
     ufw allow OpenSSH
     ufw allow 80/tcp
     ufw allow 443/tcp
     ufw --force enable
 
     systemctl enable --now docker
+
+    # Pre-pull images to give Caddy a clean first start (avoids ACME backoff)
+    docker pull caddy:2-alpine
+    docker pull mauriceboe/trek:latest
+
     systemctl daemon-reload
     systemctl enable --now trek.service
 
@@ -178,6 +182,11 @@ runcmd:
     echo " URL:      https://${DOMAIN_NAME}"
     echo " Admin:    ${ADMIN_EMAIL}"
     echo " Password: see /root/trek-credentials.txt"
+    echo ""
+    echo " Note: if Caddy fails to get a Let's Encrypt cert on first boot"
+    echo " (because DNS wasn't fully propagated yet), it'll retry with"
+    echo " backoff. To force an immediate retry: 'systemctl restart trek'"
+    echo " or reboot the Droplet."
     echo "============================================================"
 
-final_message: "TREK provisioning finished. Point an A record at this Droplet's IPv4, then open https://<your domain>. Admin credentials are in /root/trek-credentials.txt (visible via the DigitalOcean web Console)."
+final_message: "TREK provisioning finished. Open https://<your domain> after DNS resolves. Admin credentials in /root/trek-credentials.txt."

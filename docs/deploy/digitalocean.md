@@ -126,11 +126,23 @@ Your data in `/opt/trek/data` and `/opt/trek/uploads` is untouched.
 cd /opt/trek && docker compose logs --tail=50 caddy
 ```
 
-**Cert error in browser** — Let's Encrypt rejected the cert request, usually because DNS wasn't live when Caddy first tried. Wait 5 minutes and refresh — Caddy retries automatically with backoff. If it persists:
+**Cert error / `HTTPS 503` from sandboxes** — Let's Encrypt rejected the cert request, usually because DNS wasn't live when Caddy first tried. Caddy retries with exponential backoff (1m, 5m, 15m). To force an immediate retry without waiting:
 
 ```
-cd /opt/trek && docker compose restart caddy
+sudo systemctl restart trek
 ```
+
+Or reboot the Droplet from the DO console — that reliably kicks Caddy out of any ACME backoff state and on second boot the cert almost always lands within ~10s if DNS is correct.
+
+**Cloud-init seems stuck on a fresh Ubuntu 24.04 Droplet** — Ubuntu's `unattended-upgrades` daemon auto-starts on first boot and holds the apt lock for 5–15 min, silently blocking `cloud-init`'s `packages:` directive. The bootstrap script and `.do/cloud-init.yaml` in this repo both disable `unattended-upgrades` up front to avoid this, but if you're using your own cloud-init, do this **before any apt operation**:
+
+```bash
+systemctl mask unattended-upgrades.service apt-daily.timer apt-daily-upgrade.timer apt-daily.service apt-daily-upgrade.service
+pkill -9 -f unattended-upgrade
+rm -f /var/lib/apt/lists/lock /var/lib/dpkg/lock-frontend /var/lib/dpkg/lock /var/cache/apt/archives/lock
+```
+
+**Cloudflare in the way** — if `trek.yourdomain.com` is on Cloudflare, the proxy (orange cloud) **must be off** (DNS only / gray cloud) when Caddy first requests its cert, or the Let's Encrypt HTTP-01 challenge can't reach the origin. Once Caddy has a valid cert, you can switch the proxy back on, but set Cloudflare's **SSL/TLS → Full (strict)** at the same time so the proxy validates the origin cert.
 
 **Can't find the admin password** — if `/root/trek-credentials.txt` is missing (rare cloud-init failure), tail the boot log instead:
 
