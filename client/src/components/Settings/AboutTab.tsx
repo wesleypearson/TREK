@@ -239,16 +239,13 @@ export default function AboutTab({ appVersion }: Props): React.ReactElement {
           50% { transform: scale(1.15); }
         }
       `}</style>
-      <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 6, marginTop: -4 }}>
-        {t('settings.about.description')}
-      </p>
-      <p style={{ fontSize: 12, lineHeight: 1.6, color: 'var(--text-faint)', marginBottom: 16 }}>
-        {t('settings.about.madeWith')}{' '}
-        <Heart size={11} fill="#991b1b" stroke="#991b1b" style={{ display: 'inline-block', verticalAlign: '-1px', animation: 'heartPulse 1.5s ease-in-out infinite' }} />
-        {' '}{t('settings.about.madeBy')}{' '}
+      <p style={{ fontSize: 13, lineHeight: 1.6, color: 'var(--text-secondary)', marginBottom: 16, marginTop: -4 }}>
+        Travla — your family travel planner.
+        {' '}
         <span style={{ display: 'inline-flex', alignItems: 'center', background: 'var(--bg-tertiary)', borderRadius: 99, padding: '1px 7px', fontSize: 10, fontWeight: 600, color: 'var(--text-faint)', verticalAlign: '1px' }}>v{appVersion}</span>
       </p>
 
+      {false && (<>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <a
           href="https://ko-fi.com/mauriceboe"
@@ -363,7 +360,8 @@ export default function AboutTab({ appVersion }: Props): React.ReactElement {
         </a>
       </div>
 
-      <SupporterSection t={t} locale={locale} />
+      </>
+      )}
     </Section>
   )
 }
