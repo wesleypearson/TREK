@@ -1016,6 +1016,54 @@ describe('AdminPage', () => {
     });
   });
 
+  describe('FE-PAGE-ADMIN-054: Failed maps key validation shows actionable diagnostics', () => {
+    it('shows the Places API (New) restriction hint when Google returns API_KEY_SERVICE_BLOCKED', async () => {
+      server.use(
+        http.put('/api/auth/me/api-keys', async () => {
+          return HttpResponse.json({ success: true });
+        }),
+        http.get('/api/auth/validate-keys', () => {
+          return HttpResponse.json({
+            maps: false,
+            weather: false,
+            maps_details: {
+              ok: false,
+              status: 403,
+              status_text: 'Forbidden',
+              error_message: 'Requests to this API places.googleapis.com method google.maps.places.v1.Places.SearchText are blocked.',
+              error_status: 'PERMISSION_DENIED',
+              error_reason: 'API_KEY_SERVICE_BLOCKED',
+              error_raw: null,
+            },
+          });
+        }),
+      );
+
+      seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
+      render(<AdminPage />);
+
+      await waitFor(() => expect(screen.getByRole('button', { name: /^users$/i })).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: /settings/i }));
+
+      const apiKeysHeading = await screen.findByRole('heading', { name: /^api keys$/i });
+      const apiKeysCard = apiKeysHeading.closest('.bg-white');
+
+      const keyInputs = within(apiKeysCard!).getAllByPlaceholderText('Enter key...');
+      fireEvent.change(keyInputs[0], { target: { value: 'restricted-key' } });
+
+      const testBtns = within(apiKeysCard!).getAllByRole('button', { name: /^test$/i });
+      fireEvent.click(testBtns[0]);
+
+      await waitFor(() => {
+        expect(screen.getByText('Invalid')).toBeInTheDocument();
+        // Actionable hint mapped from the API_KEY_SERVICE_BLOCKED reason
+        expect(screen.getByText(/API restrictions don't include the Places API \(New\)/i)).toBeInTheDocument();
+        // Raw Google error is surfaced for transparency
+        expect(screen.getByText(/HTTP 403, API_KEY_SERVICE_BLOCKED/i)).toBeInTheDocument();
+      });
+    });
+  });
+
   describe('FE-PAGE-ADMIN-045: Edit user with short password shows error', () => {
     it('entering a password shorter than 8 chars shows error and keeps modal open', async () => {
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });

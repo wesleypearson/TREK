@@ -52,6 +52,28 @@ interface OidcConfig {
   discovery_url: string
 }
 
+interface MapsKeyDiagnostics {
+  ok: boolean
+  status: number | null
+  status_text: string | null
+  error_message: string | null
+  error_status: string | null
+  error_reason: string | null
+  error_raw: string | null
+}
+
+// Google's machine-readable failure reasons (google.rpc.ErrorInfo) from the
+// key validation call, mapped to actionable fix hints.
+const MAPS_KEY_DIAG_HINTS: Record<string, string> = {
+  API_KEY_SERVICE_BLOCKED: 'admin.keyDiag.serviceBlocked',
+  SERVICE_DISABLED: 'admin.keyDiag.serviceDisabled',
+  API_KEY_HTTP_REFERRER_BLOCKED: 'admin.keyDiag.referrerBlocked',
+  API_KEY_IP_ADDRESS_BLOCKED: 'admin.keyDiag.ipBlocked',
+  API_KEY_INVALID: 'admin.keyDiag.badKey',
+  API_KEY_EXPIRED: 'admin.keyDiag.badKey',
+  BILLING_DISABLED: 'admin.keyDiag.billingDisabled',
+}
+
 interface UpdateInfo {
   update_available: boolean
   latest: string
@@ -266,6 +288,7 @@ export default function AdminPage(): React.ReactElement {
   const [savingKeys, setSavingKeys] = useState<boolean>(false)
   const [validating, setValidating] = useState<Record<string, boolean>>({})
   const [validation, setValidation] = useState<Record<string, boolean | undefined>>({})
+  const [mapsKeyDiag, setMapsKeyDiag] = useState<MapsKeyDiagnostics | null>(null)
 
   // Version check & update
   const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null)
@@ -380,6 +403,7 @@ export default function AdminPage(): React.ReactElement {
       await updateApiKeys({ maps_api_key: mapsKey, openweather_api_key: weatherKey })
       const result = await authApi.validateKeys()
       setValidation(result)
+      setMapsKeyDiag(result.maps_details ?? null)
     } catch (err: unknown) {
       toast.error(t('common.error'))
     } finally {
@@ -394,6 +418,7 @@ export default function AdminPage(): React.ReactElement {
       await updateApiKeys({ maps_api_key: mapsKey, openweather_api_key: weatherKey })
       const result = await authApi.validateKeys()
       setValidation(prev => ({ ...prev, [keyType]: result[keyType] }))
+      if (keyType === 'maps') setMapsKeyDiag(result.maps_details ?? null)
     } catch (err: unknown) {
       toast.error(t('common.error'))
     } finally {
@@ -1028,10 +1053,28 @@ export default function AdminPage(): React.ReactElement {
                       </p>
                     )}
                     {validation.maps === false && (
-                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                        <span className="w-2 h-2 bg-red-500 rounded-full inline-block"></span>
-                        {t('admin.keyInvalid')}
-                      </p>
+                      <div className="mt-1 space-y-1">
+                        <p className="text-xs text-red-500 flex items-center gap-1">
+                          <span className="w-2 h-2 bg-red-500 rounded-full inline-block"></span>
+                          {t('admin.keyInvalid')}
+                        </p>
+                        {mapsKeyDiag && !mapsKeyDiag.ok && (() => {
+                          const hintKey = MAPS_KEY_DIAG_HINTS[mapsKeyDiag.error_reason || ''] || MAPS_KEY_DIAG_HINTS[mapsKeyDiag.error_status || '']
+                          return (
+                            <>
+                              {hintKey && (
+                                <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">{t(hintKey)}</p>
+                              )}
+                              {mapsKeyDiag.error_message && (
+                                <p className="text-[11px] text-slate-400 break-words">
+                                  Google: {mapsKeyDiag.error_message}
+                                  {mapsKeyDiag.status ? ` (HTTP ${mapsKeyDiag.status}${mapsKeyDiag.error_reason ? `, ${mapsKeyDiag.error_reason}` : ''})` : ''}
+                                </p>
+                              )}
+                            </>
+                          )
+                        })()}
+                      </div>
                     )}
                   </div>
 
