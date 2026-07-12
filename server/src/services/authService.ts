@@ -696,7 +696,7 @@ export function listUsers(excludeUserId: number) {
 // Key validation
 // ---------------------------------------------------------------------------
 
-export async function validateKeys(userId: number): Promise<{ error?: string; status?: number; maps: boolean; weather: boolean; maps_details: null | { ok: boolean; status: number | null; status_text: string | null; error_message: string | null; error_status: string | null; error_raw: string | null } }> {
+export async function validateKeys(userId: number): Promise<{ error?: string; status?: number; maps: boolean; weather: boolean; maps_details: null | { ok: boolean; status: number | null; status_text: string | null; error_message: string | null; error_status: string | null; error_reason: string | null; error_raw: string | null } }> {
   const user = db.prepare('SELECT role, maps_api_key, openweather_api_key FROM users WHERE id = ?').get(userId) as Pick<User, 'role' | 'maps_api_key' | 'openweather_api_key'> | undefined;
   if (user?.role !== 'admin') return { error: 'Admin access required', status: 403, maps: false, weather: false, maps_details: null };
 
@@ -709,6 +709,7 @@ export async function validateKeys(userId: number): Promise<{ error?: string; st
       status_text: string | null;
       error_message: string | null;
       error_status: string | null;
+      error_reason: string | null;
       error_raw: string | null;
     };
   } = { maps: false, weather: false, maps_details: null };
@@ -737,12 +738,21 @@ export async function validateKeys(userId: number): Promise<{ error?: string; st
           try { error_json = JSON.parse(error_text); } catch { error_json = null; }
         } catch { error_text = null; error_json = null; }
       }
+      // google.rpc.ErrorInfo carries the machine-readable cause (e.g.
+      // API_KEY_SERVICE_BLOCKED when the key's API restrictions exclude the
+      // Places API (New), SERVICE_DISABLED when the API isn't enabled on the
+      // project) — the client maps it to an actionable fix hint.
+      const details = error_json?.error?.details;
+      const errorInfo = Array.isArray(details)
+        ? details.find((d: { '@type'?: string }) => typeof d?.['@type'] === 'string' && d['@type'].endsWith('google.rpc.ErrorInfo'))
+        : undefined;
       result.maps_details = {
         ok: result.maps,
         status: mapsRes.status,
         status_text: mapsRes.statusText || null,
         error_message: error_json?.error?.message || null,
         error_status: error_json?.error?.status || null,
+        error_reason: typeof errorInfo?.reason === 'string' ? errorInfo.reason : null,
         error_raw: error_text,
       };
     } catch (err: unknown) {
@@ -753,6 +763,7 @@ export async function validateKeys(userId: number): Promise<{ error?: string; st
         status_text: null,
         error_message: err instanceof Error ? err.message : 'Request failed',
         error_status: 'FETCH_ERROR',
+        error_reason: null,
         error_raw: null,
       };
     }

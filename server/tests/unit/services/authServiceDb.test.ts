@@ -293,6 +293,41 @@ describe('validateKeys', () => {
 
     fetchSpy.mockRestore();
   });
+
+  it('AUTH-DB-047: extracts google.rpc.ErrorInfo reason from a blocked-key response', async () => {
+    const { user } = createAdmin(testDb);
+    testDb.prepare('UPDATE users SET maps_api_key = ? WHERE id = ?').run('test-key', user.id);
+
+    const googleError = JSON.stringify({
+      error: {
+        code: 403,
+        message: 'Requests to this API places.googleapis.com method google.maps.places.v1.Places.SearchText are blocked.',
+        status: 'PERMISSION_DENIED',
+        details: [
+          {
+            '@type': 'type.googleapis.com/google.rpc.ErrorInfo',
+            reason: 'API_KEY_SERVICE_BLOCKED',
+            domain: 'googleapis.com',
+            metadata: { service: 'places.googleapis.com' },
+          },
+        ],
+      },
+    });
+
+    const fetchSpy = vi.spyOn(global, 'fetch').mockResolvedValueOnce({
+      status: 403,
+      statusText: 'Forbidden',
+      text: async () => googleError,
+    } as Response);
+
+    const result = await validateKeys(user.id);
+    expect(result.maps).toBe(false);
+    expect(result.maps_details?.error_status).toBe('PERMISSION_DENIED');
+    expect(result.maps_details?.error_reason).toBe('API_KEY_SERVICE_BLOCKED');
+    expect(result.maps_details?.error_message).toMatch(/blocked/i);
+
+    fetchSpy.mockRestore();
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -233,7 +233,11 @@ If `ALLOWED_ORIGINS` is not set, TREK allows all origins (development default). 
 
 3. **Places API (New) not enabled.** The key must have **Places API (New)** enabled in Google Cloud Console under APIs & Services → Enabled APIs. Enabling only the legacy Places API is not sufficient.
 
-4. **Billing not set up.** Google requires a billing account to be linked to the project even within the free tier. Without it, photo and details requests return `REQUEST_DENIED`.
+4. **Key API restrictions exclude the Places API (New).** If the key uses "API restrictions → Restrict key", the selected-APIs list must include **Places API (New)** — it is the only Google API TREK calls. A key restricted to Maps JavaScript API, Maps Static API, or the mobile Maps SDKs will be rejected with `PERMISSION_DENIED` / `API_KEY_SERVICE_BLOCKED` on every TREK request. Add "Places API (New)" to the list under APIs & Services → Credentials → your key → API restrictions.
+
+5. **Billing not set up.** Google requires a billing account to be linked to the project even within the free tier. Without it, photo and details requests return `REQUEST_DENIED`.
+
+> **Tip:** The **Test** button next to the Google Maps API key in Admin → Settings runs a live Places API request and shows Google's exact error reason (e.g. `API_KEY_SERVICE_BLOCKED`) together with a fix hint, so you can tell these cases apart without curl.
 
 **Fix for HTTP referrer restriction:**
 
