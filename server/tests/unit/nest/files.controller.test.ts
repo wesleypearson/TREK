@@ -21,6 +21,7 @@ function fsvc(o: Partial<FilesService> = {}): FilesService {
   return {
     verifyTripAccess: vi.fn().mockReturnValue({ user_id: 1 }),
     can: vi.fn().mockReturnValue(true),
+    canViewFile: vi.fn().mockReturnValue(true),
     findForeignLinkTarget: vi.fn().mockReturnValue(null),
     broadcast: vi.fn(),
     ...o,
@@ -44,7 +45,7 @@ describe('FilesController (parity with the legacy /api/trips/:tripId/files route
     expect(thrown(() => new FilesController(fsvc({ verifyTripAccess: vi.fn().mockReturnValue(undefined) })).list(user, '5'))).toEqual({ status: 404, body: { error: 'Trip not found' } });
     const listFiles = vi.fn().mockReturnValue([{ id: 1 }]);
     expect(new FilesController(fsvc({ listFiles } as Partial<FilesService>)).list(user, '5', 'true')).toEqual({ files: [{ id: 1 }] });
-    expect(listFiles).toHaveBeenCalledWith('5', true);
+    expect(listFiles).toHaveBeenCalledWith('5', true, 1);
   });
 
   describe('POST / (upload)', () => {
@@ -61,7 +62,8 @@ describe('FilesController (parity with the legacy /api/trips/:tripId/files route
       const broadcast = vi.fn();
       const s = fsvc({ createFile, broadcast } as Partial<FilesService>);
       expect(new FilesController(s).upload(user, '5', file, { description: 'd' }, 'sock')).toEqual({ file: { id: 9 } });
-      expect(createFile).toHaveBeenCalledWith('5', file, 1, { place_id: undefined, description: 'd', reservation_id: undefined });
+      // Uploads default to PRIVATE (custom per-user file visibility).
+      expect(createFile).toHaveBeenCalledWith('5', file, 1, { place_id: undefined, description: 'd', reservation_id: undefined, is_private: true });
       expect(broadcast).toHaveBeenCalledWith('5', 'file:created', { file: { id: 9 } }, 'sock');
     });
 
@@ -136,9 +138,9 @@ describe('FilesController (parity with the legacy /api/trips/:tripId/files route
 
   it('DELETE /:id/link/:linkId removes the link; GET /:id/links lists', () => {
     const deleteFileLink = vi.fn();
-    expect(new FilesController(fsvc({ deleteFileLink } as Partial<FilesService>)).unlink(user, '5', '9', '3')).toEqual({ success: true });
+    expect(new FilesController(fsvc({ deleteFileLink, getFileById: vi.fn().mockReturnValue({ id: 9 }) } as Partial<FilesService>)).unlink(user, '5', '9', '3')).toEqual({ success: true });
     expect(deleteFileLink).toHaveBeenCalledWith('3', '9');
-    const s = fsvc({ getFileLinks: vi.fn().mockReturnValue([{ id: 1 }]) } as Partial<FilesService>);
+    const s = fsvc({ getFileLinks: vi.fn().mockReturnValue([{ id: 1 }]), getFileById: vi.fn().mockReturnValue({ id: 9 }) } as Partial<FilesService>);
     expect(new FilesController(s).links(user, '5', '9')).toEqual({ links: [{ id: 1 }] });
   });
 
@@ -162,6 +164,7 @@ describe('FilesDownloadController', () => {
       authenticateDownload: vi.fn().mockReturnValue({ userId: 1 }),
       verifyTripAccess: vi.fn().mockReturnValue({ user_id: 1 }),
       getFileById: vi.fn().mockReturnValue({ filename: 'x.pdf', original_name: 'x.pdf' }),
+      canViewFile: vi.fn().mockReturnValue(true),
       resolveFilePath: vi.fn().mockReturnValue({ resolved: 'C:/nope/x.pdf', safe: true }),
       ...o,
     } as unknown as FilesService;

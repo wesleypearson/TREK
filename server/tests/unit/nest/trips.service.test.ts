@@ -56,7 +56,7 @@ describe('TripsService (wrapper delegation + bundle/copy/notify helpers)', () =>
     s.createGuest('9', 'Anna', 1); expect(tripSvc.createGuest).toHaveBeenCalledWith('9', 'Anna', 1);
     s.renameGuest('9', 7, 'Bob'); expect(tripSvc.renameGuest).toHaveBeenCalledWith('9', 7, 'Bob');
     s.deleteGuest('9', 7); expect(tripSvc.deleteGuest).toHaveBeenCalledWith('9', 7);
-    s.exportICS('9'); expect(tripSvc.exportICS).toHaveBeenCalledWith('9');
+    s.exportICS('9', 1); expect(tripSvc.exportICS).toHaveBeenCalledWith('9', 1);
   });
 
   it('canAccessTrip delegates to the db helper', () => {

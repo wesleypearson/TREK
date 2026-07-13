@@ -24,7 +24,10 @@ export class FilesService {
   }
 
   broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined, onlyUserId?: number, excludeUserId?: number): void {
-    broadcast(tripId, event, payload, socketId, onlyUserId, excludeUserId);
+    // Keep the legacy 4-arg call shape when no user scoping applies.
+    if (excludeUserId != null) broadcast(tripId, event, payload, socketId, onlyUserId, excludeUserId);
+    else if (onlyUserId != null) broadcast(tripId, event, payload, socketId, onlyUserId);
+    else broadcast(tripId, event, payload, socketId);
   }
 
   // Download-token auth + safe path resolution (used by the unguarded download route).

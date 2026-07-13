@@ -69,9 +69,10 @@ export class PlacesController {
 
   // A private place belongs to its creator alone; events about it must only
   // reach the creator's sockets (custom visibility, mirrors packing #858).
+  // Group places keep the legacy call shape.
   private broadcastPlaceEvent(tripId: string, event: string, payload: Record<string, unknown>, place: { is_private?: number | null; created_by?: number | null }, socketId?: string) {
-    const onlyUserId = place.is_private && place.created_by != null ? place.created_by : undefined;
-    this.places.broadcast(tripId, event, payload, socketId, onlyUserId);
+    if (place.is_private && place.created_by != null) this.places.broadcast(tripId, event, payload, socketId, place.created_by);
+    else this.places.broadcast(tripId, event, payload, socketId);
   }
 
   @Get()

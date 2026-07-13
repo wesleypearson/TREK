@@ -25,7 +25,9 @@ export class AssignmentsService {
   }
 
   broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined, onlyUserId?: number): void {
-    broadcast(tripId, event, payload, socketId, onlyUserId);
+    // Keep the legacy 4-arg call shape when no user scoping applies.
+    if (onlyUserId != null) broadcast(tripId, event, payload, socketId, onlyUserId);
+    else broadcast(tripId, event, payload, socketId);
   }
 
   /**

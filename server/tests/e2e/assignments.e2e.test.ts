@@ -35,6 +35,8 @@ vi.mock('../../src/services/permissions', () => ({ checkPermission }));
 const { asg } = vi.hoisted(() => ({
   asg: {
     getAssignmentWithPlace: vi.fn(), listDayAssignments: vi.fn(), dayExists: vi.fn(), placeExists: vi.fn(),
+    // Custom per-user place visibility: default to a group place (no scoping).
+    getPlacePrivacy: vi.fn(() => ({ is_private: 0, created_by: null })),
     createAssignment: vi.fn(), assignmentExistsInDay: vi.fn(), deleteAssignment: vi.fn(), reorderAssignments: vi.fn(),
     getAssignmentForTrip: vi.fn(), moveAssignment: vi.fn(), getParticipants: vi.fn(), updateTime: vi.fn(), setParticipants: vi.fn(),
   },

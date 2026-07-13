@@ -73,7 +73,9 @@ export class DayAssignmentsController {
       throw new HttpException({ error: 'Place not found' }, 404);
     }
     const assignment = this.assignments.createAssignment(dayId, body.place_id, body.notes);
-    this.assignments.broadcast(tripId, 'assignment:created', { assignment }, socketId, this.assignments.placeEventAudience(body.place_id));
+    const createAudience = this.assignments.placeEventAudience(body.place_id);
+    if (createAudience != null) this.assignments.broadcast(tripId, 'assignment:created', { assignment }, socketId, createAudience);
+    else this.assignments.broadcast(tripId, 'assignment:created', { assignment }, socketId);
     this.assignments.reconcile(tripId, socketId);
     return { assignment };
   }
@@ -144,7 +146,9 @@ export class AssignmentOpsController {
     }
     const oldDayId = (existing as { day_id: number }).day_id;
     const { assignment } = this.assignments.moveAssignment(id, body.new_day_id, body.order_index, oldDayId);
-    this.assignments.broadcast(tripId, 'assignment:moved', { assignment, oldDayId: Number(oldDayId), newDayId: Number(body.new_day_id) }, socketId, this.assignments.placeEventAudience((existing as { place_id?: number }).place_id));
+    const moveAudience = this.assignments.placeEventAudience((existing as { place_id?: number }).place_id);
+    if (moveAudience != null) this.assignments.broadcast(tripId, 'assignment:moved', { assignment, oldDayId: Number(oldDayId), newDayId: Number(body.new_day_id) }, socketId, moveAudience);
+    else this.assignments.broadcast(tripId, 'assignment:moved', { assignment, oldDayId: Number(oldDayId), newDayId: Number(body.new_day_id) }, socketId);
     this.assignments.reconcile(tripId, socketId);
     return { assignment };
   }
@@ -170,7 +174,9 @@ export class AssignmentOpsController {
       throw new HttpException({ error: 'Assignment not found' }, 404);
     }
     const assignment = this.assignments.updateTime(id, body.place_time, body.end_time);
-    this.assignments.broadcast(tripId, 'assignment:updated', { assignment }, socketId, this.assignments.placeEventAudience((existingForTime as { place_id?: number }).place_id));
+    const timeAudience = this.assignments.placeEventAudience((existingForTime as { place_id?: number }).place_id);
+    if (timeAudience != null) this.assignments.broadcast(tripId, 'assignment:updated', { assignment }, socketId, timeAudience);
+    else this.assignments.broadcast(tripId, 'assignment:updated', { assignment }, socketId);
     this.assignments.reconcile(tripId, socketId);
     return { assignment };
   }

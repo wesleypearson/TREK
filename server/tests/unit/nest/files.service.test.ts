@@ -78,8 +78,8 @@ describe('FilesService (thin wrapper around the legacy fileService)', () => {
 
   it('the read helpers delegate', () => {
     svc.listFiles.mockReturnValue([{ id: 1 }]);
-    expect(service().listFiles('5', true)).toEqual([{ id: 1 }]);
-    expect(svc.listFiles).toHaveBeenCalledWith('5', true);
+    expect(service().listFiles('5', true, 1)).toEqual([{ id: 1 }]);
+    expect(svc.listFiles).toHaveBeenCalledWith('5', true, 1);
 
     svc.getFileById.mockReturnValue({ id: 9 });
     expect(service().getFileById('9', '5')).toEqual({ id: 9 });
@@ -121,8 +121,8 @@ describe('FilesService (thin wrapper around the legacy fileService)', () => {
     expect(svc.permanentDeleteFile).toHaveBeenCalledWith(trashed);
 
     svc.emptyTrash.mockReturnValue(3);
-    expect(service().emptyTrash('5')).toBe(3);
-    expect(svc.emptyTrash).toHaveBeenCalledWith('5');
+    expect(service().emptyTrash('5', 1)).toBe(3);
+    expect(svc.emptyTrash).toHaveBeenCalledWith('5', 1);
 
     svc.createFileLink.mockReturnValue([{ id: 1 }]);
     expect(service().createFileLink('9', { reservation_id: 2 })).toEqual([{ id: 1 }]);

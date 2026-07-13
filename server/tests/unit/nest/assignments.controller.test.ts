@@ -11,6 +11,8 @@ function svc(o: Partial<AssignmentsService> = {}): AssignmentsService {
   return {
     verifyTripAccess: vi.fn().mockReturnValue(trip), canEdit: vi.fn().mockReturnValue(true), broadcast: vi.fn(),
     dayExists: vi.fn().mockReturnValue(true), placeExists: vi.fn().mockReturnValue(true), reconcile: vi.fn(),
+    // Custom per-user place visibility: group place by default (no scoping).
+    placeVisibleTo: vi.fn().mockReturnValue(true), placeEventAudience: vi.fn().mockReturnValue(undefined),
     ...o,
   } as unknown as AssignmentsService;
 }

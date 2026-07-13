@@ -37,6 +37,8 @@ const { fileSvc } = vi.hoisted(() => ({
     listFiles: vi.fn(), getFileById: vi.fn(), getDeletedFile: vi.fn(), createFile: vi.fn(), updateFile: vi.fn(),
     toggleStarred: vi.fn(), softDeleteFile: vi.fn(), restoreFile: vi.fn(), permanentDeleteFile: vi.fn(),
     emptyTrash: vi.fn(), createFileLink: vi.fn(), deleteFileLink: vi.fn(), getFileLinks: vi.fn(), formatFile: vi.fn(),
+    // Custom per-user file privacy: default to a group-visible file.
+    canViewFile: vi.fn(() => true), setFileVisibility: vi.fn(),
   },
 }));
 vi.mock('../../src/services/fileService', () => fileSvc);

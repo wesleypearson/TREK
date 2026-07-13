@@ -96,10 +96,10 @@ export class FilesController {
   }
 
   // Private-file events must only reach the owner's sockets — everyone else's
-  // clients never learn the file exists.
+  // clients never learn the file exists. Group files keep the legacy call shape.
   private broadcastFileEvent(tripId: string, event: string, payload: Record<string, unknown>, file: { is_private?: number; uploaded_by?: number | null }, socketId?: string) {
-    const onlyUserId = file.is_private && file.uploaded_by != null ? file.uploaded_by : undefined;
-    this.files.broadcast(tripId, event, payload, socketId, onlyUserId);
+    if (file.is_private && file.uploaded_by != null) this.files.broadcast(tripId, event, payload, socketId, file.uploaded_by);
+    else this.files.broadcast(tripId, event, payload, socketId);
   }
 
   @Get()

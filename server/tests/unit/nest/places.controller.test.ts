@@ -11,6 +11,8 @@ function svc(o: Partial<PlacesService> = {}): PlacesService {
   return {
     verifyTripAccess: vi.fn().mockReturnValue(trip), canEdit: vi.fn().mockReturnValue(true), broadcast: vi.fn(),
     onCreated: vi.fn(), onUpdated: vi.fn(), onDeleted: vi.fn(),
+    // Pre-mutation visibility snapshot (custom per-user place visibility).
+    get: vi.fn().mockReturnValue({ id: 9 }),
     ...o,
   } as unknown as PlacesService;
 }
@@ -39,7 +41,7 @@ describe('PlacesController (parity with the legacy /api/trips/:tripId/places rou
     expect(thrown(() => new PlacesController(svc({ verifyTripAccess: vi.fn().mockReturnValue(undefined) })).list(user, '5'))).toEqual({ status: 404, body: { error: 'Trip not found' } });
     const list = vi.fn().mockReturnValue([{ id: 1 }]);
     expect(new PlacesController(svc({ list } as Partial<PlacesService>)).list(user, '5', 'beach', 'cat', 'tag')).toEqual({ places: [{ id: 1 }] });
-    expect(list).toHaveBeenCalledWith('5', { search: 'beach', category: 'cat', tag: 'tag' });
+    expect(list).toHaveBeenCalledWith('5', { search: 'beach', category: 'cat', tag: 'tag' }, 1);
   });
 
   describe('POST / (create)', () => {
@@ -210,7 +212,7 @@ describe('PlacesController (parity with the legacy /api/trips/:tripId/places rou
       const updateMany = vi.fn().mockReturnValue([{ id: 1 }, { id: 2 }]); const onUpdated = vi.fn(); const broadcast = vi.fn();
       const s = svc({ updateMany, onUpdated, broadcast } as Partial<PlacesService>);
       expect(new PlacesController(s).bulkUpdate(user, '5', { ids: [1, 2], category_id: 3 }, 'sock')).toEqual({ updated: [1, 2], count: 2 });
-      expect(updateMany).toHaveBeenCalledWith('5', [1, 2], { category_id: 3 });
+      expect(updateMany).toHaveBeenCalledWith('5', [1, 2], { category_id: 3 }, 1);
       expect(onUpdated).toHaveBeenCalledTimes(2);
       expect(broadcast).toHaveBeenCalledWith('5', 'place:updated', { place: { id: 1 } }, 'sock');
     });
@@ -218,7 +220,7 @@ describe('PlacesController (parity with the legacy /api/trips/:tripId/places rou
       const updateMany = vi.fn().mockReturnValue([{ id: 1 }]);
       const s = svc({ updateMany } as Partial<PlacesService>);
       expect(new PlacesController(s).bulkUpdate(user, '5', { ids: [1], category_id: null })).toEqual({ updated: [1], count: 1 });
-      expect(updateMany).toHaveBeenCalledWith('5', [1], { category_id: null });
+      expect(updateMany).toHaveBeenCalledWith('5', [1], { category_id: null }, 1);
     });
   });
 
@@ -243,7 +245,7 @@ describe('PlacesController (parity with the legacy /api/trips/:tripId/places rou
     expect(thrown(() => new PlacesController(s).update(user, '5', '9', { name: 'Mine' }, 'sock', '2026-01-01 00:00:00'))).toEqual({
       status: 409, body: { error: 'conflict', server: { id: 9, name: 'Theirs' } },
     });
-    expect(update).toHaveBeenCalledWith('5', '9', expect.objectContaining({ name: 'Mine' }), '2026-01-01 00:00:00');
+    expect(update).toHaveBeenCalledWith('5', '9', expect.objectContaining({ name: 'Mine' }), '2026-01-01 00:00:00', 1);
     expect(broadcast).not.toHaveBeenCalled();
     expect(onUpdated).not.toHaveBeenCalled();
   });
