@@ -374,7 +374,7 @@ export class TripsController {
     if (!trip) {
       throw new HttpException({ error: 'Trip not found' }, 404);
     }
-    return this.trips.bundle(id, trip);
+    return this.trips.bundle(id, trip, user.id);
   }
 
   @Get(':id/export.ics')
@@ -383,7 +383,7 @@ export class TripsController {
       throw new HttpException({ error: 'Trip not found' }, 404);
     }
     try {
-      const { ics, filename } = this.trips.exportICS(id);
+      const { ics, filename } = this.trips.exportICS(id, user.id);
       res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
       res.send(ics);

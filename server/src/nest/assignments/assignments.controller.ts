@@ -51,7 +51,7 @@ export class DayAssignmentsController {
     if (!this.assignments.dayExists(dayId, tripId)) {
       throw new HttpException({ error: 'Day not found' }, 404);
     }
-    return { assignments: this.assignments.listDayAssignments(dayId) };
+    return { assignments: this.assignments.listDayAssignments(dayId, user.id) };
   }
 
   @Post()
@@ -67,11 +67,13 @@ export class DayAssignmentsController {
     if (!this.assignments.dayExists(dayId, tripId)) {
       throw new HttpException({ error: 'Day not found' }, 404);
     }
-    if (!this.assignments.placeExists(body.place_id, tripId)) {
+    // Another member's private place can't be assigned — same 404 as a place
+    // that doesn't exist (custom visibility).
+    if (!this.assignments.placeExists(body.place_id, tripId) || !this.assignments.placeVisibleTo(body.place_id, user.id)) {
       throw new HttpException({ error: 'Place not found' }, 404);
     }
     const assignment = this.assignments.createAssignment(dayId, body.place_id, body.notes);
-    this.assignments.broadcast(tripId, 'assignment:created', { assignment }, socketId);
+    this.assignments.broadcast(tripId, 'assignment:created', { assignment }, socketId, this.assignments.placeEventAudience(body.place_id));
     this.assignments.reconcile(tripId, socketId);
     return { assignment };
   }
@@ -142,7 +144,7 @@ export class AssignmentOpsController {
     }
     const oldDayId = (existing as { day_id: number }).day_id;
     const { assignment } = this.assignments.moveAssignment(id, body.new_day_id, body.order_index, oldDayId);
-    this.assignments.broadcast(tripId, 'assignment:moved', { assignment, oldDayId: Number(oldDayId), newDayId: Number(body.new_day_id) }, socketId);
+    this.assignments.broadcast(tripId, 'assignment:moved', { assignment, oldDayId: Number(oldDayId), newDayId: Number(body.new_day_id) }, socketId, this.assignments.placeEventAudience((existing as { place_id?: number }).place_id));
     this.assignments.reconcile(tripId, socketId);
     return { assignment };
   }
@@ -163,11 +165,12 @@ export class AssignmentOpsController {
   ) {
     const trip = requireTrip(this.assignments, tripId, user);
     requireEdit(this.assignments, trip, user);
-    if (!this.assignments.getAssignmentForTrip(id, tripId)) {
+    const existingForTime = this.assignments.getAssignmentForTrip(id, tripId);
+    if (!existingForTime) {
       throw new HttpException({ error: 'Assignment not found' }, 404);
     }
     const assignment = this.assignments.updateTime(id, body.place_time, body.end_time);
-    this.assignments.broadcast(tripId, 'assignment:updated', { assignment }, socketId);
+    this.assignments.broadcast(tripId, 'assignment:updated', { assignment }, socketId, this.assignments.placeEventAudience((existingForTime as { place_id?: number }).place_id));
     this.assignments.reconcile(tripId, socketId);
     return { assignment };
   }

@@ -633,8 +633,8 @@ export function copyToTrip(userId: number, body: CollectionCopyToTripRequest): {
 
   const insertPlace = db.prepare(`
     INSERT INTO places (trip_id, name, description, lat, lng, address, category_id, price,
-      currency, notes, image_url, google_place_id, google_ftid, website, phone, osm_id)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      currency, notes, image_url, google_place_id, google_ftid, website, phone, osm_id, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `);
   const insertTag = db.prepare('INSERT OR IGNORE INTO place_tags (place_id, tag_id) VALUES (?, ?)');
 
@@ -648,6 +648,7 @@ export function copyToTrip(userId: number, body: CollectionCopyToTripRequest): {
     const res = insertPlace.run(
       body.trip_id, s.name, s.description, s.lat, s.lng, s.address, s.category_id, s.price,
       s.currency, s.notes, s.image_url, s.google_place_id, s.google_ftid, s.website, s.phone, s.osm_id,
+      userId,
     );
     const newPlaceId = Number(res.lastInsertRowid);
     const tagIds = db.prepare('SELECT tag_id FROM collection_place_tags WHERE collection_place_id = ?').all(s.id) as { tag_id: number }[];

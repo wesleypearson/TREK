@@ -132,7 +132,7 @@ export function getSharedTripData(token: string): Record<string, any> | null {
       FROM day_assignments da
       JOIN places p ON da.place_id = p.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE da.day_id IN (${ph})
+      WHERE da.day_id IN (${ph}) AND p.is_private = 0
       ORDER BY da.order_index ASC, da.created_at ASC
     `).all(...dayIds);
 
@@ -165,11 +165,11 @@ export function getSharedTripData(token: string): Record<string, any> | null {
     dayNotes = notesByDay;
   }
 
-  // Places
+  // Places — private places (custom visibility) never appear on a public share link.
   const places = (db.prepare(`
     SELECT p.*, c.name as category_name, c.color as category_color, c.icon as category_icon
     FROM places p LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.trip_id = ? ORDER BY p.created_at DESC
+    WHERE p.trip_id = ? AND p.is_private = 0 ORDER BY p.created_at DESC
   `).all(tripId) as any[]).map((p) => ({ ...p, image_url: rewritePlacePhotoUrl(p.image_url, token) }));
 
   // Reservations — include per-day positions so the client can render the same order as the planner
@@ -195,7 +195,7 @@ export function getSharedTripData(token: string): Record<string, any> | null {
   const accommodations = db.prepare(`
     SELECT a.*, p.name as place_name, p.address as place_address, p.lat as place_lat, p.lng as place_lng
     FROM day_accommodations a JOIN places p ON a.place_id = p.id
-    WHERE a.trip_id = ?
+    WHERE a.trip_id = ? AND p.is_private = 0
   `).all(tripId);
 
   // Packing — a public viewer is neither owner nor recipient, so only Common items

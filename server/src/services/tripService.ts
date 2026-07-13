@@ -639,7 +639,7 @@ function buildVTimezone(zone: string, yyyymmdd: string): string {
   );
 }
 
-export function exportICS(tripId: string | number): { ics: string; filename: string } {
+export function exportICS(tripId: string | number, viewerId?: number): { ics: string; filename: string } {
   const trip = db.prepare('SELECT * FROM trips WHERE id = ?').get(tripId) as any;
   if (!trip) throw new NotFoundError('Trip not found');
 
@@ -717,6 +717,7 @@ export function exportICS(tripId: string | number): { ics: string; filename: str
   for (const day of days) {
     if (!day.date) continue;
 
+    // Custom visibility: another member's private places stay out of the export.
     const assignments = db.prepare(`
       SELECT da.*, p.name as place_name, p.address as place_address,
         p.lat as place_lat, p.lng as place_lng,
@@ -724,9 +725,9 @@ export function exportICS(tripId: string | number): { ics: string; filename: str
         COALESCE(da.assignment_end_time, p.end_time) as effective_end_time
       FROM day_assignments da
       JOIN places p ON da.place_id = p.id
-      WHERE da.day_id = ?
+      WHERE da.day_id = ?${viewerId != null ? ' AND (p.is_private = 0 OR p.created_by IS NULL OR p.created_by = ?)' : ''}
       ORDER BY da.order_index ASC, da.created_at ASC
-    `).all(day.id) as any[];
+    `).all(...(viewerId != null ? [day.id, viewerId] : [day.id])) as any[];
 
     const notes = db.prepare(
       'SELECT * FROM day_notes WHERE day_id = ? ORDER BY sort_order ASC, created_at ASC'
@@ -907,19 +908,26 @@ export function copyTripById(sourceTripId: string | number, newOwnerId: number, 
       dayMap.set(d.id, r.lastInsertRowid);
     }
 
-    const oldPlaces = db.prepare('SELECT * FROM places WHERE trip_id = ?').all(sourceTripId) as any[];
+    // Custom visibility: only places the copier can see come along — another
+    // member's private places stay out of the copy. Copied rows belong to the
+    // new owner and keep their private flag (your private place stays private).
+    const oldPlaces = db.prepare(
+      'SELECT * FROM places WHERE trip_id = ? AND (is_private = 0 OR created_by IS NULL OR created_by = ?)'
+    ).all(sourceTripId, newOwnerId) as any[];
     const placeMap = new Map<number, number | bigint>();
     const insertPlace = db.prepare(`
       INSERT INTO places (trip_id, name, description, lat, lng, address, category_id, price, currency,
         reservation_status, reservation_notes, reservation_datetime, place_time, end_time,
-        duration_minutes, notes, image_url, google_place_id, google_ftid, website, phone, transport_mode, osm_id)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        duration_minutes, notes, image_url, google_place_id, google_ftid, website, phone, transport_mode, osm_id,
+        created_by, is_private)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
     for (const p of oldPlaces) {
       const r = insertPlace.run(newTripId, p.name, p.description, p.lat, p.lng, p.address, p.category_id,
         p.price, p.currency, p.reservation_status, p.reservation_notes, p.reservation_datetime,
         p.place_time, p.end_time, p.duration_minutes, p.notes, p.image_url, p.google_place_id,
-        p.google_ftid, p.website, p.phone, p.transport_mode, p.osm_id);
+        p.google_ftid, p.website, p.phone, p.transport_mode, p.osm_id,
+        newOwnerId, p.is_private ?? 0);
       placeMap.set(p.id, r.lastInsertRowid);
     }
 

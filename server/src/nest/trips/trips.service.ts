@@ -111,23 +111,27 @@ export class TripsService {
     return tripSvc.deleteGuest(tripId, guestUserId);
   }
 
-  exportICS(tripId: string) {
-    return tripSvc.exportICS(tripId);
+  exportICS(tripId: string, viewerId?: number) {
+    return tripSvc.exportICS(tripId, viewerId);
   }
 
-  /** Aggregates every trip sub-collection for offline caching (legacy /:id/bundle). */
-  bundle(tripId: string, trip: { user_id: number }) {
-    const { days } = listDays(tripId);
+  /**
+   * Aggregates every trip sub-collection for offline caching (legacy /:id/bundle).
+   * viewerId scopes the bundle to what the requesting member may see (custom
+   * per-user file/place visibility + upstream private packing items).
+   */
+  bundle(tripId: string, trip: { user_id: number }, viewerId?: number) {
+    const { days } = listDays(tripId, viewerId);
     const { owner, members } = this.listMembers(tripId, trip.user_id);
     return {
       trip,
       days,
-      places: listPlaces(String(tripId), {}),
-      packingItems: listPackingItems(tripId),
+      places: listPlaces(String(tripId), {}, viewerId),
+      packingItems: listPackingItems(tripId, viewerId),
       todoItems: listTodoItems(tripId),
       budgetItems: listBudgetItems(tripId),
       reservations: listReservations(tripId),
-      files: listFiles(tripId, false),
+      files: listFiles(tripId, false, viewerId),
       accommodations: listAccommodations(tripId),
       members: [owner, ...(members || [])].filter(Boolean),
     };

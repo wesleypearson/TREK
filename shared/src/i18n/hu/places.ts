@@ -71,6 +71,8 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Weboldal',
   'places.formNotes': 'Jegyzetek',
   'places.formNotesPlaceholder': 'Személyes jegyzetek...',
+  'places.formPrivate': 'Privát hely (csak én láthatom)',
+  'places.formPrivateHint': 'Ez a hely nem jelenik meg a csoport közös listáin és térképén. Ezt később módosíthatod.',
   'places.formReservation': 'Foglalás',
   'places.reservationNotesPlaceholder': 'Foglalási jegyzetek, visszaigazolási szám...',
   'places.mapsSearchPlaceholder': 'Helyek keresése...',

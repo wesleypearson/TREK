@@ -27,8 +27,8 @@ export class DaysService {
     broadcast(tripId, event, payload, socketId);
   }
 
-  list(tripId: string) {
-    return dayService.listDays(tripId);
+  list(tripId: string, viewerId?: number) {
+    return dayService.listDays(tripId, viewerId);
   }
 
   getDay(id: string, tripId: string) {

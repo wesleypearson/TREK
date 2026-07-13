@@ -1,4 +1,4 @@
-import { Star, Trash2 } from 'lucide-react'
+import { Star, Trash2, Lock } from 'lucide-react'
 import type { FileManagerState } from './useFileManager'
 
 export function FileManagerToolbar(S: FileManagerState) {
@@ -25,6 +25,7 @@ export function FileManagerToolbar(S: FileManagerState) {
                 { id: 'image', label: t('files.filterImages') },
                 { id: 'doc', label: t('files.filterDocs') },
                 ...(files.some(f => f.note_id) ? [{ id: 'collab', label: t('files.filterCollab') || 'Collab' }] : []),
+                ...(files.some(f => f.is_private) ? [{ id: 'private', icon: Lock, label: t('files.private') || 'Private' } as const] : []),
               ].map(tab => {
                 const active = filterType === tab.id
                 const TabIcon = 'icon' in tab ? tab.icon : null
@@ -34,6 +35,7 @@ export function FileManagerToolbar(S: FileManagerState) {
                   : tab.id === 'image' ? files.filter(f => (f.mime_type || '').startsWith('image/')).length
                   : tab.id === 'doc' ? files.filter(f => /\.(docx?|xlsx?|txt|csv)$/i.test(f.original_name)).length
                   : tab.id === 'collab' ? files.filter(f => f.note_id).length
+                  : tab.id === 'private' ? files.filter(f => f.is_private).length
                   : 0
                 return (
                   <button key={tab.id} onClick={() => setFilterType(tab.id)}

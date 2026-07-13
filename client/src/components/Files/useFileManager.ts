@@ -6,6 +6,7 @@ import { filesApi } from '../../api/client'
 import type { Place, Reservation, TripFile, Day, AssignmentsMap } from '../../types'
 import { useCanDo } from '../../store/permissionsStore'
 import { useTripStore } from '../../store/tripStore'
+import { useAuthStore } from '../../store/authStore'
 import { getAuthUrl } from '../../api/authUrl'
 import { isImage, isMedia, isWalletPass } from './FileManager.helpers'
 import { openFile as openFileInTab } from '../../utils/fileDownload'
@@ -38,6 +39,7 @@ export function useFileManager({ files = [], onUpload, onDelete, onUpdate, place
   const toast = useToast()
   const can = useCanDo()
   const trip = useTripStore((s) => s.trip)
+  const currentUserId = useAuthStore((s) => s.user?.id)
   const { t, locale } = useTranslation()
 
   const loadTrash = useCallback(async () => {
@@ -63,6 +65,18 @@ export function useFileManager({ files = [], onUpload, onDelete, onUpdate, place
       await filesApi.toggleStar(tripId, fileId)
       refreshFiles()
     } catch { /* */ }
+  }
+
+  // Custom per-user file privacy: uploads start Private; the uploader can share
+  // them with the whole trip group (and take them back) from the row toggle.
+  const handleToggleVisibility = async (file: TripFile) => {
+    try {
+      await filesApi.setVisibility(tripId, file.id, !file.is_private)
+      refreshFiles()
+      toast.success(file.is_private ? t('files.toast.sharedWithGroup') : t('files.toast.madePrivate'))
+    } catch {
+      toast.error(t('files.toast.visibilityError'))
+    }
   }
 
   const handleRestore = async (fileId: number) => {
@@ -156,6 +170,7 @@ export function useFileManager({ files = [], onUpload, onDelete, onUpdate, place
     if (filterType === 'image') return isImage(f.mime_type)
     if (filterType === 'doc') return (f.mime_type || '').includes('word') || (f.mime_type || '').includes('excel') || (f.mime_type || '').includes('text')
     if (filterType === 'collab') return !!f.note_id
+    if (filterType === 'private') return !!f.is_private
     return true
   })
 
@@ -204,8 +219,8 @@ export function useFileManager({ files = [], onUpload, onDelete, onUpdate, place
   return {
     files, places, days, assignments, reservations, tripId, allowedFileTypes,
     uploading, filterType, setFilterType, lightboxIndex, setLightboxIndex,
-    showTrash, trashFiles, loadingTrash, toast, can, trip, t, locale,
-    toggleTrash, refreshFiles, handleStar, handleRestore, handlePermanentDelete, handleEmptyTrash,
+    showTrash, trashFiles, loadingTrash, toast, can, trip, t, locale, currentUserId,
+    toggleTrash, refreshFiles, handleStar, handleToggleVisibility, handleRestore, handlePermanentDelete, handleEmptyTrash,
     previewFile, setPreviewFile, previewFileUrl, assignFileId, setAssignFileId,
     getRootProps, getInputProps, isDragActive, handlePaste, filteredFiles, handleDelete,
     handleAssign, mediaFiles, openFile,

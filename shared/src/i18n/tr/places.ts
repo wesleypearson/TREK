@@ -73,6 +73,9 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Web sitesi',
   'places.formNotes': 'Notlar',
   'places.formNotesPlaceholder': 'Kişisel notlar...',
+  'places.formPrivate': 'Özel yer (sadece bana görünür)',
+  'places.formPrivateHint':
+    'Bu yeri grubun ortak listelerinden ve haritasından uzak tutar. Bunu daha sonra değiştirebilirsiniz.',
   'places.formReservation': 'Rezervasyon',
   'places.reservationNotesPlaceholder': 'Rezervasyon notları, onay numarası...',
   'places.mapsSearchPlaceholder': 'Yerleri ara...',

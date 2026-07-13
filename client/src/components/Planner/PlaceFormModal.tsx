@@ -8,7 +8,7 @@ import { useTripStore } from '../../store/tripStore'
 import { useAddonStore } from '../../store/addonStore'
 import CollectionPicker from '../Collections/CollectionPicker'
 import { useToast } from '../shared/Toast'
-import { Search, Paperclip, X, AlertTriangle, Loader2 } from 'lucide-react'
+import { Search, Paperclip, X, AlertTriangle, Loader2, Lock } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import CustomTimePicker from '../shared/CustomTimePicker'
 import { DEFAULT_FORM, isGoogleMapsUrl, type PlaceFormData } from './PlaceFormModal.helpers'
@@ -97,6 +97,11 @@ function usePlaceFormModal(props: PlaceFormModalProps) {
   const can = useCanDo()
   const tripObj = useTripStore((s) => s.trip)
   const canUploadFiles = can('file_upload', tripObj)
+  // Custom visibility: only the place's creator may flip Private/Group on an
+  // existing place; anyone can choose it for a new one. Legacy places with no
+  // creator on record can be claimed by whoever toggles them.
+  const currentUserId = useAuthStore((s) => s.user?.id)
+  const canToggleVisibility = !place || place.created_by == null || place.created_by === currentUserId
   const collectionsEnabled = useAddonStore((s) => s.isEnabled('collections'))
 
   useEffect(() => {
@@ -118,6 +123,7 @@ function usePlaceFormModal(props: PlaceFormModalProps) {
         notes: place.notes || '',
         transport_mode: place.transport_mode || 'walking',
         website: place.website || '',
+        is_private: !!place.is_private,
       })
     } else if (prefillCoords) {
       setForm({
@@ -218,7 +224,7 @@ function usePlaceFormModal(props: PlaceFormModalProps) {
     }
   }, [mapsSearch, fetchSuggestions])
 
-  const handleChange = (field: string, value: string) => {
+  const handleChange = (field: string, value: string | boolean) => {
     setForm(prev => ({ ...prev, [field]: value }))
   }
 
@@ -456,6 +462,7 @@ function usePlaceFormModal(props: PlaceFormModalProps) {
     can,
     tripObj,
     canUploadFiles,
+    canToggleVisibility,
     places,
     locationBias,
     searchInputRef,
@@ -520,6 +527,7 @@ export default function PlaceFormModal(props: PlaceFormModalProps) {
     can,
     tripObj,
     canUploadFiles,
+    canToggleVisibility,
     places,
     locationBias,
     searchInputRef,
@@ -687,6 +695,24 @@ export default function PlaceFormModal(props: PlaceFormModalProps) {
             className="form-input" style={{ resize: 'vertical' }}
           />
         </div>
+
+        {/* Visibility (custom): places are group-visible by default; the creator
+            can keep one to themselves. */}
+        {S.canToggleVisibility && (
+          <div>
+            <label className="flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={form.is_private}
+                onChange={e => handleChange('is_private', e.target.checked)}
+                style={{ width: 15, height: 15, accentColor: 'var(--accent, #6366f1)' }}
+              />
+              <Lock size={13} style={{ color: 'var(--text-faint)' }} />
+              {t('places.formPrivate')}
+            </label>
+            <p className="text-xs mt-1" style={{ color: 'var(--text-faint)' }}>{t('places.formPrivateHint')}</p>
+          </div>
+        )}
 
         {/* Address + Coordinates */}
         <div>

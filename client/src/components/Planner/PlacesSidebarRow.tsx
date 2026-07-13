@@ -1,5 +1,5 @@
 import React from 'react'
-import { Plus, Check, Route } from 'lucide-react'
+import { Plus, Check, Route, Lock } from 'lucide-react'
 import PlaceAvatar from '../shared/PlaceAvatar'
 import { getCategoryIcon } from '../shared/categoryIcons'
 import type { Place, Category } from '../../types'
@@ -79,6 +79,7 @@ export const MemoPlaceRow = React.memo(function MemoPlaceRow({
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, overflow: 'hidden' }}>
           {hasGeometry && <span title="Track / Route" style={{ display: 'inline-flex', flexShrink: 0 }}><Route size={11} strokeWidth={2} color="var(--text-faint)" /></span>}
+          {!!place.is_private && <span title="Private" style={{ display: 'inline-flex', flexShrink: 0 }}><Lock size={11} strokeWidth={2} color="var(--text-faint)" /></span>}
           {cat && (() => {
             const CatIcon = getCategoryIcon(cat.icon)
             return <span title={cat.name} style={{ display: 'inline-flex', flexShrink: 0 }}><CatIcon size={11} strokeWidth={2} color={cat.color || '#6366f1'} /></span>

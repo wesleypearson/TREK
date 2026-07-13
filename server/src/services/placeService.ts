@@ -51,12 +51,35 @@ export interface PlaceImportResult {
 }
 
 // ---------------------------------------------------------------------------
+// Per-user place visibility (custom, mirrors packing #858)
+// ---------------------------------------------------------------------------
+
+/**
+ * A place is Group (is_private=0, the default — every trip member sees it) or
+ * Private (is_private=1, visible only to its creator). Legacy rows with no
+ * created_by stay Group-visible so nothing can become invisible to everyone.
+ * The SQL fragment is the query twin of canViewPlace; bind the viewing user's
+ * id once for its `?` placeholder. It assumes the places table is aliased `p`.
+ */
+export const PLACE_VISIBILITY_SQL = '(p.is_private = 0 OR p.created_by IS NULL OR p.created_by = ?)';
+
+export function canViewPlace(
+  place: { is_private?: number | null; created_by?: number | null },
+  userId: number | null | undefined,
+): boolean {
+  if (!place.is_private) return true;
+  if (place.created_by == null) return true;
+  return userId != null && place.created_by === userId;
+}
+
+// ---------------------------------------------------------------------------
 // List places
 // ---------------------------------------------------------------------------
 
 export function listPlaces(
   tripId: string,
   filters: { search?: string; category?: string; tag?: string; assignment?: 'all' | 'unassigned' | 'assigned' },
+  viewerId?: number,
 ) {
   let query = `
     SELECT DISTINCT p.*, c.name as category_name, c.color as category_color, c.icon as category_icon
@@ -65,6 +88,12 @@ export function listPlaces(
     WHERE p.trip_id = ?
   `;
   const params: (string | number)[] = [tripId];
+
+  // Hide other members' private places (custom visibility).
+  if (viewerId != null) {
+    query += ` AND ${PLACE_VISIBILITY_SQL}`;
+    params.push(viewerId);
+  }
 
   if (filters.search) {
     query += ' AND (p.name LIKE ? OR p.address LIKE ? OR p.description LIKE ?)';
@@ -121,8 +150,9 @@ export function createPlace(
     place_time?: string; end_time?: string;
     duration_minutes?: number; notes?: string; image_url?: string;
     google_place_id?: string; google_ftid?: string; osm_id?: string; website?: string; phone?: string;
-    transport_mode?: string; tags?: number[];
+    transport_mode?: string; tags?: number[]; is_private?: boolean | number;
   },
+  createdBy?: number,
 ) {
   const {
     name, description, lat, lng, address, category_id, price, currency,
@@ -134,13 +164,17 @@ export function createPlace(
   const result = db.prepare(`
     INSERT INTO places (trip_id, name, description, lat, lng, address, category_id, price, currency,
       place_time, end_time,
-      duration_minutes, notes, image_url, google_place_id, google_ftid, osm_id, website, phone, transport_mode)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      duration_minutes, notes, image_url, google_place_id, google_ftid, osm_id, website, phone, transport_mode,
+      created_by, is_private)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     tripId, name, description || null, lat || null, lng || null, address || null,
     category_id || null, price || null, currency || null,
     place_time || null, end_time || null, duration_minutes || 60, notes || null, image_url || null,
     google_place_id || null, google_ftid || null, osm_id || null, website || null, phone || null, transport_mode || 'walking',
+    createdBy ?? null,
+    // Places default to Group (visible to the whole trip) — the opposite of files.
+    body.is_private ? 1 : 0,
   );
 
   const placeId = result.lastInsertRowid;
@@ -159,9 +193,13 @@ export function createPlace(
 // Get single place
 // ---------------------------------------------------------------------------
 
-export function getPlace(tripId: string, placeId: string) {
-  const placeCheck = db.prepare('SELECT id FROM places WHERE id = ? AND trip_id = ?').get(placeId, tripId);
+export function getPlace(tripId: string, placeId: string, viewerId?: number) {
+  const placeCheck = db.prepare('SELECT id, is_private, created_by FROM places WHERE id = ? AND trip_id = ?').get(placeId, tripId) as
+    | { id: number; is_private?: number; created_by?: number | null }
+    | undefined;
   if (!placeCheck) return null;
+  // Another member's private place must be indistinguishable from a missing one.
+  if (viewerId != null && !canViewPlace(placeCheck, viewerId)) return null;
   return getPlaceWithTags(placeId);
 }
 
@@ -178,12 +216,16 @@ export function updatePlace(
     place_time?: string; end_time?: string;
     duration_minutes?: number; notes?: string; image_url?: string;
     google_place_id?: string; google_ftid?: string; osm_id?: string; website?: string; phone?: string;
-    transport_mode?: string; tags?: number[];
+    transport_mode?: string; tags?: number[]; is_private?: boolean | number;
   },
   ifMatch?: string,
+  viewerId?: number,
 ): ReturnType<typeof getPlaceWithTags> | UpdateConflict | null {
   const existingPlace = db.prepare('SELECT * FROM places WHERE id = ? AND trip_id = ?').get(placeId, tripId) as Place | undefined;
   if (!existingPlace) return null;
+  // Another member's private place is invisible to the viewer — 404, not 403,
+  // so its existence isn't confirmed (custom visibility).
+  if (viewerId != null && !canViewPlace(existingPlace, viewerId)) return null;
 
   // Optimistic concurrency (#1135): when the caller sent the version it based its
   // edit on and the row has moved on since, reject instead of clobbering. Absent
@@ -245,6 +287,17 @@ export function updatePlace(
     placeId,
   );
 
+  // Visibility toggle (custom): only the creator may flip Private/Group; a
+  // legacy place with no creator on record is claimed by the acting user when
+  // toggled (packing #858 claim-owner pattern). Others' attempts are ignored.
+  if (body.is_private !== undefined && viewerId != null) {
+    const isCreator = existingPlace.created_by == null || existingPlace.created_by === viewerId;
+    if (isCreator) {
+      db.prepare('UPDATE places SET is_private = ?, created_by = COALESCE(created_by, ?) WHERE id = ?')
+        .run(body.is_private ? 1 : 0, viewerId, placeId);
+    }
+  }
+
   if (tags !== undefined) {
     db.prepare('DELETE FROM place_tags WHERE place_id = ?').run(placeId);
     if (tags.length > 0) {
@@ -262,26 +315,29 @@ export function updatePlace(
 // Delete place
 // ---------------------------------------------------------------------------
 
-export function deletePlace(tripId: string, placeId: string): boolean {
+export function deletePlace(tripId: string, placeId: string, viewerId?: number): boolean {
   const place = db.prepare(
-    'SELECT google_place_id, image_url FROM places WHERE id = ? AND trip_id = ?'
-  ).get(placeId, tripId) as { google_place_id: string | null; image_url: string | null } | undefined;
+    'SELECT google_place_id, image_url, is_private, created_by FROM places WHERE id = ? AND trip_id = ?'
+  ).get(placeId, tripId) as { google_place_id: string | null; image_url: string | null; is_private?: number; created_by?: number | null } | undefined;
   if (!place) return false;
+  // An invisible (someone else's private) place can't be deleted — 404 parity.
+  if (viewerId != null && !canViewPlace(place, viewerId)) return false;
   db.prepare('DELETE FROM places WHERE id = ?').run(placeId);
   reclaimPhotoCache(place.google_place_id, place.image_url);
   return true;
 }
 
-export function deletePlacesMany(tripId: string, ids: number[]): number[] {
+export function deletePlacesMany(tripId: string, ids: number[], viewerId?: number): number[] {
   if (ids.length === 0) return [];
-  const selectStmt = db.prepare('SELECT google_place_id, image_url FROM places WHERE id = ? AND trip_id = ?');
+  const selectStmt = db.prepare('SELECT google_place_id, image_url, is_private, created_by FROM places WHERE id = ? AND trip_id = ?');
   const deleteStmt = db.prepare('DELETE FROM places WHERE id = ?');
   const deleted: number[] = [];
   const reclaimable: { google_place_id: string | null; image_url: string | null }[] = [];
   const run = db.transaction((list: number[]) => {
     for (const id of list) {
-      const row = selectStmt.get(id, tripId) as { google_place_id: string | null; image_url: string | null } | undefined;
+      const row = selectStmt.get(id, tripId) as { google_place_id: string | null; image_url: string | null; is_private?: number; created_by?: number | null } | undefined;
       if (!row) continue;
+      if (viewerId != null && !canViewPlace(row, viewerId)) continue;
       deleteStmt.run(id);
       deleted.push(id);
       reclaimable.push(row);
@@ -307,6 +363,7 @@ export function updatePlacesMany(
   tripId: string,
   ids: number[],
   body: Parameters<typeof updatePlace>[2],
+  viewerId?: number,
 ): NonNullable<ReturnType<typeof getPlaceWithTags>>[] {
   if (ids.length === 0) return [];
   const updated: NonNullable<ReturnType<typeof getPlaceWithTags>>[] = [];
@@ -314,7 +371,7 @@ export function updatePlacesMany(
     for (const id of list) {
       // Bulk update sends no If-Match, so updatePlace never returns a conflict
       // here; the guard keeps the types honest.
-      const place = updatePlace(tripId, String(id), body);
+      const place = updatePlace(tripId, String(id), body, undefined, viewerId);
       if (place && !isUpdateConflict(place)) updated.push(place);
     }
   });
@@ -414,11 +471,15 @@ export interface GpxImportOptions {
   importTracks?: boolean;
   /** Source filename used to name unnamed routes/tracks (keeps multiple imports distinct). */
   defaultName?: string;
+  /** Who ran the import — recorded as places.created_by (custom visibility). */
+  createdBy?: number;
 }
 
 export interface KmlImportOptions {
   importPoints?: boolean;
   importPaths?: boolean;
+  /** Who ran the import — recorded as places.created_by (custom visibility). */
+  createdBy?: number;
 }
 
 export function importGpx(tripId: string, fileBuffer: Buffer, opts: GpxImportOptions = {}) {
@@ -495,8 +556,8 @@ export function importGpx(tripId: string, fileBuffer: Buffer, opts: GpxImportOpt
 
   const dedup = buildDedupSet(tripId);
   const insertStmt = db.prepare(`
-    INSERT INTO places (trip_id, name, description, lat, lng, transport_mode, route_geometry)
-    VALUES (?, ?, ?, ?, ?, 'walking', ?)
+    INSERT INTO places (trip_id, name, description, lat, lng, transport_mode, route_geometry, created_by)
+    VALUES (?, ?, ?, ?, ?, 'walking', ?, ?)
   `);
   const created: any[] = [];
   let skipped = 0;
@@ -506,7 +567,7 @@ export function importGpx(tripId: string, fileBuffer: Buffer, opts: GpxImportOpt
         skipped++;
         continue;
       }
-      const result = insertStmt.run(tripId, wp.name, wp.description, wp.lat, wp.lng, wp.routeGeometry || null);
+      const result = insertStmt.run(tripId, wp.name, wp.description, wp.lat, wp.lng, wp.routeGeometry || null, opts.createdBy ?? null);
       const place = getPlaceWithTags(Number(result.lastInsertRowid));
       created.push(place);
       trackInsertedInDedupSet({ name: wp.name, lat: wp.lat, lng: wp.lng }, dedup);
@@ -547,8 +608,8 @@ export function importKmlPlaces(tripId: string, fileBuffer: Buffer, opts: KmlImp
   let dupCount = 0;
 
   const insertStmt = db.prepare(`
-    INSERT INTO places (trip_id, name, description, lat, lng, category_id, transport_mode, route_geometry)
-    VALUES (?, ?, ?, ?, ?, ?, 'walking', ?)
+    INSERT INTO places (trip_id, name, description, lat, lng, category_id, transport_mode, route_geometry, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, 'walking', ?, ?)
   `);
 
   const insertAll = db.transaction(() => {
@@ -597,6 +658,7 @@ export function importKmlPlaces(tripId: string, fileBuffer: Buffer, opts: KmlImp
         parsedPlacemark.lng,
         categoryId,
         parsedPlacemark.routeGeometry,
+        opts.createdBy ?? null,
       );
 
       const place = getPlaceWithTags(Number(result.lastInsertRowid));
@@ -808,8 +870,8 @@ export async function importGoogleList(tripId: string, url: string, opts?: ListI
 
   const dedup = buildDedupSet(tripId);
   const insertStmt = db.prepare(`
-    INSERT INTO places (trip_id, name, lat, lng, notes, google_ftid, transport_mode)
-    VALUES (?, ?, ?, ?, ?, ?, 'walking')
+    INSERT INTO places (trip_id, name, lat, lng, notes, google_ftid, transport_mode, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, 'walking', ?)
   `);
   const updateGoogleFtidStmt = db.prepare('UPDATE places SET google_ftid = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?');
   const created: any[] = [];
@@ -824,7 +886,7 @@ export async function importGoogleList(tripId: string, url: string, opts?: ListI
         skipped++;
         continue;
       }
-      const result = insertStmt.run(tripId, p.name, p.lat, p.lng, p.notes, p.googleFtid);
+      const result = insertStmt.run(tripId, p.name, p.lat, p.lng, p.notes, p.googleFtid, opts?.userId ?? null);
       const place = getPlaceWithTags(Number(result.lastInsertRowid));
       created.push(place);
       trackInsertedInDedupSet({ name: p.name, lat: p.lat, lng: p.lng }, dedup);
@@ -947,8 +1009,8 @@ export async function importNaverList(
 
   const dedup = buildDedupSet(tripId);
   const insertStmt = db.prepare(`
-    INSERT INTO places (trip_id, name, lat, lng, address, notes, transport_mode)
-    VALUES (?, ?, ?, ?, ?, ?, 'walking')
+    INSERT INTO places (trip_id, name, lat, lng, address, notes, transport_mode, created_by)
+    VALUES (?, ?, ?, ?, ?, ?, 'walking', ?)
   `);
   const created: any[] = [];
   let skipped = 0;
@@ -958,7 +1020,7 @@ export async function importNaverList(
         skipped++;
         continue;
       }
-      const result = insertStmt.run(tripId, p.name, p.lat, p.lng, p.address, p.notes);
+      const result = insertStmt.run(tripId, p.name, p.lat, p.lng, p.address, p.notes, opts?.userId ?? null);
       const place = getPlaceWithTags(Number(result.lastInsertRowid));
       created.push(place);
       trackInsertedInDedupSet({ name: p.name, lat: p.lat, lng: p.lng }, dedup);

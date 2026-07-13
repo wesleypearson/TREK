@@ -366,6 +366,8 @@ export function removeTripFromJourney(journeyId: number, tripId: number, userId:
 // ── Sync engine ──────────────────────────────────────────────────────────
 
 export function syncTripPlaces(journeyId: number, tripId: number, authorId: number) {
+  // Custom visibility: the journey author's sync must not pull in other
+  // members' private places.
   const places = db
     .prepare(
       `
@@ -373,11 +375,11 @@ export function syncTripPlaces(journeyId: number, tripId: number, authorId: numb
     FROM places p
     INNER JOIN day_assignments da ON da.place_id = p.id
     INNER JOIN days d ON da.day_id = d.id
-    WHERE p.trip_id = ?
+    WHERE p.trip_id = ? AND (p.is_private = 0 OR p.created_by IS NULL OR p.created_by = ?)
     ORDER BY d.day_number ASC, da.order_index ASC
   `,
     )
-    .all(tripId) as any[];
+    .all(tripId, authorId) as any[];
 
   const now = ts();
   const existing = db

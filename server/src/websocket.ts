@@ -189,9 +189,11 @@ function leaveRoom(ws: NomadWebSocket, tripId: number): void {
  * Broadcast an event to all sockets in a trip room, optionally excluding a socket.
  * When `onlyUserId` is given the event is delivered only to that user's sockets in
  * the room — used to keep private packing items (#858) off other members' screens
- * while still syncing the owner's own tabs.
+ * while still syncing the owner's own tabs. `excludeUserId` is the inverse: deliver
+ * to everyone BUT that user — used when an item flips shared→private so other
+ * members drop it while the owner (who keeps seeing it) isn't told to.
  */
-function broadcast(tripId: number | string, eventType: string, payload: Record<string, unknown>, excludeSid?: number | string, onlyUserId?: number): void {
+function broadcast(tripId: number | string, eventType: string, payload: Record<string, unknown>, excludeSid?: number | string, onlyUserId?: number, excludeUserId?: number): void {
   tripId = Number(tripId);
   // Announce every CORE trip event (name only, never the payload) to subscribed
   // plugins — before the room check so it fires even with no connected viewers, and
@@ -207,6 +209,7 @@ function broadcast(tripId: number | string, eventType: string, payload: Record<s
     // Exclude the specific socket that triggered the change
     if (excludeNum && socketId.get(ws) === excludeNum) continue;
     if (onlyUserId != null && socketUser.get(ws)?.id !== onlyUserId) continue;
+    if (excludeUserId != null && socketUser.get(ws)?.id === excludeUserId) continue;
     ws.send(JSON.stringify({ type: eventType, tripId, ...payload }));
   }
 }

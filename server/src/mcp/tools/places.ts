@@ -47,7 +47,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
       if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
-      const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, notes, website, phone, price, currency });
+      const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, notes, website, phone, price, currency }, userId);
       safeBroadcast(tripId, 'place:created', { place });
       return ok({ place });
     }
@@ -85,7 +85,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
       if (!dayExists(dayId, tripId)) return { content: [{ type: 'text' as const, text: 'Day not found.' }], isError: true };
       try {
         const run = db.transaction(() => {
-          const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, notes: place_notes, website, phone, price, currency });
+          const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, notes: place_notes, website, phone, price, currency }, userId);
           const assignment = createAssignment(dayId, place.id, assignment_notes ?? null);
           return { place, assignment };
         });
@@ -132,7 +132,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
       if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
-      const place = updatePlace(String(tripId), String(placeId), { name, description, lat, lng, address, category_id, price, currency, place_time, end_time, duration_minutes, notes, website, phone, transport_mode, osm_id, google_place_id, google_ftid });
+      const place = updatePlace(String(tripId), String(placeId), { name, description, lat, lng, address, category_id, price, currency, place_time, end_time, duration_minutes, notes, website, phone, transport_mode, osm_id, google_place_id, google_ftid }, undefined, userId);
       if (!place) return { content: [{ type: 'text' as const, text: 'Place not found.' }], isError: true };
       safeBroadcast(tripId, 'place:updated', { place });
       return ok({ place });
@@ -154,7 +154,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
       if (!canAccessTrip(tripId, userId)) return noAccess();
       if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
       try { onPlaceDeleted(placeId); } catch {} // sync journeys before the row is gone
-      const deleted = deletePlace(String(tripId), String(placeId));
+      const deleted = deletePlace(String(tripId), String(placeId), userId);
       if (!deleted) return { content: [{ type: 'text' as const, text: 'Place not found.' }], isError: true };
       safeBroadcast(tripId, 'place:deleted', { placeId });
       return ok({ success: true });
@@ -176,7 +176,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
     },
     async ({ tripId, search, category, tag, assignment }) => {
       if (!canAccessTrip(tripId, userId)) return noAccess();
-      const places = listPlaces(String(tripId), { search, category, tag, assignment });
+      const places = listPlaces(String(tripId), { search, category, tag, assignment }, userId);
       return ok({ places });
     }
   );
@@ -263,7 +263,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
       if (!canAccessTrip(tripId, userId)) return noAccess();
       if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
 
-      const deleted = deletePlacesMany(String(tripId), placeIds);
+      const deleted = deletePlacesMany(String(tripId), placeIds, userId);
       for (const id of deleted) {
         safeBroadcast(tripId, 'place:deleted', { placeId: id });
         try { onPlaceDeleted(id); } catch {}
@@ -303,7 +303,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
         return { content: [{ type: 'text' as const, text: 'Provide at least one field to update.' }], isError: true };
       }
 
-      const updated = updatePlacesMany(String(tripId), placeIds, fields);
+      const updated = updatePlacesMany(String(tripId), placeIds, fields, userId);
       for (const place of updated) safeBroadcast(tripId, 'place:updated', { place });
       return ok({ count: updated.length, updatedIds: updated.map(p => p.id), skipped: placeIds.length - updated.length });
     }

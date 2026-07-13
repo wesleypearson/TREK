@@ -155,13 +155,36 @@ export function getFileById(id: string | number, tripId: string | number): TripF
   return db.prepare('SELECT * FROM trip_files WHERE id = ? AND trip_id = ?').get(id, tripId) as TripFile | undefined;
 }
 
+/**
+ * Per-user file privacy (custom): a Private file (is_private=1) is visible only
+ * to its uploader. Files without an uploader (legacy rows, deleted users) are
+ * treated as Group so they can never become invisible to everyone.
+ */
+export function canViewFile(file: Pick<TripFile, 'is_private' | 'uploaded_by'>, userId: number | null | undefined): boolean {
+  if (!file.is_private) return true;
+  if (file.uploaded_by == null) return true;
+  return userId != null && file.uploaded_by === userId;
+}
+
+/**
+ * The SQL twin of canViewFile, used to filter list queries. Bind the viewing
+ * user's id once for the `?` placeholder.
+ */
+export const FILE_VISIBILITY_SQL = '(f.is_private = 0 OR f.uploaded_by IS NULL OR f.uploaded_by = ?)';
+
 export function getDeletedFile(id: string | number, tripId: string | number): TripFile | undefined {
   return db.prepare('SELECT * FROM trip_files WHERE id = ? AND trip_id = ? AND deleted_at IS NOT NULL').get(id, tripId) as TripFile | undefined;
 }
 
-export function listFiles(tripId: string | number, showTrash: boolean) {
-  const where = showTrash ? 'f.trip_id = ? AND f.deleted_at IS NOT NULL' : 'f.trip_id = ? AND f.deleted_at IS NULL';
-  const files = db.prepare(`${FILE_SELECT} WHERE ${where} ORDER BY f.starred DESC, f.created_at DESC`).all(tripId) as TripFile[];
+export function listFiles(tripId: string | number, showTrash: boolean, viewerId?: number) {
+  let where = showTrash ? 'f.trip_id = ? AND f.deleted_at IS NOT NULL' : 'f.trip_id = ? AND f.deleted_at IS NULL';
+  const params: (string | number)[] = [Number(tripId)];
+  // Private files (custom) are the uploader's own; hide them from other members.
+  if (viewerId != null) {
+    where += ` AND ${FILE_VISIBILITY_SQL}`;
+    params.push(viewerId);
+  }
+  const files = db.prepare(`${FILE_SELECT} WHERE ${where} ORDER BY f.starred DESC, f.created_at DESC`).all(...params) as TripFile[];
 
   const fileIds = files.map(f => f.id);
   const linksMap: Record<number, FileLink[]> = {};
@@ -188,11 +211,11 @@ export function createFile(
   tripId: string | number,
   file: { filename: string; originalname: string; size: number; mimetype: string },
   uploadedBy: number,
-  opts: { place_id?: string | null; reservation_id?: string | null; description?: string | null }
+  opts: { place_id?: string | null; reservation_id?: string | null; description?: string | null; is_private?: boolean }
 ) {
   const result = db.prepare(`
-    INSERT INTO trip_files (trip_id, place_id, reservation_id, filename, original_name, file_size, mime_type, description, uploaded_by)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO trip_files (trip_id, place_id, reservation_id, filename, original_name, file_size, mime_type, description, uploaded_by, is_private)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     tripId,
     opts.place_id || null,
@@ -202,7 +225,8 @@ export function createFile(
     file.size,
     file.mimetype,
     opts.description || null,
-    uploadedBy
+    uploadedBy,
+    opts.is_private ? 1 : 0
   );
 
   const created = db.prepare(`${FILE_SELECT} WHERE f.id = ?`).get(result.lastInsertRowid) as TripFile;
@@ -239,6 +263,20 @@ export function toggleStarred(id: string | number, currentStarred: number | unde
   return formatFile(updated);
 }
 
+/**
+ * Flip a file between Private (uploader only) and Group (all trip members).
+ * Only the uploader may change visibility; a file with no uploader on record is
+ * claimed by the acting user when made private (packing #858 claim-owner
+ * pattern) so it always has an owner who can share it back.
+ */
+export function setFileVisibility(id: string | number, file: TripFile, isPrivate: boolean, actingUserId: number): { forbidden: true } | { file: ReturnType<typeof formatFile> } {
+  if (file.uploaded_by != null && file.uploaded_by !== actingUserId) return { forbidden: true };
+  db.prepare('UPDATE trip_files SET is_private = ?, uploaded_by = COALESCE(uploaded_by, ?) WHERE id = ?')
+    .run(isPrivate ? 1 : 0, actingUserId, id);
+  const updated = db.prepare(`${FILE_SELECT} WHERE f.id = ?`).get(id) as TripFile;
+  return { file: formatFile(updated) };
+}
+
 export function softDeleteFile(id: string | number) {
   db.prepare('UPDATE trip_files SET deleted_at = CURRENT_TIMESTAMP WHERE id = ?').run(id);
 }
@@ -265,8 +303,16 @@ export async function permanentDeleteFile(file: TripFile): Promise<void> {
   db.prepare('DELETE FROM trip_files WHERE id = ?').run(file.id);
 }
 
-export async function emptyTrash(tripId: string | number): Promise<number> {
-  const trashed = db.prepare('SELECT * FROM trip_files WHERE trip_id = ? AND deleted_at IS NOT NULL').all(tripId) as TripFile[];
+export async function emptyTrash(tripId: string | number, viewerId?: number): Promise<number> {
+  // Scope to the acting user's view (custom privacy): emptying the trash must
+  // not silently destroy other members' private trashed files they can't see.
+  let where = 'trip_id = ? AND deleted_at IS NOT NULL';
+  const params: (string | number)[] = [Number(tripId)];
+  if (viewerId != null) {
+    where += ' AND (is_private = 0 OR uploaded_by IS NULL OR uploaded_by = ?)';
+    params.push(viewerId);
+  }
+  const trashed = db.prepare(`SELECT * FROM trip_files WHERE ${where}`).all(...params) as TripFile[];
   // Collect successful IDs separately so we only DELETE rows whose disk
   // content was actually removed — failing unlinks keep their DB row
   // and a retry via the single-file delete path can try again.

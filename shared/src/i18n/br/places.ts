@@ -71,6 +71,9 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Site',
   'places.formNotes': 'Notas',
   'places.formNotesPlaceholder': 'Notas pessoais...',
+  'places.formPrivate': 'Lugar privado (visível só para mim)',
+  'places.formPrivateHint':
+    'Mantém este lugar fora das listas e do mapa compartilhados do grupo. Você pode alterar isso depois.',
   'places.formReservation': 'Reserva',
   'places.reservationNotesPlaceholder': 'Notas da reserva, código de confirmação...',
   'places.mapsSearchPlaceholder': 'Buscar lugares...',

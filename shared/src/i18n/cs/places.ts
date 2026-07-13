@@ -71,6 +71,9 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Webové stránky',
   'places.formNotes': 'Poznámky',
   'places.formNotesPlaceholder': 'Osobní poznámky...',
+  'places.formPrivate': 'Soukromé místo (viditelné jen pro mě)',
+  'places.formPrivateHint':
+    'Toto místo se nezobrazí ve sdílených seznamech a na mapě skupiny. Později to můžete změnit.',
   'places.formReservation': 'Rezervace',
   'places.reservationNotesPlaceholder': 'Poznámky k rezervaci, potvrzovací kód...',
   'places.mapsSearchPlaceholder': 'Hledat místa...',

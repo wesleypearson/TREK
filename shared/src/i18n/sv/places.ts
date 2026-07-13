@@ -71,6 +71,8 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Hemsida',
   'places.formNotes': 'Noteringar',
   'places.formNotesPlaceholder': 'Personliga anteckningar...',
+  'places.formPrivate': 'Privat plats (endast synlig för mig)',
+  'places.formPrivateHint': 'Håller platsen borta från gruppens delade listor och karta. Du kan ändra detta senare.',
   'places.formReservation': 'Bokning',
   'places.reservationNotesPlaceholder': 'Bokningsinformation, bekräftelsenummer...',
   'places.mapsSearchPlaceholder': 'Sök efter platser...',

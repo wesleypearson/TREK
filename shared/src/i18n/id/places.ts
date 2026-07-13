@@ -70,6 +70,9 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Situs web',
   'places.formNotes': 'Catatan',
   'places.formNotesPlaceholder': 'Catatan pribadi...',
+  'places.formPrivate': 'Tempat pribadi (hanya terlihat oleh saya)',
+  'places.formPrivateHint':
+    'Tempat ini tidak akan muncul di daftar bersama dan peta grup. Kamu bisa mengubahnya nanti.',
   'places.formReservation': 'Reservasi',
   'places.reservationNotesPlaceholder': 'Catatan reservasi, nomor konfirmasi...',
   'places.mapsSearchPlaceholder': 'Cari tempat...',

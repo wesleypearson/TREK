@@ -70,6 +70,8 @@ const places: TranslationStrings = {
   'places.formWebsite': '웹사이트',
   'places.formNotes': '메모',
   'places.formNotesPlaceholder': '개인 메모...',
+  'places.formPrivate': '비공개 장소 (나에게만 표시)',
+  'places.formPrivateHint': '이 장소는 그룹의 공유 목록과 지도에 표시되지 않습니다. 나중에 변경할 수 있습니다.',
   'places.formReservation': '예약',
   'places.reservationNotesPlaceholder': '예약 메모, 확인 번호...',
   'places.mapsSearchPlaceholder': '장소 검색...',

@@ -71,6 +71,9 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Trang web',
   'places.formNotes': 'Ghi chú',
   'places.formNotesPlaceholder': 'Ghi chú cá nhân...',
+  'places.formPrivate': 'Địa điểm riêng tư (chỉ mình tôi thấy)',
+  'places.formPrivateHint':
+    'Địa điểm này sẽ không xuất hiện trong danh sách chung và bản đồ của nhóm. Bạn có thể thay đổi sau.',
   'places.formReservation': 'Sự đặt chỗ',
   'places.reservationNotesPlaceholder': 'Phiếu đặt chỗ, số xác nhận...',
   'places.mapsSearchPlaceholder': 'Tìm kiếm địa điểm...',

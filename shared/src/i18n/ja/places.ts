@@ -71,6 +71,8 @@ const places: TranslationStrings = {
   'places.formWebsite': 'ウェブサイト',
   'places.formNotes': 'メモ',
   'places.formNotesPlaceholder': '個人的なメモ…',
+  'places.formPrivate': 'プライベートな場所（自分にのみ表示）',
+  'places.formPrivateHint': 'この場所はグループの共有リストや地図に表示されません。後で変更できます。',
   'places.formReservation': '予約',
   'places.reservationNotesPlaceholder': '予約メモ、確認番号など…',
   'places.mapsSearchPlaceholder': '場所を検索…',

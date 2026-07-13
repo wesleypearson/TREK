@@ -1,4 +1,4 @@
-import { Trash2, ExternalLink, Download, MapPin, Ticket, StickyNote, Star, RotateCcw, Pencil } from 'lucide-react'
+import { Trash2, ExternalLink, Download, MapPin, Ticket, StickyNote, Star, RotateCcw, Pencil, Lock, Users } from 'lucide-react'
 import type { TripFile } from '../../types'
 import type { FileManagerState } from './useFileManager'
 import { TRANSPORT_TYPES } from './FileManager.constants'
@@ -9,9 +9,12 @@ import { SourceBadge } from './FileManagerSourceBadge'
 
 export function FileRow(p: FileManagerState & { file: TripFile; isTrash?: boolean }) {
   const {
-    file, isTrash = false, places, reservations, t, locale, can, trip,
-    handleStar, handleRestore, handlePermanentDelete, handleDelete, openFile, setAssignFileId,
+    file, isTrash = false, places, reservations, t, locale, can, trip, currentUserId,
+    handleStar, handleToggleVisibility, handleRestore, handlePermanentDelete, handleDelete, openFile, setAssignFileId,
   } = p
+  // Only the uploader may flip a file between Private and Group; unowned files
+  // (legacy uploads, collab-note attachments) can be claimed by anyone.
+  const canToggleVisibility = file.uploaded_by == null || file.uploaded_by === currentUserId
   const FileIcon = getFileIcon(file.mime_type)
   const allLinkedPlaceIds = new Set<number>()
   if (file.place_id) allLinkedPlaceIds.add(file.place_id)
@@ -63,6 +66,7 @@ export function FileRow(p: FileManagerState & { file: TripFile; isTrash?: boolea
             <AvatarChip name={file.uploaded_by_name} avatarUrl={file.uploaded_by_avatar} size={20} />
           )}
           {!isTrash && file.starred ? <Star size={12} fill="#facc15" color="#facc15" style={{ flexShrink: 0 }} /> : null}
+          {file.is_private ? <Lock size={12} color="var(--text-faint)" style={{ flexShrink: 0 }} aria-label={t('files.private') || 'Private'} /> : null}
           <span
             onClick={() => !isTrash && openFile(file)}
             style={{ fontWeight: 500, fontSize: 'calc(13px * var(--fs-scale-body, 1))', color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: isTrash ? 'default' : 'pointer' }}
@@ -112,6 +116,10 @@ export function FileRow(p: FileManagerState & { file: TripFile; isTrash?: boolea
               onMouseEnter={e => { if (!file.starred) e.currentTarget.style.color = '#facc15' }} onMouseLeave={e => { if (!file.starred) e.currentTarget.style.color = 'var(--text-faint)' }}>
               <Star size={14} fill={file.starred ? '#facc15' : 'none'} />
             </button>
+            {canToggleVisibility && <button onClick={() => handleToggleVisibility(file)} title={file.is_private ? t('files.shareWithGroup') || 'Share with group' : t('files.makePrivate') || 'Make private'} style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', borderRadius: 6, display: 'flex' }}
+              onMouseEnter={e => e.currentTarget.style.color = file.is_private ? '#22c55e' : 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-faint)'}>
+              {file.is_private ? <Users size={14} /> : <Lock size={14} />}
+            </button>}
             {can('file_edit', trip) && <button onClick={() => setAssignFileId(file.id)} title={t('files.assign') || 'Assign'} style={{ padding: 6, background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', borderRadius: 6, display: 'flex' }}
               onMouseEnter={e => e.currentTarget.style.color = 'var(--text-primary)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text-faint)'}>
               <Pencil size={14} />

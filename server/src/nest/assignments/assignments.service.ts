@@ -24,8 +24,28 @@ export class AssignmentsService {
     return checkPermission('day_edit', user.role, trip.user_id, user.id, trip.user_id !== user.id);
   }
 
-  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined): void {
-    broadcast(tripId, event, payload, socketId);
+  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined, onlyUserId?: number): void {
+    broadcast(tripId, event, payload, socketId, onlyUserId);
+  }
+
+  /**
+   * Custom per-user place visibility: when the assignment's place is private,
+   * its events must only reach the creator's sockets (the payload embeds the
+   * place). Returns the creator's id for the broadcast onlyUserId, or
+   * undefined for group places.
+   */
+  placeEventAudience(placeId: unknown): number | undefined {
+    if (placeId == null) return undefined;
+    const priv = svc.getPlacePrivacy(placeId as string | number);
+    return priv?.is_private && priv.created_by != null ? priv.created_by : undefined;
+  }
+
+  /** Whether the user may see (and thus assign) this place — see canViewPlace. */
+  placeVisibleTo(placeId: unknown, userId: number): boolean {
+    if (placeId == null) return false;
+    const priv = svc.getPlacePrivacy(placeId as string | number);
+    if (!priv) return false;
+    return !priv.is_private || priv.created_by == null || priv.created_by === userId;
   }
 
   dayExists(dayId: string, tripId: string) {
@@ -36,8 +56,8 @@ export class AssignmentsService {
     return svc.placeExists(placeId as never, tripId);
   }
 
-  listDayAssignments(dayId: string) {
-    return svc.listDayAssignments(dayId);
+  listDayAssignments(dayId: string, viewerId?: number) {
+    return svc.listDayAssignments(dayId, viewerId);
   }
 
   createAssignment(dayId: string, placeId: unknown, notes?: string | null) {

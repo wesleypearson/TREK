@@ -10,6 +10,8 @@ export interface PlaceFormData {
   notes: string
   transport_mode: string
   website: string
+  /** Custom visibility: true = only I can see this place (default: whole group). */
+  is_private: boolean
   // Populated from a maps-search pick (not part of the initial blank form).
   phone?: string
   google_place_id?: string
@@ -48,4 +50,5 @@ export const DEFAULT_FORM: PlaceFormData = {
   notes: '',
   transport_mode: 'walking',
   website: '',
+  is_private: false,
 }

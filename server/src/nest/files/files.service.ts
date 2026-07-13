@@ -23,17 +23,19 @@ export class FilesService {
     return checkPermission(action, user.role, trip.user_id, user.id, trip.user_id !== user.id);
   }
 
-  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined): void {
-    broadcast(tripId, event, payload, socketId);
+  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined, onlyUserId?: number, excludeUserId?: number): void {
+    broadcast(tripId, event, payload, socketId, onlyUserId, excludeUserId);
   }
 
   // Download-token auth + safe path resolution (used by the unguarded download route).
   authenticateDownload(req: Request) { return svc.authenticateDownload(req); }
   resolveFilePath(filename: string) { return svc.resolveFilePath(filename); }
 
-  listFiles(tripId: string, showTrash: boolean) { return svc.listFiles(tripId, showTrash); }
+  listFiles(tripId: string, showTrash: boolean, viewerId?: number) { return svc.listFiles(tripId, showTrash, viewerId); }
   getFileById(id: string, tripId: string) { return svc.getFileById(id, tripId); }
   getDeletedFile(id: string, tripId: string) { return svc.getDeletedFile(id, tripId); }
+  canViewFile(file: TripFile, userId: number) { return svc.canViewFile(file, userId); }
+  setFileVisibility(id: string, file: TripFile, isPrivate: boolean, actingUserId: number) { return svc.setFileVisibility(id, file, isPrivate, actingUserId); }
   createFile(tripId: string, file: Parameters<typeof svc.createFile>[1], userId: number, opts: Parameters<typeof svc.createFile>[3]) {
     return svc.createFile(tripId, file, userId, opts);
   }
@@ -42,7 +44,7 @@ export class FilesService {
   softDeleteFile(id: string) { return svc.softDeleteFile(id); }
   restoreFile(id: string) { return svc.restoreFile(id); }
   permanentDeleteFile(file: TripFile) { return svc.permanentDeleteFile(file); }
-  emptyTrash(tripId: string) { return svc.emptyTrash(tripId); }
+  emptyTrash(tripId: string, viewerId?: number) { return svc.emptyTrash(tripId, viewerId); }
   findForeignLinkTarget(tripId: string, opts: Parameters<typeof svc.findForeignLinkTarget>[1]) { return svc.findForeignLinkTarget(tripId, opts); }
   createFileLink(id: string, opts: Parameters<typeof svc.createFileLink>[1]) { return svc.createFileLink(id, opts); }
   deleteFileLink(linkId: string, id: string) { return svc.deleteFileLink(linkId, id); }

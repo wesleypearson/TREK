@@ -71,6 +71,9 @@ const places: TranslationStrings = {
   'places.formWebsite': 'Ιστοσελίδα',
   'places.formNotes': 'Σημειώσεις',
   'places.formNotesPlaceholder': 'Προσωπικές σημειώσεις...',
+  'places.formPrivate': 'Ιδιωτικό μέρος (ορατό μόνο σε εμένα)',
+  'places.formPrivateHint':
+    'Κρατά αυτό το μέρος εκτός των κοινόχρηστων λιστών και του χάρτη της ομάδας. Μπορείτε να το αλλάξετε αργότερα.',
   'places.formReservation': 'Κράτηση',
   'places.reservationNotesPlaceholder': 'Σημειώσεις κράτησης, αριθμός επιβεβαίωσης...',
   'places.mapsSearchPlaceholder': 'Αναζήτηση μερών...',

@@ -70,6 +70,8 @@ const places: TranslationStrings = {
   'places.formWebsite': '网站',
   'places.formNotes': '备注',
   'places.formNotesPlaceholder': '个人备注...',
+  'places.formPrivate': '私密地点（仅自己可见）',
+  'places.formPrivateHint': '此地点不会出现在群组的共享列表和地图中。你可以稍后更改。',
   'places.formReservation': '预订',
   'places.reservationNotesPlaceholder': '预订备注、确认号...',
   'places.mapsSearchPlaceholder': '搜索地点...',

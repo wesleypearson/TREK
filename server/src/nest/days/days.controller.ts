@@ -46,7 +46,7 @@ export class DaysController {
   @Get()
   list(@CurrentUser() user: User, @Param('tripId') tripId: string) {
     this.requireTrip(tripId, user);
-    return this.days.list(tripId);
+    return this.days.list(tripId, user.id);
   }
 
   @Post()

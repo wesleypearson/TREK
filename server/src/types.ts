@@ -75,6 +75,10 @@ export interface Place {
   website?: string | null;
   phone?: string | null;
   transport_mode?: string;
+  /** Who added the place (custom visibility); NULL on legacy rows. */
+  created_by?: number | null;
+  /** 1 = visible only to created_by; 0 = visible to the whole trip group (custom). */
+  is_private?: number;
   created_at?: string;
   updated_at?: string;
 }
@@ -211,6 +215,7 @@ export interface TripFile {
   mime_type?: string | null;
   description?: string | null;
   starred?: number;
+  is_private?: number;
   deleted_at?: string | null;
   created_at?: string;
   reservation_title?: string;

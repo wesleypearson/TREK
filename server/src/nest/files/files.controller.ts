@@ -85,10 +85,27 @@ export class FilesController {
     }
   }
 
+  // A private file belongs to its uploader alone: to everyone else it must look
+  // like it doesn't exist (404, matching the not-found body), never a 403 that
+  // would confirm there IS a hidden file with that id.
+  private requireVisibleFile(file: ReturnType<FilesService['getFileById']>, user: User, notFoundError = 'File not found') {
+    if (!file || !this.files.canViewFile(file, user.id)) {
+      throw new HttpException({ error: notFoundError }, 404);
+    }
+    return file;
+  }
+
+  // Private-file events must only reach the owner's sockets — everyone else's
+  // clients never learn the file exists.
+  private broadcastFileEvent(tripId: string, event: string, payload: Record<string, unknown>, file: { is_private?: number; uploaded_by?: number | null }, socketId?: string) {
+    const onlyUserId = file.is_private && file.uploaded_by != null ? file.uploaded_by : undefined;
+    this.files.broadcast(tripId, event, payload, socketId, onlyUserId);
+  }
+
   @Get()
   list(@CurrentUser() user: User, @Param('tripId') tripId: string, @Query('trash') trash?: string) {
     this.requireTrip(tripId, user);
-    return { files: this.files.listFiles(tripId, trash === 'true') };
+    return { files: this.files.listFiles(tripId, trash === 'true', user.id) };
   }
 
   @Post()
@@ -97,7 +114,7 @@ export class FilesController {
     @CurrentUser() user: User,
     @Param('tripId') tripId: string,
     @UploadedFile() file: Express.Multer.File | undefined,
-    @Body() body: { place_id?: string; description?: string; reservation_id?: string },
+    @Body() body: { place_id?: string; description?: string; reservation_id?: string; is_private?: string },
     @Headers('x-socket-id') socketId?: string,
   ) {
     // multer (diskStorage) has already written the upload by the time we get here,
@@ -133,13 +150,48 @@ export class FilesController {
       cleanup();
       throw err;
     }
+    // Files are PRIVATE to their uploader by default (custom); pass
+    // is_private=0/false in the form data to share with the group immediately.
+    const isPrivate = !['0', 'false'].includes(String(body.is_private ?? '1').toLowerCase());
     const created = this.files.createFile(tripId, file, user.id, {
       place_id: body.place_id,
       description: body.description,
       reservation_id: body.reservation_id,
+      is_private: isPrivate,
     });
-    this.files.broadcast(tripId, 'file:created', { file: created }, socketId);
+    this.broadcastFileEvent(tripId, 'file:created', { file: created }, created, socketId);
     return { file: created };
+  }
+
+  /**
+   * Flip a file between Private (uploader only) and Group (all members) —
+   * custom endpoint, uploader-only. Transitions notify the room so the file
+   * appears/disappears live on other members' screens.
+   */
+  @Patch(':id/visibility')
+  visibility(@CurrentUser() user: User, @Param('tripId') tripId: string, @Param('id') id: string, @Body() body: { is_private?: boolean }, @Headers('x-socket-id') socketId?: string) {
+    this.requireTrip(tripId, user);
+    if (typeof body.is_private !== 'boolean') {
+      throw new HttpException({ error: 'is_private must be a boolean' }, 400);
+    }
+    const file = this.requireVisibleFile(this.files.getFileById(id, tripId), user);
+    const result = this.files.setFileVisibility(id, file, body.is_private, user.id);
+    if ('forbidden' in result) {
+      throw new HttpException({ error: 'Only the uploader can change file visibility' }, 403);
+    }
+    const updated = result.file;
+    const wasPrivate = !!file.is_private;
+    if (wasPrivate && !body.is_private) {
+      // Now shared: the rest of the room learns about it for the first time.
+      this.files.broadcast(tripId, 'file:created', { file: updated }, socketId);
+    } else if (!wasPrivate && body.is_private) {
+      // Now private: everyone but the owner drops it; the owner's other tabs update.
+      this.files.broadcast(tripId, 'file:deleted', { fileId: Number(id) }, socketId, undefined, user.id);
+      this.files.broadcast(tripId, 'file:updated', { file: updated }, socketId, user.id);
+    } else {
+      this.broadcastFileEvent(tripId, 'file:updated', { file: updated }, updated, socketId);
+    }
+    return { file: updated };
   }
 
   @Put(':id')
@@ -148,13 +200,10 @@ export class FilesController {
     if (!this.files.can('file_edit', trip, user)) {
       throw new HttpException({ error: 'No permission to edit files' }, 403);
     }
-    const file = this.files.getFileById(id, tripId);
-    if (!file) {
-      throw new HttpException({ error: 'File not found' }, 404);
-    }
+    const file = this.requireVisibleFile(this.files.getFileById(id, tripId), user);
     this.assertLinkTargets(tripId, { reservation_id: body.reservation_id, place_id: body.place_id });
     const updated = this.files.updateFile(id, file, { description: body.description, place_id: body.place_id, reservation_id: body.reservation_id });
-    this.files.broadcast(tripId, 'file:updated', { file: updated }, socketId);
+    this.broadcastFileEvent(tripId, 'file:updated', { file: updated }, file, socketId);
     return { file: updated };
   }
 
@@ -164,12 +213,9 @@ export class FilesController {
     if (!this.files.can('file_edit', trip, user)) {
       throw new HttpException({ error: 'No permission' }, 403);
     }
-    const file = this.files.getFileById(id, tripId);
-    if (!file) {
-      throw new HttpException({ error: 'File not found' }, 404);
-    }
+    const file = this.requireVisibleFile(this.files.getFileById(id, tripId), user);
     const updated = this.files.toggleStarred(id, file.starred);
-    this.files.broadcast(tripId, 'file:updated', { file: updated }, socketId);
+    this.broadcastFileEvent(tripId, 'file:updated', { file: updated }, file, socketId);
     return { file: updated };
   }
 
@@ -179,7 +225,7 @@ export class FilesController {
     if (!this.files.can('file_delete', trip, user)) {
       throw new HttpException({ error: 'No permission' }, 403);
     }
-    const deleted = await this.files.emptyTrash(tripId);
+    const deleted = await this.files.emptyTrash(tripId, user.id);
     return { success: true, deleted };
   }
 
@@ -189,12 +235,9 @@ export class FilesController {
     if (!this.files.can('file_delete', trip, user)) {
       throw new HttpException({ error: 'No permission' }, 403);
     }
-    const file = this.files.getDeletedFile(id, tripId);
-    if (!file) {
-      throw new HttpException({ error: 'File not found in trash' }, 404);
-    }
+    const file = this.requireVisibleFile(this.files.getDeletedFile(id, tripId), user, 'File not found in trash');
     await this.files.permanentDeleteFile(file);
-    this.files.broadcast(tripId, 'file:deleted', { fileId: Number(id) }, socketId);
+    this.broadcastFileEvent(tripId, 'file:deleted', { fileId: Number(id) }, file, socketId);
     return { success: true };
   }
 
@@ -204,12 +247,9 @@ export class FilesController {
     if (!this.files.can('file_delete', trip, user)) {
       throw new HttpException({ error: 'No permission to delete files' }, 403);
     }
-    const file = this.files.getFileById(id, tripId);
-    if (!file) {
-      throw new HttpException({ error: 'File not found' }, 404);
-    }
+    const file = this.requireVisibleFile(this.files.getFileById(id, tripId), user);
     this.files.softDeleteFile(id);
-    this.files.broadcast(tripId, 'file:deleted', { fileId: Number(id) }, socketId);
+    this.broadcastFileEvent(tripId, 'file:deleted', { fileId: Number(id) }, file, socketId);
     return { success: true };
   }
 
@@ -220,12 +260,9 @@ export class FilesController {
     if (!this.files.can('file_delete', trip, user)) {
       throw new HttpException({ error: 'No permission' }, 403);
     }
-    const file = this.files.getDeletedFile(id, tripId);
-    if (!file) {
-      throw new HttpException({ error: 'File not found in trash' }, 404);
-    }
+    const file = this.requireVisibleFile(this.files.getDeletedFile(id, tripId), user, 'File not found in trash');
     const restored = this.files.restoreFile(id);
-    this.files.broadcast(tripId, 'file:created', { file: restored }, socketId);
+    this.broadcastFileEvent(tripId, 'file:created', { file: restored }, file, socketId);
     return { file: restored };
   }
 
@@ -236,10 +273,7 @@ export class FilesController {
     if (!this.files.can('file_edit', trip, user)) {
       throw new HttpException({ error: 'No permission' }, 403);
     }
-    const file = this.files.getFileById(id, tripId);
-    if (!file) {
-      throw new HttpException({ error: 'File not found' }, 404);
-    }
+    this.requireVisibleFile(this.files.getFileById(id, tripId), user);
     this.assertLinkTargets(tripId, { reservation_id: body.reservation_id, assignment_id: body.assignment_id, place_id: body.place_id });
     const links = this.files.createFileLink(id, { reservation_id: body.reservation_id, assignment_id: body.assignment_id, place_id: body.place_id });
     return { success: true, links };
@@ -251,6 +285,7 @@ export class FilesController {
     if (!this.files.can('file_edit', trip, user)) {
       throw new HttpException({ error: 'No permission' }, 403);
     }
+    this.requireVisibleFile(this.files.getFileById(id, tripId), user);
     this.files.deleteFileLink(linkId, id);
     return { success: true };
   }
@@ -258,6 +293,7 @@ export class FilesController {
   @Get(':id/links')
   links(@CurrentUser() user: User, @Param('tripId') tripId: string, @Param('id') id: string) {
     this.requireTrip(tripId, user);
+    this.requireVisibleFile(this.files.getFileById(id, tripId), user);
     return { links: this.files.getFileLinks(id) };
   }
 }

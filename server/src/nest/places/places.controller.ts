@@ -67,6 +67,13 @@ export class PlacesController {
     }
   }
 
+  // A private place belongs to its creator alone; events about it must only
+  // reach the creator's sockets (custom visibility, mirrors packing #858).
+  private broadcastPlaceEvent(tripId: string, event: string, payload: Record<string, unknown>, place: { is_private?: number | null; created_by?: number | null }, socketId?: string) {
+    const onlyUserId = place.is_private && place.created_by != null ? place.created_by : undefined;
+    this.places.broadcast(tripId, event, payload, socketId, onlyUserId);
+  }
+
   @Get()
   list(
     @CurrentUser() user: User,
@@ -76,7 +83,7 @@ export class PlacesController {
     @Query('tag') tag?: string,
   ) {
     this.requireTrip(tripId, user);
-    return { places: this.places.list(tripId, { search, category, tag }) };
+    return { places: this.places.list(tripId, { search, category, tag }, user.id) };
   }
 
   @Post()
@@ -92,8 +99,8 @@ export class PlacesController {
     if (!body.name) {
       throw new HttpException({ error: 'Place name is required' }, 400);
     }
-    const place = this.places.create(tripId, body as never);
-    this.places.broadcast(tripId, 'place:created', { place }, socketId);
+    const place = this.places.create(tripId, body as never, user.id);
+    this.broadcastPlaceEvent(tripId, 'place:created', { place }, place, socketId);
     this.places.onCreated(tripId, place.id);
     return { place };
   }
@@ -118,7 +125,7 @@ export class PlacesController {
     if (!importWaypoints && !importRoutes && !importTracks) {
       throw new HttpException({ error: 'No import types selected' }, 400);
     }
-    const result = this.places.importGpx(tripId, file.buffer, { importWaypoints, importRoutes, importTracks, defaultName: file.originalname });
+    const result = this.places.importGpx(tripId, file.buffer, { importWaypoints, importRoutes, importTracks, defaultName: file.originalname, createdBy: user.id });
     if (!result) {
       throw new HttpException({ error: 'No matching places found in GPX file' }, 400);
     }
@@ -148,7 +155,7 @@ export class PlacesController {
       throw new HttpException({ error: 'No import types selected' }, 400);
     }
     try {
-      const result = await this.places.importMapFile(tripId, file.buffer, file.originalname, { importPoints, importPaths });
+      const result = await this.places.importMapFile(tripId, file.buffer, file.originalname, { importPoints, importPaths, createdBy: user.id });
       if (result.summary?.totalPlacemarks === 0) {
         throw new HttpException({ error: 'No valid Placemarks found in map file', summary: result.summary }, 400);
       }
@@ -218,10 +225,17 @@ export class PlacesController {
     if (ids.length === 0) {
       return { deleted: [], count: 0 };
     }
-    for (const id of ids) this.places.onDeleted(id);
-    const deleted = this.places.removeMany(tripId, ids);
+    // Capture visibility before the rows are gone so each delete event can be
+    // scoped: a private place's removal is only the creator's business. Ids the
+    // user can't see won't be deleted, so their journey hook must not fire.
+    const visibilityById = new Map(ids.map((id) => {
+      const p = this.places.get(tripId, String(id), user.id);
+      return [id, p ? { is_private: p.is_private, created_by: p.created_by } : null] as const;
+    }));
+    for (const id of ids) if (visibilityById.get(id)) this.places.onDeleted(id); // sync before actual delete
+    const deleted = this.places.removeMany(tripId, ids, user.id);
     for (const id of deleted) {
-      this.places.broadcast(tripId, 'place:deleted', { placeId: id }, socketId);
+      this.broadcastPlaceEvent(tripId, 'place:deleted', { placeId: id }, visibilityById.get(id) ?? {}, socketId);
     }
     return { deleted, count: deleted.length };
   }
@@ -248,9 +262,9 @@ export class PlacesController {
     if (!('category_id' in body)) {
       throw new HttpException({ error: 'Provide at least one field to update' }, 400);
     }
-    const updated = this.places.updateMany(tripId, ids, { category_id: body.category_id as number | null });
+    const updated = this.places.updateMany(tripId, ids, { category_id: body.category_id as number | null }, user.id);
     for (const place of updated) {
-      this.places.broadcast(tripId, 'place:updated', { place }, socketId);
+      this.broadcastPlaceEvent(tripId, 'place:updated', { place }, place, socketId);
       this.places.onUpdated(place.id);
     }
     return { updated: updated.map((p) => p.id), count: updated.length };
@@ -259,7 +273,7 @@ export class PlacesController {
   @Get(':id')
   get(@CurrentUser() user: User, @Param('tripId') tripId: string, @Param('id') id: string) {
     this.requireTrip(tripId, user);
-    const place = this.places.get(tripId, id);
+    const place = this.places.get(tripId, id, user.id);
     if (!place) {
       throw new HttpException({ error: 'Place not found' }, 404);
     }
@@ -294,7 +308,13 @@ export class PlacesController {
     const trip = this.requireTrip(tripId, user);
     validateLengths(body);
     this.requireEdit(trip, user);
-    const result = this.places.update(tripId, id, body as never, ifMatch);
+    // Snapshot the pre-update visibility so a Private↔Group flip can notify the
+    // room correctly (and so another member's private place 404s untouched).
+    const before = this.places.get(tripId, id, user.id);
+    if (!before) {
+      throw new HttpException({ error: 'Place not found' }, 404);
+    }
+    const result = this.places.update(tripId, id, body as never, ifMatch, user.id);
     if (!result) {
       throw new HttpException({ error: 'Place not found' }, 404);
     }
@@ -304,7 +324,19 @@ export class PlacesController {
       throw new HttpException({ error: 'conflict', server: result.server }, 409);
     }
     const place = result;
-    this.places.broadcast(tripId, 'place:updated', { place }, socketId);
+    const wasPrivate = !!before.is_private;
+    const isPrivate = !!place.is_private;
+    if (wasPrivate && !isPrivate) {
+      // Now shared: the rest of the group learns about it for the first time.
+      this.places.broadcast(tripId, 'place:created', { place }, socketId);
+    } else if (!wasPrivate && isPrivate) {
+      // Now private: everyone but the creator drops it; the creator's other
+      // tabs get the regular update.
+      this.places.broadcast(tripId, 'place:deleted', { placeId: place.id }, socketId, undefined, user.id);
+      this.places.broadcast(tripId, 'place:updated', { place }, socketId, user.id);
+    } else {
+      this.broadcastPlaceEvent(tripId, 'place:updated', { place }, place, socketId);
+    }
     this.places.onUpdated(place.id);
     return { place };
   }
@@ -313,11 +345,14 @@ export class PlacesController {
   remove(@CurrentUser() user: User, @Param('tripId') tripId: string, @Param('id') id: string, @Headers('x-socket-id') socketId?: string) {
     const trip = this.requireTrip(tripId, user);
     this.requireEdit(trip, user);
-    this.places.onDeleted(Number(id)); // sync before actual delete
-    if (!this.places.remove(tripId, id)) {
+    // Snapshot visibility before the row is gone so the delete event can be
+    // scoped to the creator when the place was private.
+    const before = this.places.get(tripId, id, user.id);
+    if (before) this.places.onDeleted(Number(id)); // sync before actual delete
+    if (!this.places.remove(tripId, id, user.id)) {
       throw new HttpException({ error: 'Place not found' }, 404);
     }
-    this.places.broadcast(tripId, 'place:deleted', { placeId: Number(id) }, socketId);
+    this.broadcastPlaceEvent(tripId, 'place:deleted', { placeId: Number(id) }, before ?? {}, socketId);
     return { success: true };
   }
 }

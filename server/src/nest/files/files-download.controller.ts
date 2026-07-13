@@ -29,7 +29,9 @@ export class FilesDownloadController {
     }
 
     const file = this.files.getFileById(id, tripId);
-    if (!file) {
+    // A private file (custom) is downloadable only by its uploader; to anyone
+    // else it must be indistinguishable from a file that doesn't exist.
+    if (!file || !this.files.canViewFile(file, auth.userId)) {
       throw new HttpException({ error: 'File not found' }, 404);
     }
 

@@ -8,7 +8,14 @@ export { verifyTripAccess } from './tripAccess';
 // Day assignment helpers
 // ---------------------------------------------------------------------------
 
-export function getAssignmentsForDay(dayId: number | string) {
+// Custom per-user place visibility: itinerary reads must not surface another
+// member's private places (the assignment embeds the full place row).
+const ASSIGNMENT_PLACE_VISIBILITY = 'AND (p.is_private = 0 OR p.created_by IS NULL OR p.created_by = ?)';
+
+export function getAssignmentsForDay(dayId: number | string, viewerId?: number) {
+  const visibility = viewerId != null ? ASSIGNMENT_PLACE_VISIBILITY : '';
+  const params: (number | string)[] = [dayId];
+  if (viewerId != null) params.push(viewerId);
   const assignments = db.prepare(`
     SELECT da.*, p.id as place_id, p.name as place_name, p.description as place_description,
       p.lat, p.lng, p.address, p.category_id, p.price, p.currency as place_currency,
@@ -20,9 +27,9 @@ export function getAssignmentsForDay(dayId: number | string) {
     FROM day_assignments da
     JOIN places p ON da.place_id = p.id
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE da.day_id = ?
+    WHERE da.day_id = ? ${visibility}
     ORDER BY da.order_index ASC, da.created_at ASC
-  `).all(dayId) as AssignmentRow[];
+  `).all(...params) as AssignmentRow[];
 
   return assignments.map(a => {
     const tags = db.prepare(`
@@ -73,7 +80,7 @@ export function getAssignmentsForDay(dayId: number | string) {
 // Day CRUD
 // ---------------------------------------------------------------------------
 
-export function listDays(tripId: string | number) {
+export function listDays(tripId: string | number, viewerId?: number) {
   const days = db.prepare('SELECT * FROM days WHERE trip_id = ? ORDER BY day_number ASC').all(tripId) as Day[];
 
   if (days.length === 0) {
@@ -83,6 +90,9 @@ export function listDays(tripId: string | number) {
   const dayIds = days.map(d => d.id);
   const dayPlaceholders = dayIds.map(() => '?').join(',');
 
+  const visibility = viewerId != null ? ASSIGNMENT_PLACE_VISIBILITY : '';
+  const assignmentParams: (number | string)[] = [...dayIds];
+  if (viewerId != null) assignmentParams.push(viewerId);
   const allAssignments = db.prepare(`
     SELECT da.*, p.id as place_id, p.name as place_name, p.description as place_description,
       p.lat, p.lng, p.address, p.category_id, p.price, p.currency as place_currency,
@@ -94,9 +104,9 @@ export function listDays(tripId: string | number) {
     FROM day_assignments da
     JOIN places p ON da.place_id = p.id
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE da.day_id IN (${dayPlaceholders})
+    WHERE da.day_id IN (${dayPlaceholders}) ${visibility}
     ORDER BY da.order_index ASC, da.created_at ASC
-  `).all(...dayIds) as AssignmentRow[];
+  `).all(...assignmentParams) as AssignmentRow[];
 
   const placeIds = [...new Set(allAssignments.map(a => a.place_id))];
   const tagsByPlaceId = loadTagsByPlaceIds(placeIds, { compact: true });

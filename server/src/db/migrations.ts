@@ -3626,6 +3626,28 @@ function runMigrations(db: Database.Database): void {
         );
       `);
     },
+
+    // Per-user file privacy (custom, mirrors packing #858): a file is Private
+    // (is_private=1, visible only to its uploader) or Group (is_private=0,
+    // visible to every trip member). Existing files stay Group so nothing
+    // disappears on upgrade; NEW uploads default to Private at the API layer.
+    // Files with a NULL uploaded_by (pre-attribution uploads, deleted users)
+    // are treated as Group regardless of the flag so they can't become
+    // invisible to everyone.
+    () => {
+      db.exec('ALTER TABLE trip_files ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_trip_files_uploaded_by ON trip_files (uploaded_by)');
+    },
+
+    // Per-user place visibility (custom, mirrors packing #858): a place is
+    // Group (is_private=0, the default — visible to every trip member) or
+    // Private (is_private=1, visible only to its creator). created_by records
+    // who added the place; legacy rows keep NULL and stay Group-visible.
+    () => {
+      db.exec('ALTER TABLE places ADD COLUMN created_by INTEGER REFERENCES users(id) ON DELETE SET NULL');
+      db.exec('ALTER TABLE places ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_places_created_by ON places (created_by)');
+    },
   ];
 
   if (currentVersion < migrations.length) {

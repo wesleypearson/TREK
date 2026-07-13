@@ -355,9 +355,16 @@ function getUserTrips(userId: number): Trip[] {
   `).all(userId, userId, userId) as Trip[];
 }
 
-function getPlacesForTrips(tripIds: number[]): Place[] {
+function getPlacesForTrips(tripIds: number[], viewerId?: number): Place[] {
   if (tripIds.length === 0) return [];
   const placeholders = tripIds.map(() => '?').join(',');
+  // Custom visibility: atlas stats are per-user — other members' private
+  // places don't count toward (or leak into) this user's map.
+  if (viewerId != null) {
+    return db.prepare(
+      `SELECT * FROM places WHERE trip_id IN (${placeholders}) AND (is_private = 0 OR created_by IS NULL OR created_by = ?)`
+    ).all(...tripIds, viewerId) as Place[];
+  }
   return db.prepare(`SELECT * FROM places WHERE trip_id IN (${placeholders})`).all(...tripIds) as Place[];
 }
 
@@ -424,7 +431,7 @@ export async function getStats(userId: number) {
     return { countries, trips: [], stats: { totalTrips: 0, totalPlaces: 0, totalCountries: countries.length, totalDays: 0 } };
   }
 
-  const places = getPlacesForTrips(tripIds);
+  const places = getPlacesForTrips(tripIds, userId);
 
   interface CountryEntry { code: string; places: { id: number; name: string; lat: number | null; lng: number | null }[]; tripIds: Set<number> }
   const placeCountries = resolvePlaceCountries(places);
@@ -578,7 +585,7 @@ export function getCountryPlaces(userId: number, code: string) {
   const tripIds = trips.map(t => t.id);
   if (tripIds.length === 0) return { places: [], trips: [], manually_marked: false };
 
-  const places = getPlacesForTrips(tripIds);
+  const places = getPlacesForTrips(tripIds, userId);
 
   const matchingPlaces: { id: number; name: string; address: string | null; lat: number | null; lng: number | null; trip_id: number }[] = [];
   const matchingTripIds = new Set<number>();
@@ -728,7 +735,7 @@ async function reverseGeocodeRegion(lat: number, lng: number): Promise<RegionInf
 export async function getVisitedRegions(userId: number): Promise<{ regions: Record<string, { code: string; name: string; placeCount: number }[]> }> {
   const trips = getUserTrips(userId);
   const tripIds = trips.map(t => t.id);
-  const places = getPlacesForTrips(tripIds);
+  const places = getPlacesForTrips(tripIds, userId);
 
   // Check DB cache first
   const placeIds = places.filter(p => p.lat && p.lng).map(p => p.id);

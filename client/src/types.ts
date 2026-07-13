@@ -93,6 +93,8 @@ export interface TripFile {
   mime_type: string
   description?: string | null
   starred?: number
+  /** 1 = visible only to the uploader; 0 = shared with the trip group (custom). */
+  is_private?: number
   deleted_at?: string | null
   created_at: string
   reservation_title?: string

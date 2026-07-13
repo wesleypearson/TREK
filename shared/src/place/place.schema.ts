@@ -64,6 +64,10 @@ export const placeSchema = z.object({
   website: z.string().nullable().optional(),
   phone: z.string().nullable().optional(),
   transport_mode: z.string().nullable().optional(),
+  // Custom per-user visibility: created_by records who added the place;
+  // is_private=1 keeps it off other members' lists (0 = whole trip group).
+  created_by: z.number().nullable().optional(),
+  is_private: z.number().nullable().optional(),
   created_at: z.string().optional(),
   updated_at: z.string().optional(),
   category: placeCategorySchema.optional(),

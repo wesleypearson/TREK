@@ -24,42 +24,42 @@ export class PlacesService {
     return checkPermission('place_edit', user.role, trip.user_id, user.id, trip.user_id !== user.id);
   }
 
-  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined): void {
-    broadcast(tripId, event, payload, socketId);
+  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined, onlyUserId?: number, excludeUserId?: number): void {
+    broadcast(tripId, event, payload, socketId, onlyUserId, excludeUserId);
   }
 
-  list(tripId: string, filters: { search?: string; category?: string; tag?: string }) {
-    return svc.listPlaces(tripId, filters);
+  list(tripId: string, filters: { search?: string; category?: string; tag?: string }, viewerId?: number) {
+    return svc.listPlaces(tripId, filters, viewerId);
   }
 
-  get(tripId: string, id: string) {
-    return svc.getPlace(tripId, id);
+  get(tripId: string, id: string, viewerId?: number) {
+    return svc.getPlace(tripId, id, viewerId);
   }
 
-  create(tripId: string, data: Parameters<typeof svc.createPlace>[1]) {
-    return svc.createPlace(tripId, data);
+  create(tripId: string, data: Parameters<typeof svc.createPlace>[1], createdBy?: number) {
+    return svc.createPlace(tripId, data, createdBy);
   }
 
-  update(tripId: string, id: string, data: Parameters<typeof svc.updatePlace>[2], ifMatch?: string) {
-    return svc.updatePlace(tripId, id, data, ifMatch);
+  update(tripId: string, id: string, data: Parameters<typeof svc.updatePlace>[2], ifMatch?: string, viewerId?: number) {
+    return svc.updatePlace(tripId, id, data, ifMatch, viewerId);
   }
 
-  remove(tripId: string, id: string): boolean {
-    return svc.deletePlace(tripId, id);
+  remove(tripId: string, id: string, viewerId?: number): boolean {
+    return svc.deletePlace(tripId, id, viewerId);
   }
 
-  removeMany(tripId: string, ids: number[]): number[] {
-    return svc.deletePlacesMany(tripId, ids);
+  removeMany(tripId: string, ids: number[], viewerId?: number): number[] {
+    return svc.deletePlacesMany(tripId, ids, viewerId);
   }
 
-  updateMany(tripId: string, ids: number[], data: Parameters<typeof svc.updatePlacesMany>[2]) {
-    return svc.updatePlacesMany(tripId, ids, data);
+  updateMany(tripId: string, ids: number[], data: Parameters<typeof svc.updatePlacesMany>[2], viewerId?: number) {
+    return svc.updatePlacesMany(tripId, ids, data, viewerId);
   }
 
   importGpx(
     tripId: string,
     buffer: Buffer,
-    opts: { importWaypoints: boolean; importRoutes: boolean; importTracks: boolean; defaultName?: string },
+    opts: { importWaypoints: boolean; importRoutes: boolean; importTracks: boolean; defaultName?: string; createdBy?: number },
   ) {
     return svc.importGpx(tripId, buffer, opts);
   }
