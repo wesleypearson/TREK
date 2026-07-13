@@ -1220,7 +1220,7 @@ function PluginDetailModal({ item, installed, busy, onInstall, onClose, t, local
             <div className="grid grid-cols-2 gap-x-6 gap-y-3 mt-2.5">
               {item.latest && <Meta k={t('admin.plugins.metaVersion')} v={`v${item.latest}`} />}
               {sizeKb && <Meta k={t('admin.plugins.metaSize')} v={`${sizeKb} KB`} />}
-              {item.minTrekVersion && <Meta k={t('admin.plugins.metaRequires')} v={`TREK ${item.minTrekVersion}+`} />}
+              {item.minTrekVersion && <Meta k={t('admin.plugins.metaRequires')} v={`Travla ${item.minTrekVersion}+`} />}
               {item.reviewedAt && <Meta k={t('admin.plugins.metaReviewed')} v={new Date(item.reviewedAt).toLocaleDateString(locale)} />}
               {typeof item.downloadCount === 'number' && item.downloadCount > 0 && (
                 <Meta k={t('admin.plugins.downloads')} v={item.downloadCount.toLocaleString(locale)} />

@@ -24,7 +24,7 @@ const notif: TranslationStrings = {
   'notif.packing_tagged.title': '打包指派',
   'notif.packing_tagged.text': '{actor} 在 {trip} 中將 {category} 指派給你',
   'notif.version_available.title': '有新版本可用',
-  'notif.version_available.text': 'TREK {version} 現已推出',
+  'notif.version_available.text': 'Travla {version} 現已推出',
   'notif.action.view_trip': '查看旅行',
   'notif.action.view_collab': '查看訊息',
   'notif.action.view_packing': '查看打包',

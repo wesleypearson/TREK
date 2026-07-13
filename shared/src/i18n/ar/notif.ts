@@ -24,7 +24,7 @@ const notif: TranslationStrings = {
   'notif.packing_tagged.title': 'مهمة التعبئة',
   'notif.packing_tagged.text': '{actor} عيّنك في {category} في {trip}',
   'notif.version_available.title': 'إصدار جديد متاح',
-  'notif.version_available.text': 'TREK {version} متاح الآن',
+  'notif.version_available.text': 'Travla {version} متاح الآن',
   'notif.action.view_trip': 'عرض الرحلة',
   'notif.action.view_collab': 'عرض الرسائل',
   'notif.action.view_packing': 'عرض التعبئة',

@@ -185,9 +185,9 @@ const settings: TranslationStrings = {
   'settings.about.featureRequestHint': 'Stel een nieuwe functie voor',
   'settings.about.wikiHint': 'Documentatie en handleidingen',
   'settings.about.supporters.badge': 'Maandelijkse Steuners',
-  'settings.about.supporters.title': 'Reisgezelschap voor TREK',
+  'settings.about.supporters.title': 'Reisgezelschap voor Travla',
   'settings.about.supporters.subtitle':
-    'Terwijl jij je volgende route plant, plannen deze mensen mee aan de toekomst van TREK. Hun maandelijkse bijdrage gaat rechtstreeks naar ontwikkeling en echte uren — zodat TREK Open Source blijft.',
+    'Terwijl jij je volgende route plant, plannen deze mensen mee aan de toekomst van Travla. Hun maandelijkse bijdrage gaat rechtstreeks naar ontwikkeling en echte uren — zodat Travla Open Source blijft.',
   'settings.about.supporters.since': 'steuner sinds {date}',
   'settings.about.supporters.tierEmpty': 'Wees de eerste',
   'settings.about.supporter.tier.noReturnTicket': 'No Return Ticket',
@@ -196,7 +196,7 @@ const settings: TranslationStrings = {
   'settings.about.supporter.tier.budgetTraveller': 'Budget Traveller',
   'settings.about.supporter.tier.hostelBunkmate': 'Hostel Bunkmate',
   'settings.about.description':
-    "TREK is een zelf-gehoste reisplanner die je helpt je reizen te organiseren van het eerste idee tot de laatste herinnering. Dagplanning, budget, paklijsten, foto's en nog veel meer — alles op één plek, op je eigen server.",
+    "Travla is een zelf-gehoste reisplanner die je helpt je reizen te organiseren van het eerste idee tot de laatste herinnering. Dagplanning, budget, paklijsten, foto's en nog veel meer — alles op één plek, op je eigen server.",
   'settings.about.madeWith': 'Gemaakt met',
   'settings.about.madeBy': 'door Maurice en een groeiende open-source community.',
   'settings.username': 'Gebruikersnaam',
@@ -339,7 +339,7 @@ const settings: TranslationStrings = {
   'settings.airtrail.allowInsecureTlsHint': 'Schakel dit alleen in voor een vertrouwde instantie op je eigen netwerk.',
   'settings.airtrail.writeBack': 'Wijzigingen terugschrijven naar AirTrail',
   'settings.airtrail.writeBackHint':
-    'Standaard uit: AirTrail is de bron van waarheid en TREK leest er alleen uit. Schakel in om in TREK gemaakte wijzigingen terug te sturen naar AirTrail.',
+    'Standaard uit: AirTrail is de bron van waarheid en Travla leest er alleen uit. Schakel in om in Travla gemaakte wijzigingen terug te sturen naar AirTrail.',
   'settings.airtrail.connected': 'Verbonden',
   'settings.airtrail.notConnected': 'Niet verbonden',
   'settings.airtrail.toast.saved': 'AirTrail-verbinding opgeslagen',

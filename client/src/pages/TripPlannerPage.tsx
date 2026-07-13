@@ -258,7 +258,7 @@ export default function TripPlannerPage(): React.ReactElement | null {
           />
         </div>
         <div className="text-content" style={{ fontSize: 'calc(20px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.3px', marginBottom: 6, animation: 'fadeInUp 0.5s ease-out' }}>
-          {trip?.title || 'TREK'}
+          {trip?.title || 'Travla'}
         </div>
         <div className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500, letterSpacing: '2px', textTransform: 'uppercase', marginBottom: 32, animation: 'fadeInUp 0.5s ease-out 0.1s both' }}>
           {t('trip.loadingPhotos')}

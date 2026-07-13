@@ -24,7 +24,7 @@ const notif: TranslationStrings = {
   'notif.packing_tagged.title': 'Nhiệm vụ đóng gói',
   'notif.packing_tagged.text': '{actor} đã giao cho bạn {category} trong {trip}',
   'notif.version_available.title': 'Phiên bản mới có sẵn',
-  'notif.version_available.text': 'TREK {version} hiện có sẵn',
+  'notif.version_available.text': 'Travla {version} hiện có sẵn',
   'notif.action.view_trip': 'Xem chuyến đi',
   'notif.action.view_collab': 'Xem tin nhắn',
   'notif.action.view_packing': 'Xem đóng gói',

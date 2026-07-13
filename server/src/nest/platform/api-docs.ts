@@ -18,7 +18,7 @@ import { attachZodBodySchemas } from '../common/api-zod';
 export function setupApiDocs(app: INestApplication): void {
   const version: string = process.env.APP_VERSION || (require('../../../package.json') as { version: string }).version;
   const config = new DocumentBuilder()
-    .setTitle('TREK API')
+    .setTitle('Travla API')
     .setDescription(
       'The REST API the TREK web app itself runs on. Authenticate with a session JWT — '
       + 'either the `trek_session` cookie (same browser) or an `Authorization: Bearer <jwt>` header.',

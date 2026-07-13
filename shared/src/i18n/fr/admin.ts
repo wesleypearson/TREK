@@ -240,7 +240,7 @@ const admin: TranslationStrings = {
   'admin.plugins.sourceRepo': 'Dépôt source',
   'admin.plugins.reportIssue': 'Signaler un problème',
   'admin.plugins.homepage': 'Site web',
-  'admin.plugins.requiresTrek': 'Nécessite TREK {version}+',
+  'admin.plugins.requiresTrek': 'Nécessite Travla {version}+',
   'admin.plugins.reviewedOn': 'Vérifié le {date}',
   'admin.plugins.perm.db:own': 'Stocker ses propres données dans une base de données isolée',
   'admin.plugins.perm.db:read:trips': "Lire les voyages accessibles à l'utilisateur actif",
@@ -345,26 +345,26 @@ const admin: TranslationStrings = {
   'admin.plugins.updateKeptOff':
     "Mise à jour installée — laissée désactivée jusqu'à ce que vous approuviez les nouvelles permissions",
   'admin.plugins.reviewedMeaning':
-    "« Vérifié » signifie qu'un mainteneur de TREK a analysé ce plugin à la recherche de logiciels malveillants à chaque version — non pour sa qualité ni son bon fonctionnement. Ce n'est pas une garantie qu'un plugin est inoffensif.",
+    "« Vérifié » signifie qu'un mainteneur de Travla a analysé ce plugin à la recherche de logiciels malveillants à chaque version — non pour sa qualité ni son bon fonctionnement. Ce n'est pas une garantie qu'un plugin est inoffensif.",
   'admin.plugins.security.title': 'Comment les plugins sont confinés — et les limites',
   'admin.plugins.security.isolationTitle': "Chaque plugin s'exécute en isolation",
   'admin.plugins.security.isolationBody':
-    "Un plugin s'exécute comme son propre processus verrouillé qui ne peut lire que ses propres fichiers. Il ne peut pas lire votre base de données, votre secret de connexion ou votre clé de chiffrement, ne peut pas lancer d'autres programmes et ne peut écrire de fichiers nulle part. Son interface s'exécute dans un cadre de navigateur scellé qui ne peut pas lire votre cookie de session ni toucher à la page TREK qui l'entoure.",
+    "Un plugin s'exécute comme son propre processus verrouillé qui ne peut lire que ses propres fichiers. Il ne peut pas lire votre base de données, votre secret de connexion ou votre clé de chiffrement, ne peut pas lancer d'autres programmes et ne peut écrire de fichiers nulle part. Son interface s'exécute dans un cadre de navigateur scellé qui ne peut pas lire votre cookie de session ni toucher à la page Travla qui l'entoure.",
   'admin.plugins.security.permsTitle': 'Ce que signifient les permissions',
   'admin.plugins.security.permsBody':
-    "Les permissions affichées avant l'installation constituent une limite stricte que TREK applique pendant l'exécution du plugin — il ne peut littéralement rien faire qui ne figure pas dans la liste. Mais elles vous indiquent ce qu'un plugin peut faire, pas ce qu'il fait réellement. Un plugin autorisé à lire vos voyages et à contacter un serveur peut envoyer vos voyages à ce serveur ; lisez donc les permissions et les hôtes sortants, pas seulement la description.",
+    "Les permissions affichées avant l'installation constituent une limite stricte que Travla applique pendant l'exécution du plugin — il ne peut littéralement rien faire qui ne figure pas dans la liste. Mais elles vous indiquent ce qu'un plugin peut faire, pas ce qu'il fait réellement. Un plugin autorisé à lire vos voyages et à contacter un serveur peut envoyer vos voyages à ce serveur ; lisez donc les permissions et les hôtes sortants, pas seulement la description.",
   'admin.plugins.security.limitsTitle': 'Ce que nous ne pouvons pas promettre',
   'admin.plugins.security.limitsBody':
-    "L'isolation est une frontière logicielle solide, mais pas absolue. Un plugin agit avec exactement les droits que vous approuvez ; dans les limites de ces droits, il peut donc se comporter autrement que ne le laisse penser sa description, et il peut envoyer aux hôtes qu'il a déclarés les données qu'il détient légitimement. TREK ne lit ni ne juge ce que fait réellement le code d'un plugin.",
+    "L'isolation est une frontière logicielle solide, mais pas absolue. Un plugin agit avec exactement les droits que vous approuvez ; dans les limites de ces droits, il peut donc se comporter autrement que ne le laisse penser sa description, et il peut envoyer aux hôtes qu'il a déclarés les données qu'il détient légitimement. Travla ne lit ni ne juge ce que fait réellement le code d'un plugin.",
   'admin.plugins.security.worstTitle': 'Le pire scénario',
   'admin.plugins.security.worstBody':
     "Un plugin malveillant que vous activez peut détourner les données et connexions que vous lui avez accordées — par exemple, divulguer les voyages qu'il est autorisé à lire. Il ne peut pas voler de mots de passe, falsifier une connexion admin, exécuter des commandes sur votre serveur ni atteindre des données que vous n'avez pas accordées. Les dégâts restent limités à ce que vous avez approuvé, et désactiver le plugin l'arrête.",
   'admin.plugins.security.reviewedTitle': 'Ce que signifie « Vérifié »',
   'admin.plugins.security.reviewedBody':
-    "Un plugin vérifié a été analysé manuellement à la recherche de logiciels malveillants par un mainteneur de TREK à chaque version — contrôlé pour du code hostile, non pour son bon fonctionnement. Ce n'est pas une promesse que le plugin est inoffensif.",
+    "Un plugin vérifié a été analysé manuellement à la recherche de logiciels malveillants par un mainteneur de Travla à chaque version — contrôlé pour du code hostile, non pour son bon fonctionnement. Ce n'est pas une promesse que le plugin est inoffensif.",
   'admin.plugins.security.trustTitle': 'En résumé',
   'admin.plugins.security.trustBody':
-    "Installer un plugin revient à installer n'importe quelle application tierce : n'ajoutez que du code provenant d'auteurs de confiance et, en cas de doute, inspectez-le vous-même au préalable. TREK décline toute responsabilité concernant les plugins tiers.",
+    "Installer un plugin revient à installer n'importe quelle application tierce : n'ajoutez que du code provenant d'auteurs de confiance et, en cas de doute, inspectez-le vous-même au préalable. Travla décline toute responsabilité concernant les plugins tiers.",
   'admin.plugins.runtimeOn': 'Exécution activée',
   'admin.plugins.tabDiscover': 'Découvrir',
   'admin.plugins.searchPlaceholder': 'Rechercher des plugins…',
@@ -431,7 +431,7 @@ const admin: TranslationStrings = {
   'admin.plugins.metaReviewed': 'Vérifié le',
   'admin.plugins.downloads': 'Téléchargements',
   'admin.addons.title': 'Extensions',
-  'admin.addons.subtitle': 'Activez ou désactivez des fonctionnalités pour personnaliser votre expérience TREK.',
+  'admin.addons.subtitle': 'Activez ou désactivez des fonctionnalités pour personnaliser votre expérience Travla.',
   'admin.addons.catalog.memories.name': 'Photos (Immich)',
   'admin.addons.catalog.memories.description': 'Partagez vos photos de voyage via votre instance Immich',
   'admin.addons.catalog.mcp.name': 'MCP',
@@ -464,7 +464,7 @@ const admin: TranslationStrings = {
   'admin.weather.title': 'Données météo',
   'admin.weather.badge': 'Depuis le 24 mars 2026',
   'admin.weather.description':
-    'TREK utilise Open-Meteo comme source de données météo. Open-Meteo est un service météo gratuit et open source — aucune clé API requise.',
+    'Travla utilise Open-Meteo comme source de données météo. Open-Meteo est un service météo gratuit et open source — aucune clé API requise.',
   'admin.weather.forecast': 'Prévisions sur 16 jours',
   'admin.weather.forecastDesc': 'Auparavant 5 jours (OpenWeatherMap)',
   'admin.weather.climate': 'Données climatiques historiques',
@@ -522,16 +522,16 @@ const admin: TranslationStrings = {
   'admin.github.hideDetails': 'Masquer les détails',
   'admin.github.loadMore': 'Charger plus',
   'admin.github.loading': 'Chargement…',
-  'admin.github.support': 'Aidez à poursuivre le développement de TREK',
+  'admin.github.support': 'Aidez à poursuivre le développement de Travla',
   'admin.github.error': 'Impossible de charger les versions',
   'admin.github.by': 'par',
   'admin.update.available': 'Mise à jour disponible',
-  'admin.update.text': 'TREK {version} est disponible. Vous utilisez {current}.',
+  'admin.update.text': 'Travla {version} est disponible. Vous utilisez {current}.',
   'admin.update.button': 'Voir sur GitHub',
   'admin.update.install': 'Installer la mise à jour',
   'admin.update.confirmTitle': 'Installer la mise à jour ?',
   'admin.update.confirmText':
-    'TREK sera mis à jour de {current} vers {version}. Le serveur redémarrera automatiquement ensuite.',
+    'Travla sera mis à jour de {current} vers {version}. Le serveur redémarrera automatiquement ensuite.',
   'admin.update.dataInfo':
     'Toutes vos données (voyages, utilisateurs, clés API, importations, Vacances, Atlas, budgets) seront préservées.',
   'admin.update.warning': "L'application sera brièvement indisponible pendant le redémarrage.",
@@ -543,9 +543,9 @@ const admin: TranslationStrings = {
   'admin.update.backupLink': 'Aller aux sauvegardes',
   'admin.update.howTo': 'Comment mettre à jour',
   'admin.update.dockerText':
-    'Votre instance TREK fonctionne dans Docker. Pour mettre à jour vers {version}, exécutez les commandes suivantes sur votre serveur :',
+    'Votre instance Travla fonctionne dans Docker. Pour mettre à jour vers {version}, exécutez les commandes suivantes sur votre serveur :',
   'admin.update.nonDockerText':
-    "Cette instance TREK ne fonctionne pas dans Docker. Pour mettre à jour vers {version}, relancez la méthode d'installation ou de mise à jour que vous avez utilisée — par exemple, sur Proxmox Community Scripts, lancez la mise à jour depuis la console LXC :",
+    "Cette instance Travla ne fonctionne pas dans Docker. Pour mettre à jour vers {version}, relancez la méthode d'installation ou de mise à jour que vous avez utilisée — par exemple, sur Proxmox Community Scripts, lancez la mise à jour depuis la console LXC :",
   'admin.update.wikiLink': 'Ouvrir le guide de mise à jour',
   'admin.update.reloadHint': 'Veuillez recharger la page dans quelques secondes.',
   'admin.tabs.permissions': 'Permissions',

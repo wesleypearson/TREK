@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const en: NotificationLocale = {
   email: {
-    footer: 'Du har fått detta eftersom du har aktiverat aviseringar i TREK.',
+    footer: 'Du har fått detta eftersom du har aktiverat aviseringar i Travla.',
     manage: 'Hantera egenskaper under Inställningar',
     madeWith: 'Gjorde med',
-    openTrek: 'Öppna TREK',
+    openTrek: 'Öppna Travla',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,11 +26,11 @@ const en: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Vacay sammanslagnings inbjudan',
-      body: `${p.actor} bjöd in dig att slå samman semesterplaner. Öppna TREK för att acceptera eller avvisa.`,
+      body: `${p.actor} bjöd in dig att slå samman semesterplaner. Öppna Travla för att acceptera eller avvisa.`,
     }),
     collection_invite: (p) => ({
       title: 'Inbjudan till samling',
-      body: `${p.actor} bjöd in dig att dela en samling. Öppna TREK för att acceptera eller avvisa.`,
+      body: `${p.actor} bjöd in dig att dela en samling. Öppna Travla för att acceptera eller avvisa.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} foton delade`,
@@ -45,8 +45,8 @@ const en: NotificationLocale = {
       body: `${p.actor} tilldelade dig till "${p.category}" packning kategori i "${p.trip}".`,
     }),
     version_available: (p) => ({
-      title: 'Ny TREK version tillgänglig',
-      body: `TREK ${p.version} är nu tillgänglig. Gå till adminpanelen för att uppdatera.`,
+      title: 'Ny Travla version tillgänglig',
+      body: `Travla ${p.version} är nu tillgänglig. Gå till adminpanelen för att uppdatera.`,
     }),
     synology_session_cleared: () => ({
       title: 'Synology session rensad',
@@ -57,7 +57,7 @@ const en: NotificationLocale = {
   passwordReset: {
     subject: 'Återställ ditt lösenord',
     greeting: 'Hej',
-    body: 'Vi har fått en begäran om att återställa lösenordet till ditt TREK konto. Klicka på knappen nedan för att ange ett nytt lösenord.',
+    body: 'Vi har fått en begäran om att återställa lösenordet till ditt Travla konto. Klicka på knappen nedan för att ange ett nytt lösenord.',
     ctaIntro: 'Återställ lösenord',
     expiry: 'Den här länken upphör att gälla om 60 minuter.',
     ignore:

@@ -29,7 +29,7 @@ const trip: TranslationStrings = {
   'trip.loadingPhotos': 'Caricamento foto dei luoghi...',
   'trip.invite.linkTitle': 'Link di invito al viaggio',
   'trip.invite.linkHint':
-    'Chiunque abbia un account TREK e apra questo link entra nel viaggio come membro. Rigenera per invalidare il vecchio link.',
+    'Chiunque abbia un account Travla e apra questo link entra nel viaggio come membro. Rigenera per invalidare il vecchio link.',
   'trip.invite.create': 'Crea link di invito',
   'trip.invite.regenerate': 'Rigenera',
   'trip.invite.disable': 'Disattiva',

@@ -26,7 +26,7 @@ const login: TranslationStrings = {
   'login.signingIn': 'Вхід…',
   'login.signIn': 'Увійти',
   'login.createAdmin': 'Створити акаунт адміністратора',
-  'login.createAdminHint': 'Налаштуйте перший акаунт адміністратора для TREK.',
+  'login.createAdminHint': 'Налаштуйте перший акаунт адміністратора для Travla.',
   'login.setNewPassword': 'Встановити новий пароль',
   'login.setNewPasswordHint': 'Ви повинні змінити пароль, перш ніж продовжити.',
   'login.createAccount': 'Створити акаунт',
@@ -87,7 +87,7 @@ const login: TranslationStrings = {
   'login.passkey.failed': 'Не вдалося увійти за допомогою passkey. Спробуйте ще раз.',
   'login.insecureCookie.title': "Login won't stick over HTTP",
   'login.insecureCookie.body':
-    'You’re connecting over plain HTTP, so your browser drops TREK’s secure session cookie — the next request fails with "Access token required". Fix: use HTTPS, or for a home-lab set COOKIE_SECURE=false.',
+    'You’re connecting over plain HTTP, so your browser drops Travla’s secure session cookie — the next request fails with "Access token required". Fix: use HTTPS, or for a home-lab set COOKIE_SECURE=false.',
   'login.insecureCookie.link': 'Open the Troubleshooting guide',
 };
 export default login;

@@ -129,7 +129,7 @@ describe('buildWebhookBody', () => {
   it('Discord embed footer defaults to TREK when no trip name', () => {
     const noTrip = { ...payload, tripName: undefined };
     const body = JSON.parse(buildWebhookBody('https://discord.com/api/webhooks/123/abc', noTrip));
-    expect(body.embeds[0].footer.text).toBe('TREK');
+    expect(body.embeds[0].footer.text).toBe('Travla');
   });
 
   it('discordapp.com URL is also detected as Discord', () => {
@@ -162,7 +162,7 @@ describe('buildWebhookBody', () => {
     expect(body).toHaveProperty('title', payload.title);
     expect(body).toHaveProperty('body', payload.body);
     expect(body).toHaveProperty('timestamp');
-    expect(body).toHaveProperty('source', 'TREK');
+    expect(body).toHaveProperty('source', 'Travla');
   });
 });
 

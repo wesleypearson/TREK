@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const nl: NotificationLocale = {
   email: {
-    footer: 'Je ontvangt dit omdat je meldingen hebt ingeschakeld in TREK.',
+    footer: 'Je ontvangt dit omdat je meldingen hebt ingeschakeld in Travla.',
     manage: 'Voorkeuren beheren',
     madeWith: 'Made with',
-    openTrek: 'TREK openen',
+    openTrek: 'Travla openen',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,11 +26,11 @@ const nl: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Vacay Fusion uitnodiging',
-      body: `${p.actor} nodigt je uit om vakantieplannen te fuseren. Open TREK om te accepteren of af te wijzen.`,
+      body: `${p.actor} nodigt je uit om vakantieplannen te fuseren. Open Travla om te accepteren of af te wijzen.`,
     }),
     collection_invite: (p) => ({
       title: 'Collectie-uitnodiging',
-      body: `${p.actor} nodigt je uit om een collectie te delen. Open TREK om te accepteren of af te wijzen.`,
+      body: `${p.actor} nodigt je uit om een collectie te delen. Open Travla om te accepteren of af te wijzen.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} foto's gedeeld`,
@@ -45,8 +45,8 @@ const nl: NotificationLocale = {
       body: `${p.actor} heeft je toegewezen aan de categorie "${p.category}" in "${p.trip}".`,
     }),
     version_available: (p) => ({
-      title: 'Nieuwe TREK-versie beschikbaar',
-      body: `TREK ${p.version} is nu beschikbaar. Bezoek het beheerderspaneel om bij te werken.`,
+      title: 'Nieuwe Travla-versie beschikbaar',
+      body: `Travla ${p.version} is nu beschikbaar. Bezoek het beheerderspaneel om bij te werken.`,
     }),
     synology_session_cleared: () => ({
       title: 'Synology-sessie gewist',
@@ -57,7 +57,7 @@ const nl: NotificationLocale = {
   passwordReset: {
     subject: 'Reset je wachtwoord',
     greeting: 'Hallo',
-    body: 'We hebben een verzoek ontvangen om het wachtwoord voor je TREK-account te resetten. Klik op de knop hieronder om een nieuw wachtwoord in te stellen.',
+    body: 'We hebben een verzoek ontvangen om het wachtwoord voor je Travla-account te resetten. Klik op de knop hieronder om een nieuw wachtwoord in te stellen.',
     ctaIntro: 'Wachtwoord resetten',
     expiry: 'Deze link verloopt over 60 minuten.',
     ignore: 'Als jij dit niet hebt aangevraagd, kun je deze e-mail negeren — je wachtwoord blijft ongewijzigd.',

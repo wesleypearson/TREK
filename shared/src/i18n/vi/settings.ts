@@ -227,9 +227,9 @@ const settings: TranslationStrings = {
   'settings.about.featureRequestHint': 'Đề xuất tính năng mới',
   'settings.about.wikiHint': 'Tài liệu & hướng dẫn',
   'settings.about.supporters.badge': 'Người ủng hộ hàng tháng',
-  'settings.about.supporters.title': 'Bạn đồng hành cho TREK',
+  'settings.about.supporters.title': 'Bạn đồng hành cho Travla',
   'settings.about.supporters.subtitle':
-    'Trong khi bạn đang lên kế hoạch cho lộ trình tiếp theo của mình, những người này đang giúp lập kế hoạch cho tương lai của TREK. Đóng góp hàng tháng của họ được đổ thẳng vào hoạt động phát triển và số giờ thực tế được sử dụng — vì vậy TREK vẫn là Nguồn mở.',
+    'Trong khi bạn đang lên kế hoạch cho lộ trình tiếp theo của mình, những người này đang giúp lập kế hoạch cho tương lai của Travla. Đóng góp hàng tháng của họ được đổ thẳng vào hoạt động phát triển và số giờ thực tế được sử dụng — vì vậy Travla vẫn là Nguồn mở.',
   'settings.about.supporters.since': 'ủng hộ kể từ {date}',
   'settings.about.supporters.tierEmpty': 'Hãy là người đầu tiên',
   'settings.about.supporter.tier.noReturnTicket': 'Không có vé khứ hồi',
@@ -238,7 +238,7 @@ const settings: TranslationStrings = {
   'settings.about.supporter.tier.budgetTraveller': 'Khách du lịch tiết kiệm',
   'settings.about.supporter.tier.hostelBunkmate': 'Nhà nghỉ bạn cùng phòng',
   'settings.about.description':
-    'TREK là công cụ lập kế hoạch du lịch tự lưu trữ giúp bạn tổ chức các chuyến đi của mình từ ý tưởng đầu tiên đến kỷ niệm cuối cùng. Lập kế hoạch trong ngày, ngân sách, danh sách đóng gói, ảnh và nhiều nội dung khác — tất cả đều ở cùng một nơi, trên máy chủ của riêng bạn.',
+    'Travla là công cụ lập kế hoạch du lịch tự lưu trữ giúp bạn tổ chức các chuyến đi của mình từ ý tưởng đầu tiên đến kỷ niệm cuối cùng. Lập kế hoạch trong ngày, ngân sách, danh sách đóng gói, ảnh và nhiều nội dung khác — tất cả đều ở cùng một nơi, trên máy chủ của riêng bạn.',
   'settings.about.madeWith': 'Được làm bằng',
   'settings.about.madeBy': 'của Maurice và cộng đồng nguồn mở đang phát triển.',
   'settings.username': 'Tên người dùng',
@@ -341,7 +341,7 @@ const settings: TranslationStrings = {
   'settings.airtrail.allowInsecureTlsHint': 'Chỉ kích hoạt cho một phiên bản đáng tin cậy trên mạng của riêng bạn.',
   'settings.airtrail.writeBack': 'Viết các thay đổi trở lại AirTrail',
   'settings.airtrail.writeBackHint':
-    'Tắt theo mặc định: AirTrail là nguồn sự thật và TREK chỉ đọc từ đó. Bật để đẩy các chỉnh sửa được thực hiện trong TREK trở lại AirTrail.',
+    'Tắt theo mặc định: AirTrail là nguồn sự thật và Travla chỉ đọc từ đó. Bật để đẩy các chỉnh sửa được thực hiện trong Travla trở lại AirTrail.',
   'settings.airtrail.connected': 'Đã kết nối',
   'settings.airtrail.notConnected': 'Không được kết nối',
   'settings.airtrail.toast.saved': 'AirTrail đã lưu kết nối',

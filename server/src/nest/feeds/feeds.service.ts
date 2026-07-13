@@ -125,7 +125,7 @@ export class FeedsService {
 
     const calName = `${user.username} – All Trips`;
     let header =
-      'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TREK//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
+      'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Travla//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
     header += `X-WR-CALNAME:${esc(calName)}\r\n`;
     header += 'REFRESH-INTERVAL;VALUE=DURATION:PT1H\r\nX-PUBLISHED-TTL:PT1H\r\n';
 

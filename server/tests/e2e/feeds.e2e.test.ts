@@ -36,7 +36,7 @@ vi.mock('../../src/db/database', () => ({ db, closeDb: () => {}, reinitialize: (
 
 // Own the ICS payload so we control the events and can assert which trips were pulled.
 const SAMPLE_ICS =
-  'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TREK//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\n' +
+  'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Travla//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\n' +
   'METHOD:PUBLISH\r\nX-WR-CALNAME:Sample\r\n' +
   'BEGIN:VEVENT\r\nUID:trek-trip-x@trek\r\nDTSTAMP:20260101T000000Z\r\n' +
   'DTSTART;VALUE=DATE:20260101\r\nDTEND;VALUE=DATE:20260102\r\nSUMMARY:Sample\r\nEND:VEVENT\r\n' +
@@ -220,7 +220,7 @@ describe('Calendar-feed e2e (real auth guard + temp SQLite)', () => {
   it('all-trips feed carries VTIMEZONE blocks so TZID references resolve (#1453)', async () => {
     // A per-trip calendar whose event references a zone via TZID and defines it.
     const ZONED_ICS =
-      'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TREK//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\n' +
+      'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Travla//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\n' +
       'METHOD:PUBLISH\r\nX-WR-CALNAME:Zoned\r\n' +
       'BEGIN:VTIMEZONE\r\nTZID:Europe/Paris\r\nBEGIN:STANDARD\r\nDTSTART:19700101T000000\r\n' +
       'TZOFFSETFROM:+0100\r\nTZOFFSETTO:+0100\r\nTZNAME:Europe/Paris\r\nEND:STANDARD\r\nEND:VTIMEZONE\r\n' +

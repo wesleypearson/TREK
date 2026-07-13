@@ -187,9 +187,9 @@ const settings: TranslationStrings = {
   'settings.about.featureRequestHint': 'Suggérez une nouvelle fonctionnalité',
   'settings.about.wikiHint': 'Documentation et guides',
   'settings.about.supporters.badge': 'Soutiens Mensuels',
-  'settings.about.supporters.title': 'Compagnons de voyage pour TREK',
+  'settings.about.supporters.title': 'Compagnons de voyage pour Travla',
   'settings.about.supporters.subtitle':
-    "Pendant que tu planifies ton prochain itinéraire, ces personnes aident à planifier l'avenir de TREK. Leur contribution mensuelle va directement au développement et aux heures réellement passées — pour que TREK reste Open Source.",
+    "Pendant que tu planifies ton prochain itinéraire, ces personnes aident à planifier l'avenir de Travla. Leur contribution mensuelle va directement au développement et aux heures réellement passées — pour que Travla reste Open Source.",
   'settings.about.supporters.since': 'soutien depuis {date}',
   'settings.about.supporters.tierEmpty': 'Sois le premier',
   'settings.about.supporter.tier.noReturnTicket': 'No Return Ticket',
@@ -198,7 +198,7 @@ const settings: TranslationStrings = {
   'settings.about.supporter.tier.budgetTraveller': 'Budget Traveller',
   'settings.about.supporter.tier.hostelBunkmate': 'Hostel Bunkmate',
   'settings.about.description':
-    'TREK est un planificateur de voyage auto-hébergé qui vous aide à organiser vos voyages de la première idée au dernier souvenir. Planification journalière, budget, listes de bagages, photos et bien plus — le tout au même endroit, sur votre propre serveur.',
+    'Travla est un planificateur de voyage auto-hébergé qui vous aide à organiser vos voyages de la première idée au dernier souvenir. Planification journalière, budget, listes de bagages, photos et bien plus — le tout au même endroit, sur votre propre serveur.',
   'settings.about.madeWith': 'Fait avec',
   'settings.about.madeBy': 'par Maurice et une communauté open-source grandissante.',
   'settings.username': "Nom d'utilisateur",
@@ -345,7 +345,7 @@ const settings: TranslationStrings = {
     'À activer uniquement pour une instance de confiance sur votre propre réseau.',
   'settings.airtrail.writeBack': 'Réécrire les modifications dans AirTrail',
   'settings.airtrail.writeBackHint':
-    'Désactivé par défaut : AirTrail fait référence et TREK se contente de le lire. Activez pour renvoyer vers AirTrail les modifications faites dans TREK.',
+    'Désactivé par défaut : AirTrail fait référence et Travla se contente de le lire. Activez pour renvoyer vers AirTrail les modifications faites dans Travla.',
   'settings.airtrail.connected': 'Connecté',
   'settings.airtrail.notConnected': 'Non connecté',
   'settings.airtrail.toast.saved': 'Connexion AirTrail enregistrée',

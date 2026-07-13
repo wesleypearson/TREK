@@ -331,7 +331,7 @@ export class CollectionsController {
   @UseInterceptors(FileInterceptor('cover', COVER_UPLOAD))
   uploadCover(@CurrentUser() user: User, @Param('id') id: string, @UploadedFile() file: Express.Multer.File | undefined, @Headers('x-socket-id') socketId?: string) {
     if (process.env.DEMO_MODE?.toLowerCase() === 'true' && isDemoEmail(user.email)) {
-      throw new HttpException({ error: 'Uploads are disabled in demo mode. Self-host TREK for full functionality.' }, 403);
+      throw new HttpException({ error: 'Uploads are disabled in demo mode. Self-host Travla for full functionality.' }, 403);
     }
     if (!file) throw new HttpException({ error: 'No image uploaded' }, 400);
     const coverUrl = `/uploads/covers/${file.filename}`;

@@ -24,7 +24,7 @@ const notif: TranslationStrings = {
   'notif.packing_tagged.title': 'Packningsuppdrag',
   'notif.packing_tagged.text': '{actor} har tilldelat dig {category} i {trip}',
   'notif.version_available.title': 'Ny version tillgänglig',
-  'notif.version_available.text': 'TREK {version} finns nu tillgängligt',
+  'notif.version_available.text': 'Travla {version} finns nu tillgängligt',
   'notif.action.view_trip': 'Visa resan',
   'notif.action.view_collab': 'Visa meddelanden',
   'notif.action.view_packing': 'Visa förpackning',

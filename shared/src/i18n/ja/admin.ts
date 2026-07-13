@@ -270,7 +270,7 @@ const admin: TranslationStrings = {
   'admin.plugins.sourceRepo': 'ソースリポジトリ',
   'admin.plugins.reportIssue': '問題を報告',
   'admin.plugins.homepage': 'ホームページ',
-  'admin.plugins.requiresTrek': 'TREK {version} 以上が必要',
+  'admin.plugins.requiresTrek': 'Travla {version} 以上が必要',
   'admin.plugins.reviewedOn': 'レビュー日：{date}',
   'admin.plugins.perm.db:own': '専用の分離データベースに独自データを保存',
   'admin.plugins.perm.db:read:trips': '操作中のユーザーがアクセスできる旅行の読み取り',
@@ -355,26 +355,26 @@ const admin: TranslationStrings = {
   'admin.plugins.updateLater': '今は無効のままにする',
   'admin.plugins.updateKeptOff': 'アップデートをインストールしました — 新しい権限を承認するまで無効のままです',
   'admin.plugins.reviewedMeaning':
-    '「レビュー済み」とは、TREKのメンテナーが各バージョンでこのプラグインをマルウェアの観点から確認したという意味です — 品質や動作の可否を確認したものではありません。プラグインが無害であることを保証するものではありません。',
+    '「レビュー済み」とは、Travlaのメンテナーが各バージョンでこのプラグインをマルウェアの観点から確認したという意味です — 品質や動作の可否を確認したものではありません。プラグインが無害であることを保証するものではありません。',
   'admin.plugins.security.title': 'プラグインの分離のしくみ — そしてその限界',
   'admin.plugins.security.isolationTitle': 'すべてのプラグインは隔離環境で実行されます',
   'admin.plugins.security.isolationBody':
-    'プラグインは、自身のファイルしか読み取れない厳重に制限された独立プロセスとして実行されます。データベース、ログイン用のシークレット、暗号鍵を読み取ることはできず、他のプログラムを起動することも、どこかにファイルを書き込むこともできません。その画面は隔離されたブラウザフレーム内で動作し、セッションCookieを読み取ったり、周囲のTREKページに干渉したりすることはできません。',
+    'プラグインは、自身のファイルしか読み取れない厳重に制限された独立プロセスとして実行されます。データベース、ログイン用のシークレット、暗号鍵を読み取ることはできず、他のプログラムを起動することも、どこかにファイルを書き込むこともできません。その画面は隔離されたブラウザフレーム内で動作し、セッションCookieを読み取ったり、周囲のTravlaページに干渉したりすることはできません。',
   'admin.plugins.security.permsTitle': '権限の意味',
   'admin.plugins.security.permsBody':
-    'インストール前に表示される権限は、プラグインの実行中にTREKが強制する厳格な制限です — リストにないことは一切実行できません。ただし、これらはプラグインが何をできるかを示すもので、実際に何をするかを示すものではありません。旅行の読み取りとサーバーへの接続を許可されたプラグインは、あなたの旅行をそのサーバーに送信できます。説明文だけでなく、権限と接続先ホストも確認してください。',
+    'インストール前に表示される権限は、プラグインの実行中にTravlaが強制する厳格な制限です — リストにないことは一切実行できません。ただし、これらはプラグインが何をできるかを示すもので、実際に何をするかを示すものではありません。旅行の読み取りとサーバーへの接続を許可されたプラグインは、あなたの旅行をそのサーバーに送信できます。説明文だけでなく、権限と接続先ホストも確認してください。',
   'admin.plugins.security.limitsTitle': '保証できないこと',
   'admin.plugins.security.limitsBody':
-    'この分離は強固なソフトウェア上の境界ですが、絶対的なものではありません。プラグインは、あなたが承認した権限のとおりに動作するため、その権限の範囲内では説明とは異なる振る舞いをする場合があり、正当に保持しているデータを宣言済みのホストへ送信することもできます。TREKは、プラグインのコードが実際に何をするかを読み取ったり判断したりはしません。',
+    'この分離は強固なソフトウェア上の境界ですが、絶対的なものではありません。プラグインは、あなたが承認した権限のとおりに動作するため、その権限の範囲内では説明とは異なる振る舞いをする場合があり、正当に保持しているデータを宣言済みのホストへ送信することもできます。Travlaは、プラグインのコードが実際に何をするかを読み取ったり判断したりはしません。',
   'admin.plugins.security.worstTitle': '最悪の場合',
   'admin.plugins.security.worstBody':
     '有効化した悪意のあるプラグインは、あなたが与えたデータと接続を悪用する可能性があります — たとえば、読み取りを許可された旅行を漏えいさせるなどです。ただし、パスワードを盗んだり、管理者ログインを偽造したり、サーバー上でコマンドを実行したり、許可していないデータにアクセスしたりすることはできません。被害はあなたが承認した範囲内にとどまり、プラグインを無効化すれば止まります。',
   'admin.plugins.security.reviewedTitle': '「レビュー済み」の意味',
   'admin.plugins.security.reviewedBody':
-    'レビュー済みのプラグインは、TREKのメンテナーが各バージョンで手動でマルウェアの有無を確認したものです — 悪意のあるコードの有無を確認したものであり、正しく動作するかどうかを確認したものではありません。プラグインが無害であることを約束するものではありません。',
+    'レビュー済みのプラグインは、Travlaのメンテナーが各バージョンで手動でマルウェアの有無を確認したものです — 悪意のあるコードの有無を確認したものであり、正しく動作するかどうかを確認したものではありません。プラグインが無害であることを約束するものではありません。',
   'admin.plugins.security.trustTitle': '結論',
   'admin.plugins.security.trustBody':
-    'プラグインのインストールは、サードパーティ製アプリのインストールと同じです。信頼できる作者のコードのみを追加し、少しでも疑わしい場合は、まずご自身で内容を確認してください。TREKはサードパーティ製プラグインについて一切の責任を負いません。',
+    'プラグインのインストールは、サードパーティ製アプリのインストールと同じです。信頼できる作者のコードのみを追加し、少しでも疑わしい場合は、まずご自身で内容を確認してください。Travlaはサードパーティ製プラグインについて一切の責任を負いません。',
   'admin.plugins.runtimeOn': 'ランタイム：オン',
   'admin.plugins.tabDiscover': '探す',
   'admin.plugins.searchPlaceholder': 'プラグインを検索…',
@@ -441,7 +441,7 @@ const admin: TranslationStrings = {
   'admin.plugins.metaReviewed': 'レビュー日',
   'admin.plugins.downloads': 'ダウンロード数',
   'admin.addons.title': 'アドオン',
-  'admin.addons.subtitle': '機能を有効／無効にしてTREKをカスタマイズします。',
+  'admin.addons.subtitle': '機能を有効／無効にしてTravlaをカスタマイズします。',
   'admin.addons.catalog.packing.name': 'リスト',
   'admin.addons.catalog.packing.description': '旅行用の持ち物リストとToDo',
   'admin.addons.catalog.budget.name': '費用',
@@ -474,7 +474,7 @@ const admin: TranslationStrings = {
   'admin.weather.title': '天気データ',
   'admin.weather.badge': '2026年3月24日以降',
   'admin.weather.description':
-    'TREKは天気データにOpen‑Meteoを使用しています。無料でオープンソース、APIキーは不要です。',
+    'Travlaは天気データにOpen‑Meteoを使用しています。無料でオープンソース、APIキーは不要です。',
   'admin.weather.forecast': '16日間予報',
   'admin.weather.forecastDesc': '以前は5日（OpenWeatherMap）',
   'admin.weather.climate': '過去の気候データ',
@@ -532,13 +532,13 @@ const admin: TranslationStrings = {
   'admin.github.loading': '読み込み中...',
   'admin.github.error': 'リリースの読み込みに失敗しました',
   'admin.github.by': '作成者',
-  'admin.github.support': 'TREKの開発を支援',
+  'admin.github.support': 'Travlaの開発を支援',
   'admin.update.available': '更新があります',
-  'admin.update.text': 'TREK {version} が利用可能です。現在は {current} を使用しています。',
+  'admin.update.text': 'Travla {version} が利用可能です。現在は {current} を使用しています。',
   'admin.update.button': 'GitHubで見る',
   'admin.update.install': '更新をインストール',
   'admin.update.confirmTitle': '更新をインストールしますか？',
-  'admin.update.confirmText': 'TREKを {current} から {version} に更新します。更新後、サーバーは自動的に再起動します。',
+  'admin.update.confirmText': 'Travlaを {current} から {version} に更新します。更新後、サーバーは自動的に再起動します。',
   'admin.update.dataInfo':
     'すべてのデータ（旅行、ユーザー、APIキー、アップロード、Vacay、Atlas、予算）は保持されます。',
   'admin.update.warning': '再起動中、アプリは短時間利用できません。',
@@ -550,9 +550,9 @@ const admin: TranslationStrings = {
   'admin.update.backupLink': 'バックアップへ',
   'admin.update.howTo': '更新方法',
   'admin.update.dockerText':
-    'TREKはDockerで実行されています。{version} に更新するには、サーバーで次のコマンドを実行してください：',
+    'TravlaはDockerで実行されています。{version} に更新するには、サーバーで次のコマンドを実行してください：',
   'admin.update.nonDockerText':
-    'このTREKインスタンスはDockerで実行されていません。{version} に更新するには、使用したインストールまたは更新方法をもう一度実行してください。たとえばProxmox Community Scriptsの場合は、LXCコンソールから更新を実行します：',
+    'このTravlaインスタンスはDockerで実行されていません。{version} に更新するには、使用したインストールまたは更新方法をもう一度実行してください。たとえばProxmox Community Scriptsの場合は、LXCコンソールから更新を実行します：',
   'admin.update.wikiLink': '更新ガイドを開く',
   'admin.update.reloadHint': '数秒後にページを再読み込みしてください。',
   'admin.tabs.permissions': '権限',

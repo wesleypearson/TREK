@@ -29,7 +29,7 @@ const trip: TranslationStrings = {
   'trip.loadingPhotos': 'Helyek fotóinak betöltése...',
   'trip.invite.linkTitle': 'Meghívó link az utazáshoz',
   'trip.invite.linkHint':
-    'Bárki, akinek van TREK-fiókja és megnyitja ezt a linket, tagként csatlakozik az utazáshoz. A régi link érvénytelenítéséhez hozz létre újat.',
+    'Bárki, akinek van Travla-fiókja és megnyitja ezt a linket, tagként csatlakozik az utazáshoz. A régi link érvénytelenítéséhez hozz létre újat.',
   'trip.invite.create': 'Meghívó link létrehozása',
   'trip.invite.regenerate': 'Újragenerálás',
   'trip.invite.disable': 'Letiltás',

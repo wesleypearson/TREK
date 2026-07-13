@@ -232,7 +232,7 @@ const admin: TranslationStrings = {
   'admin.plugins.sourceRepo': 'Repozytorium źródłowe',
   'admin.plugins.reportIssue': 'Zgłoś problem',
   'admin.plugins.homepage': 'Strona główna',
-  'admin.plugins.requiresTrek': 'Wymaga TREK {version}+',
+  'admin.plugins.requiresTrek': 'Wymaga Travla {version}+',
   'admin.plugins.reviewedOn': 'Zweryfikowano {date}',
   'admin.plugins.perm.db:own': 'Przechowywanie własnych danych w izolowanej bazie danych',
   'admin.plugins.perm.db:read:trips': 'Odczyt podróży, do których działający użytkownik ma dostęp',
@@ -339,26 +339,26 @@ const admin: TranslationStrings = {
   'admin.plugins.updateKeptOff':
     'Aktualizacja zainstalowana — pozostaje wyłączona, dopóki nie zatwierdzisz nowych uprawnień',
   'admin.plugins.reviewedMeaning':
-    '„Zweryfikowana” oznacza, że opiekun TREK przeskanował tę wtyczkę pod kątem złośliwego oprogramowania w każdej wersji — nie pod kątem jakości ani tego, czy działa. To nie jest gwarancja, że wtyczka jest nieszkodliwa.',
+    '„Zweryfikowana” oznacza, że opiekun Travla przeskanował tę wtyczkę pod kątem złośliwego oprogramowania w każdej wersji — nie pod kątem jakości ani tego, czy działa. To nie jest gwarancja, że wtyczka jest nieszkodliwa.',
   'admin.plugins.security.title': 'Jak wtyczki są izolowane — i jakie są tego granice',
   'admin.plugins.security.isolationTitle': 'Każda wtyczka działa w izolacji',
   'admin.plugins.security.isolationBody':
-    'Wtyczka działa jako własny, odizolowany proces, który może odczytywać wyłącznie swoje własne pliki. Nie może odczytać Twojej bazy danych, sekretu logowania ani klucza szyfrującego, nie może uruchamiać innych programów ani nigdzie zapisywać plików. Jej interfejs działa w zamkniętej ramce przeglądarki, która nie może odczytać Twojego pliku cookie sesji ani ingerować w otaczającą ją stronę TREK.',
+    'Wtyczka działa jako własny, odizolowany proces, który może odczytywać wyłącznie swoje własne pliki. Nie może odczytać Twojej bazy danych, sekretu logowania ani klucza szyfrującego, nie może uruchamiać innych programów ani nigdzie zapisywać plików. Jej interfejs działa w zamkniętej ramce przeglądarki, która nie może odczytać Twojego pliku cookie sesji ani ingerować w otaczającą ją stronę Travla.',
   'admin.plugins.security.permsTitle': 'Co oznaczają uprawnienia',
   'admin.plugins.security.permsBody':
-    'Uprawnienia pokazywane przed instalacją to twarda granica, którą TREK egzekwuje w trakcie działania wtyczki — dosłownie nie może ona zrobić niczego, czego nie ma na liście. Mówią one jednak, co wtyczka może robić, a nie co faktycznie robi. Wtyczka, która może odczytywać Twoje podróże i łączyć się z serwerem, może wysłać Twoje podróże na ten serwer, dlatego czytaj uprawnienia i hosty wychodzące, a nie tylko opis.',
+    'Uprawnienia pokazywane przed instalacją to twarda granica, którą Travla egzekwuje w trakcie działania wtyczki — dosłownie nie może ona zrobić niczego, czego nie ma na liście. Mówią one jednak, co wtyczka może robić, a nie co faktycznie robi. Wtyczka, która może odczytywać Twoje podróże i łączyć się z serwerem, może wysłać Twoje podróże na ten serwer, dlatego czytaj uprawnienia i hosty wychodzące, a nie tylko opis.',
   'admin.plugins.security.limitsTitle': 'Czego nie możemy obiecać',
   'admin.plugins.security.limitsBody':
-    'Izolacja to silna granica programowa, ale nie absolutna. Wtyczka działa dokładnie z tymi uprawnieniami, które zatwierdzisz, więc w ich ramach może zachowywać się inaczej, niż sugeruje jej opis, i może wysyłać dane, do których ma zgodny z uprawnieniami dostęp, do zadeklarowanych przez siebie hostów. TREK nie odczytuje ani nie ocenia tego, co faktycznie robi kod wtyczki.',
+    'Izolacja to silna granica programowa, ale nie absolutna. Wtyczka działa dokładnie z tymi uprawnieniami, które zatwierdzisz, więc w ich ramach może zachowywać się inaczej, niż sugeruje jej opis, i może wysyłać dane, do których ma zgodny z uprawnieniami dostęp, do zadeklarowanych przez siebie hostów. Travla nie odczytuje ani nie ocenia tego, co faktycznie robi kod wtyczki.',
   'admin.plugins.security.worstTitle': 'Najgorszy scenariusz',
   'admin.plugins.security.worstBody':
     'Wroga wtyczka, którą włączysz, może nadużyć danych i połączeń, które jej przyznałeś — na przykład ujawnić podróże, które może odczytywać. Nie może wykraść haseł, sfałszować logowania administratora, uruchamiać poleceń na Twoim serwerze ani sięgać po dane, których jej nie przyznałeś. Szkody pozostają w granicach tego, co zatwierdziłeś, a wyłączenie wtyczki je zatrzymuje.',
   'admin.plugins.security.reviewedTitle': 'Co oznacza „Zweryfikowana”',
   'admin.plugins.security.reviewedBody':
-    'Zweryfikowana wtyczka została ręcznie przeskanowana pod kątem złośliwego oprogramowania przez opiekuna TREK w każdej wersji — sprawdzona pod kątem wrogiego kodu, a nie tego, czy działa dobrze. To nie jest obietnica, że wtyczka jest nieszkodliwa.',
+    'Zweryfikowana wtyczka została ręcznie przeskanowana pod kątem złośliwego oprogramowania przez opiekuna Travla w każdej wersji — sprawdzona pod kątem wrogiego kodu, a nie tego, czy działa dobrze. To nie jest obietnica, że wtyczka jest nieszkodliwa.',
   'admin.plugins.security.trustTitle': 'Podsumowanie',
   'admin.plugins.security.trustBody':
-    'Instalacja wtyczki jest jak instalacja dowolnej aplikacji innych firm: dodawaj tylko kod od autorów, którym ufasz, a w razie wątpliwości najpierw samodzielnie go sprawdź. TREK nie ponosi żadnej odpowiedzialności za wtyczki innych firm.',
+    'Instalacja wtyczki jest jak instalacja dowolnej aplikacji innych firm: dodawaj tylko kod od autorów, którym ufasz, a w razie wątpliwości najpierw samodzielnie go sprawdź. Travla nie ponosi żadnej odpowiedzialności za wtyczki innych firm.',
   'admin.plugins.runtimeOn': 'Środowisko włączone',
   'admin.plugins.tabDiscover': 'Odkrywaj',
   'admin.plugins.searchPlaceholder': 'Szukaj wtyczek…',
@@ -425,7 +425,7 @@ const admin: TranslationStrings = {
   'admin.plugins.metaReviewed': 'Zweryfikowano',
   'admin.plugins.downloads': 'Pobrania',
   'admin.addons.title': 'Dodatki',
-  'admin.addons.subtitle': 'Włączaj lub wyłączaj funkcje, aby dostosować swoje doświadczenie w TREK.',
+  'admin.addons.subtitle': 'Włączaj lub wyłączaj funkcje, aby dostosować swoje doświadczenie w Travla.',
   'admin.addons.catalog.packing.name': 'Listy',
   'admin.addons.catalog.packing.description': 'Listy pakowania i zadania do wykonania dla Twoich podróży',
   'admin.addons.catalog.budget.name': 'Koszty',
@@ -458,7 +458,7 @@ const admin: TranslationStrings = {
   'admin.weather.title': 'Dane pogodowe',
   'admin.weather.badge': 'Od 24 marca 2026',
   'admin.weather.description':
-    'TREK korzysta z Open-Meteo jako źródła danych pogodowych. Open-Meteo to darmowy, otwartoźródłowy serwis pogodowy — klucz API nie jest wymagany.',
+    'Travla korzysta z Open-Meteo jako źródła danych pogodowych. Open-Meteo to darmowy, otwartoźródłowy serwis pogodowy — klucz API nie jest wymagany.',
   'admin.weather.forecast': '16-dniowa prognoza',
   'admin.weather.forecastDesc': 'Wcześniej 5 dni (OpenWeatherMap)',
   'admin.weather.climate': 'Historyczne dane klimatyczne',
@@ -517,14 +517,14 @@ const admin: TranslationStrings = {
   'admin.github.loading': 'Ładowanie...',
   'admin.github.error': 'Nie udało się załadować wydań',
   'admin.github.by': 'przez',
-  'admin.github.support': 'Pomóż mi rozwijać TREK',
+  'admin.github.support': 'Pomóż mi rozwijać Travla',
   'admin.update.available': 'Dostępna aktualizacja',
-  'admin.update.text': 'Dostępna jest wersja TREK {version}. Używasz {current}.',
+  'admin.update.text': 'Dostępna jest wersja Travla {version}. Używasz {current}.',
   'admin.update.button': 'Zobacz na GitHubie',
   'admin.update.install': 'Zainstaluj aktualizację',
   'admin.update.confirmTitle': 'Zainstalować aktualizację?',
   'admin.update.confirmText':
-    'TREK zostanie zaktualizowany z {current} do {version}. Serwer zostanie automatycznie zrestartowany po zakończeniu.',
+    'Travla zostanie zaktualizowany z {current} do {version}. Serwer zostanie automatycznie zrestartowany po zakończeniu.',
   'admin.update.dataInfo':
     'Wszystkie twoje dane (podróże, użytkownicy, klucze API, przesłane pliki, urlopy, Atlas, budżety) zostaną zachowane.',
   'admin.update.warning': 'Aplikacja będzie niedostępna przez krótki czas podczas restartu.',
@@ -536,9 +536,9 @@ const admin: TranslationStrings = {
   'admin.update.backupLink': 'Zrób kopię zapasową',
   'admin.update.howTo': 'Jak zaktualizować',
   'admin.update.dockerText':
-    'Twoja instancja TREK działa w Dockerze. Aby zaktualizować do {version}, uruchom następujące polecenia na swoim serwerze:',
+    'Twoja instancja Travla działa w Dockerze. Aby zaktualizować do {version}, uruchom następujące polecenia na swoim serwerze:',
   'admin.update.nonDockerText':
-    'Ta instancja TREK nie działa w Dockerze. Aby zaktualizować do {version}, uruchom ponownie metodę instalacji lub aktualizacji, której użyłeś — na przykład w Proxmox Community Scripts uruchom aktualizację z konsoli LXC:',
+    'Ta instancja Travla nie działa w Dockerze. Aby zaktualizować do {version}, uruchom ponownie metodę instalacji lub aktualizacji, której użyłeś — na przykład w Proxmox Community Scripts uruchom aktualizację z konsoli LXC:',
   'admin.update.wikiLink': 'Otwórz przewodnik aktualizacji',
   'admin.update.reloadHint': 'Proszę odświeżyć stronę za kilka sekund.',
   'admin.notifications.title': 'Powiadomienia',

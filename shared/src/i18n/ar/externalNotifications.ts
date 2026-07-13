@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const ar: NotificationLocale = {
   email: {
-    footer: 'تلقيت هذا لأنك قمت بتفعيل الإشعارات في TREK.',
+    footer: 'تلقيت هذا لأنك قمت بتفعيل الإشعارات في Travla.',
     manage: 'إدارة التفضيلات',
     madeWith: 'Made with',
-    openTrek: 'فتح TREK',
+    openTrek: 'فتح Travla',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,11 +26,11 @@ const ar: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'دعوة دمج الإجازة',
-      body: `${p.actor} يدعوك لدمج خطط الإجازة. افتح TREK للقبول أو الرفض.`,
+      body: `${p.actor} يدعوك لدمج خطط الإجازة. افتح Travla للقبول أو الرفض.`,
     }),
     collection_invite: (p) => ({
       title: 'دعوة إلى مجموعة',
-      body: `${p.actor} يدعوك لمشاركة مجموعة. افتح TREK للقبول أو الرفض.`,
+      body: `${p.actor} يدعوك لمشاركة مجموعة. افتح Travla للقبول أو الرفض.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} صور مشتركة`,
@@ -45,8 +45,8 @@ const ar: NotificationLocale = {
       body: `${p.actor} عيّنك في فئة "${p.category}" في "${p.trip}".`,
     }),
     version_available: (p) => ({
-      title: 'إصدار TREK جديد متاح',
-      body: `TREK ${p.version} متاح الآن. تفضل بزيارة لوحة الإدارة للتحديث.`,
+      title: 'إصدار Travla جديد متاح',
+      body: `Travla ${p.version} متاح الآن. تفضل بزيارة لوحة الإدارة للتحديث.`,
     }),
     synology_session_cleared: () => ({
       title: 'تمت إعادة تعيين جلسة Synology',
@@ -57,7 +57,7 @@ const ar: NotificationLocale = {
   passwordReset: {
     subject: 'إعادة تعيين كلمة المرور',
     greeting: 'مرحبا',
-    body: 'تلقينا طلبًا لإعادة تعيين كلمة المرور لحسابك في TREK. انقر على الزر أدناه لتعيين كلمة مرور جديدة.',
+    body: 'تلقينا طلبًا لإعادة تعيين كلمة المرور لحسابك في Travla. انقر على الزر أدناه لتعيين كلمة مرور جديدة.',
     ctaIntro: 'إعادة تعيين كلمة المرور',
     expiry: 'تنتهي صلاحية هذا الرابط خلال 60 دقيقة.',
     ignore: 'إذا لم تطلب هذا، يمكنك تجاهل هذه الرسالة — لن تتغير كلمة المرور الخاصة بك.',

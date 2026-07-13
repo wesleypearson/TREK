@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const de: NotificationLocale = {
   email: {
-    footer: 'Du erhältst diese E-Mail, weil du Benachrichtigungen in TREK aktiviert hast.',
+    footer: 'Du erhältst diese E-Mail, weil du Benachrichtigungen in Travla aktiviert hast.',
     manage: 'Einstellungen verwalten',
     madeWith: 'Made with',
-    openTrek: 'TREK öffnen',
+    openTrek: 'Travla öffnen',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,11 +26,11 @@ const de: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Vacay Fusion-Einladung',
-      body: `${p.actor} hat dich eingeladen, Urlaubspläne zu fusionieren. Öffne TREK um anzunehmen oder abzulehnen.`,
+      body: `${p.actor} hat dich eingeladen, Urlaubspläne zu fusionieren. Öffne Travla um anzunehmen oder abzulehnen.`,
     }),
     collection_invite: (p) => ({
       title: 'Sammlungs-Einladung',
-      body: `${p.actor} hat dich eingeladen, eine Sammlung zu teilen. Öffne TREK um anzunehmen oder abzulehnen.`,
+      body: `${p.actor} hat dich eingeladen, eine Sammlung zu teilen. Öffne Travla um anzunehmen oder abzulehnen.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} Fotos geteilt`,
@@ -45,8 +45,8 @@ const de: NotificationLocale = {
       body: `${p.actor} hat dich der Kategorie "${p.category}" in der Packliste von "${p.trip}" zugewiesen.`,
     }),
     version_available: (p) => ({
-      title: 'Neue TREK-Version verfügbar',
-      body: `TREK ${p.version} ist jetzt verfügbar. Besuche das Admin-Panel zum Aktualisieren.`,
+      title: 'Neue Travla-Version verfügbar',
+      body: `Travla ${p.version} ist jetzt verfügbar. Besuche das Admin-Panel zum Aktualisieren.`,
     }),
     synology_session_cleared: () => ({
       title: 'Synology-Sitzung beendet',
@@ -57,7 +57,7 @@ const de: NotificationLocale = {
   passwordReset: {
     subject: 'Passwort zurücksetzen',
     greeting: 'Hallo',
-    body: 'Wir haben eine Anfrage erhalten, das Passwort für dein TREK-Konto zurückzusetzen. Klicke auf den Button unten, um ein neues Passwort festzulegen.',
+    body: 'Wir haben eine Anfrage erhalten, das Passwort für dein Travla-Konto zurückzusetzen. Klicke auf den Button unten, um ein neues Passwort festzulegen.',
     ctaIntro: 'Passwort zurücksetzen',
     expiry: 'Dieser Link ist 60 Minuten gültig.',
     ignore: 'Wenn du das nicht warst, ignoriere diese E-Mail — dein Passwort bleibt unverändert.',
