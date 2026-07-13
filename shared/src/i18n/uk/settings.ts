@@ -179,9 +179,9 @@ const settings: TranslationStrings = {
   'settings.about.featureRequestHint': 'Запропонуйте нову функцію',
   'settings.about.wikiHint': 'Документація та керівництва',
   'settings.about.supporters.badge': 'Щомісячні спонсори',
-  'settings.about.supporters.title': 'Спутники TREK',
+  'settings.about.supporters.title': 'Спутники Travla',
   'settings.about.supporters.subtitle':
-    'Поки ти плануєш наступний маршрут, ці люди разом зі мною планують майбутнє TREK. Їхній щомісячний внесок йде безпосередньо в розробку та реальні витрачені години — щоб TREK залишався Open Source.',
+    'Поки ти плануєш наступний маршрут, ці люди разом зі мною планують майбутнє Travla. Їхній щомісячний внесок йде безпосередньо в розробку та реальні витрачені години — щоб Travla залишався Open Source.',
   'settings.about.supporters.since': 'спонсор з {date}',
   'settings.about.supporters.tierEmpty': 'Стань першим',
   'settings.about.supporter.tier.noReturnTicket': 'No Return Ticket',
@@ -190,7 +190,7 @@ const settings: TranslationStrings = {
   'settings.about.supporter.tier.budgetTraveller': 'Budget Traveller',
   'settings.about.supporter.tier.hostelBunkmate': 'Hostel Bunkmate',
   'settings.about.description':
-    'TREK — це self-hosted планувальник подорожей, який допомагає організувати поїздки від першої ідеї до останнього спогаду. Планування по днях, бюджет, списки речей, фото та багато іншого — все в одному місці, на вашому власному сервері.',
+    'Travla — це self-hosted планувальник подорожей, який допомагає організувати поїздки від першої ідеї до останнього спогаду. Планування по днях, бюджет, списки речей, фото та багато іншого — все в одному місці, на вашому власному сервері.',
   'settings.about.madeWith': 'Зроблено з',
   'settings.about.madeBy': 'Морісом і зростаючою open-source спільнотою.',
   'settings.username': "Ім'я користувача",
@@ -339,7 +339,7 @@ const settings: TranslationStrings = {
   'settings.airtrail.allowInsecureTlsHint': 'Вмикайте лише для довіреного екземпляра у вашій власній мережі.',
   'settings.airtrail.writeBack': 'Записувати зміни назад у AirTrail',
   'settings.airtrail.writeBackHint':
-    'Типово вимкнено: AirTrail є джерелом істини, а TREK лише читає з нього. Увімкніть, щоб надсилати зміни, зроблені в TREK, назад до AirTrail.',
+    'Типово вимкнено: AirTrail є джерелом істини, а Travla лише читає з нього. Увімкніть, щоб надсилати зміни, зроблені в Travla, назад до AirTrail.',
   'settings.airtrail.connected': 'Підключено',
   'settings.airtrail.notConnected': 'Не підключено',
   'settings.airtrail.toast.saved': 'Підключення AirTrail збережено',

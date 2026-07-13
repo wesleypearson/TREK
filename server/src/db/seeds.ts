@@ -39,7 +39,7 @@ function seedAdminAccount(db: Database.Database): void {
     if (isOidcOnlyConfigured()) {
       console.log('');
       console.log('╔══════════════════════════════════════════════╗');
-      console.log('║  TREK — OIDC-Only Mode                       ║');
+      console.log('║  Travla — OIDC-Only Mode                       ║');
       console.log('║  First SSO login will become admin.           ║');
       console.log('╚══════════════════════════════════════════════╝');
       console.log('');
@@ -71,7 +71,7 @@ function seedAdminAccount(db: Database.Database): void {
 
     console.log('');
     console.log('╔══════════════════════════════════════════════╗');
-    console.log('║  TREK — First Run: Admin Account Created     ║');
+    console.log('║  Travla — First Run: Admin Account Created     ║');
     console.log('╠══════════════════════════════════════════════╣');
     console.log(`║  Email:    ${email.padEnd(33)}║`);
     console.log(`║  Password: ${password.padEnd(33)}║`);

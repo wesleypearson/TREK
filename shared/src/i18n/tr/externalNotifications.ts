@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const tr: NotificationLocale = {
   email: {
-    footer: "TREK'te bildirimleri etkinleştirdiğiniz için bunu aldınız.",
+    footer: "Travla'da bildirimleri etkinleştirdiğiniz için bunu aldınız.",
     manage: 'Ayarlarda tercihleri yönetin',
     madeWith: 'Made with',
-    openTrek: "TREK'i aç",
+    openTrek: "Travla'yı aç",
   },
   events: {
     trip_invite: (p) => ({
@@ -26,11 +26,11 @@ const tr: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Vacay Fusion Daveti',
-      body: `${p.actor} sizi tatil planlarını birleştirmeye davet etti. Kabul etmek veya reddetmek için TREK'i açın.`,
+      body: `${p.actor} sizi tatil planlarını birleştirmeye davet etti. Kabul etmek veya reddetmek için Travla'yı açın.`,
     }),
     collection_invite: (p) => ({
       title: 'Koleksiyon daveti',
-      body: `${p.actor} sizi bir koleksiyonu paylaşmaya davet etti. Kabul etmek veya reddetmek için TREK’i açın.`,
+      body: `${p.actor} sizi bir koleksiyonu paylaşmaya davet etti. Kabul etmek veya reddetmek için Travla’yı açın.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} fotoğraf paylaşıldı`,
@@ -45,8 +45,8 @@ const tr: NotificationLocale = {
       body: `${p.actor}, sizi "${p.trip}" içindeki "${p.category}" bagaj kategorisine atadı.`,
     }),
     version_available: (p) => ({
-      title: 'Yeni TREK sürümü mevcut',
-      body: `TREK ${p.version} artık mevcut. Güncellemek için yönetici panelini ziyaret edin.`,
+      title: 'Yeni Travla sürümü mevcut',
+      body: `Travla ${p.version} artık mevcut. Güncellemek için yönetici panelini ziyaret edin.`,
     }),
     synology_session_cleared: () => ({
       title: 'Synology oturumu temizlendi',
@@ -57,7 +57,7 @@ const tr: NotificationLocale = {
   passwordReset: {
     subject: 'Şifrenizi sıfırlayın',
     greeting: 'Merhaba',
-    body: 'TREK hesabınızın şifresini sıfırlamak için bir istek aldık. Yeni bir şifre belirlemek için aşağıdaki butona tıklayın.',
+    body: 'Travla hesabınızın şifresini sıfırlamak için bir istek aldık. Yeni bir şifre belirlemek için aşağıdaki butona tıklayın.',
     ctaIntro: 'Şifreyi sıfırla',
     expiry: 'Bu bağlantı 60 dakika içinde sona erer.',
     ignore: 'Bu isteği siz yapmadıysanız, bu e-postayı güvenle yok sayabilirsiniz — şifreniz değişmeyecektir.',

@@ -625,7 +625,7 @@ export function validateAuthorizeRequest(
     ? params.resource.replace(/\/+$/, '')
     : mcpResource;
   if (resource !== mcpResource) {
-    return { valid: false, error: 'invalid_target', error_description: 'Requested resource must be the TREK MCP endpoint' };
+    return { valid: false, error: 'invalid_target', error_description: 'Requested resource must be the Travla MCP endpoint' };
   }
 
   const requestedScopes = (params.scope || '').split(' ').filter(Boolean);

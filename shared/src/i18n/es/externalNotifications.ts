@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const es: NotificationLocale = {
   email: {
-    footer: 'Recibiste esto porque tienes las notificaciones activadas en TREK.',
+    footer: 'Recibiste esto porque tienes las notificaciones activadas en Travla.',
     manage: 'Gestionar preferencias',
     madeWith: 'Made with',
-    openTrek: 'Abrir TREK',
+    openTrek: 'Abrir Travla',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,11 +26,11 @@ const es: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Invitación Vacay Fusion',
-      body: `${p.actor} te invitó a fusionar planes de vacaciones. Abre TREK para aceptar o rechazar.`,
+      body: `${p.actor} te invitó a fusionar planes de vacaciones. Abre Travla para aceptar o rechazar.`,
     }),
     collection_invite: (p) => ({
       title: 'Invitación a colección',
-      body: `${p.actor} te invitó a compartir una colección. Abre TREK para aceptar o rechazar.`,
+      body: `${p.actor} te invitó a compartir una colección. Abre Travla para aceptar o rechazar.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} fotos compartidas`,
@@ -45,8 +45,8 @@ const es: NotificationLocale = {
       body: `${p.actor} te asignó a la categoría "${p.category}" en "${p.trip}".`,
     }),
     version_available: (p) => ({
-      title: 'Nueva versión de TREK disponible',
-      body: `TREK ${p.version} ya está disponible. Visita el panel de administración para actualizar.`,
+      title: 'Nueva versión de Travla disponible',
+      body: `Travla ${p.version} ya está disponible. Visita el panel de administración para actualizar.`,
     }),
     synology_session_cleared: () => ({
       title: 'Sesión de Synology cerrada',
@@ -57,7 +57,7 @@ const es: NotificationLocale = {
   passwordReset: {
     subject: 'Restablecer tu contraseña',
     greeting: 'Hola',
-    body: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta de TREK. Haz clic en el botón de abajo para establecer una nueva contraseña.',
+    body: 'Recibimos una solicitud para restablecer la contraseña de tu cuenta de Travla. Haz clic en el botón de abajo para establecer una nueva contraseña.',
     ctaIntro: 'Restablecer contraseña',
     expiry: 'Este enlace caduca en 60 minutos.',
     ignore: 'Si no solicitaste esto, puedes ignorar este correo — tu contraseña no cambiará.',

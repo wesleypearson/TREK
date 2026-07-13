@@ -281,7 +281,7 @@ const admin: TranslationStrings = {
   'admin.plugins.sourceRepo': 'Repositori sumber',
   'admin.plugins.reportIssue': 'Laporkan masalah',
   'admin.plugins.homepage': 'Beranda',
-  'admin.plugins.requiresTrek': 'Memerlukan TREK {version}+',
+  'admin.plugins.requiresTrek': 'Memerlukan Travla {version}+',
   'admin.plugins.reviewedOn': 'Ditinjau {date}',
   'admin.plugins.perm.db:own': 'Menyimpan datanya sendiri di database terisolasi',
   'admin.plugins.perm.db:read:trips': 'Membaca perjalanan yang dapat diakses oleh pengguna yang bersangkutan',
@@ -389,26 +389,26 @@ const admin: TranslationStrings = {
   'admin.plugins.updateLater': 'Biarkan nonaktif dulu',
   'admin.plugins.updateKeptOff': 'Pembaruan terpasang — dibiarkan nonaktif sampai kamu menyetujui izin baru',
   'admin.plugins.reviewedMeaning':
-    '"Ditinjau" berarti seorang maintainer TREK memindai plugin ini dari malware pada setiap versi — bukan untuk kualitas atau apakah plugin ini berfungsi. Ini bukan jaminan bahwa sebuah plugin tidak berbahaya.',
+    '"Ditinjau" berarti seorang maintainer Travla memindai plugin ini dari malware pada setiap versi — bukan untuk kualitas atau apakah plugin ini berfungsi. Ini bukan jaminan bahwa sebuah plugin tidak berbahaya.',
   'admin.plugins.security.title': 'Bagaimana plugin dikungkung — dan batasannya',
   'admin.plugins.security.isolationTitle': 'Setiap plugin berjalan dalam kotak terisolasi',
   'admin.plugins.security.isolationBody':
-    'Sebuah plugin berjalan sebagai prosesnya sendiri yang terkunci dan hanya bisa membaca file-nya sendiri. Ia tidak bisa membaca database kamu, rahasia login kamu, atau kunci enkripsi kamu, tidak bisa menjalankan program lain, dan tidak bisa menulis file di mana pun. Antarmukanya berjalan dalam frame browser tersegel yang tidak bisa membaca cookie sesi kamu atau menyentuh halaman TREK di sekitarnya.',
+    'Sebuah plugin berjalan sebagai prosesnya sendiri yang terkunci dan hanya bisa membaca file-nya sendiri. Ia tidak bisa membaca database kamu, rahasia login kamu, atau kunci enkripsi kamu, tidak bisa menjalankan program lain, dan tidak bisa menulis file di mana pun. Antarmukanya berjalan dalam frame browser tersegel yang tidak bisa membaca cookie sesi kamu atau menyentuh halaman Travla di sekitarnya.',
   'admin.plugins.security.permsTitle': 'Apa arti izin-izin ini',
   'admin.plugins.security.permsBody':
-    'Izin yang ditampilkan sebelum kamu memasang adalah batas keras yang diberlakukan TREK selama plugin berjalan — secara harfiah plugin tidak bisa melakukan apa pun yang tidak ada dalam daftar. Namun izin itu memberitahumu apa yang bisa dilakukan sebuah plugin, bukan apa yang sebenarnya dilakukannya. Plugin yang diizinkan membaca perjalananmu dan menjangkau sebuah server bisa mengirimkan perjalananmu ke server itu, jadi baca izin dan host keluarnya, bukan hanya deskripsinya.',
+    'Izin yang ditampilkan sebelum kamu memasang adalah batas keras yang diberlakukan Travla selama plugin berjalan — secara harfiah plugin tidak bisa melakukan apa pun yang tidak ada dalam daftar. Namun izin itu memberitahumu apa yang bisa dilakukan sebuah plugin, bukan apa yang sebenarnya dilakukannya. Plugin yang diizinkan membaca perjalananmu dan menjangkau sebuah server bisa mengirimkan perjalananmu ke server itu, jadi baca izin dan host keluarnya, bukan hanya deskripsinya.',
   'admin.plugins.security.limitsTitle': 'Apa yang tidak bisa kami janjikan',
   'admin.plugins.security.limitsBody':
-    'Isolasi ini adalah batas perangkat lunak yang kuat, bukan batas yang mutlak. Sebuah plugin bertindak persis dengan hak yang kamu setujui, jadi dalam batas hak itu ia bisa berperilaku berbeda dari yang disiratkan deskripsinya, dan ia bisa mengirim data yang memang dimilikinya secara sah ke host yang telah dideklarasikannya. TREK tidak membaca atau menilai apa yang sebenarnya dilakukan oleh kode sebuah plugin.',
+    'Isolasi ini adalah batas perangkat lunak yang kuat, bukan batas yang mutlak. Sebuah plugin bertindak persis dengan hak yang kamu setujui, jadi dalam batas hak itu ia bisa berperilaku berbeda dari yang disiratkan deskripsinya, dan ia bisa mengirim data yang memang dimilikinya secara sah ke host yang telah dideklarasikannya. Travla tidak membaca atau menilai apa yang sebenarnya dilakukan oleh kode sebuah plugin.',
   'admin.plugins.security.worstTitle': 'Skenario terburuk',
   'admin.plugins.security.worstBody':
     'Plugin berbahaya yang kamu aktifkan bisa menyalahgunakan data dan koneksi yang kamu berikan padanya — misalnya, membocorkan perjalanan yang boleh dibacanya. Ia tidak bisa mencuri kata sandi, memalsukan login admin, menjalankan perintah di servermu, atau menjangkau data yang tidak kamu berikan. Kerusakannya tetap dalam batas yang kamu setujui, dan menonaktifkan plugin akan menghentikannya.',
   'admin.plugins.security.reviewedTitle': 'Apa arti "Ditinjau"',
   'admin.plugins.security.reviewedBody':
-    'Plugin yang ditinjau telah dipindai secara manual dari malware oleh seorang maintainer TREK pada setiap versi — diperiksa untuk kode berbahaya, bukan untuk apakah plugin berfungsi dengan baik. Ini bukan janji bahwa plugin tidak berbahaya.',
+    'Plugin yang ditinjau telah dipindai secara manual dari malware oleh seorang maintainer Travla pada setiap versi — diperiksa untuk kode berbahaya, bukan untuk apakah plugin berfungsi dengan baik. Ini bukan janji bahwa plugin tidak berbahaya.',
   'admin.plugins.security.trustTitle': 'Intinya',
   'admin.plugins.security.trustBody':
-    'Memasang plugin sama seperti memasang aplikasi pihak ketiga mana pun: hanya tambahkan kode dari pembuat yang kamu percaya, dan jika ragu, periksa sendiri terlebih dahulu. TREK tidak bertanggung jawab atas plugin pihak ketiga.',
+    'Memasang plugin sama seperti memasang aplikasi pihak ketiga mana pun: hanya tambahkan kode dari pembuat yang kamu percaya, dan jika ragu, periksa sendiri terlebih dahulu. Travla tidak bertanggung jawab atas plugin pihak ketiga.',
   'admin.plugins.runtimeOn': 'Runtime aktif',
   'admin.plugins.tabDiscover': 'Jelajahi',
   'admin.plugins.searchPlaceholder': 'Cari plugin…',
@@ -475,7 +475,7 @@ const admin: TranslationStrings = {
   'admin.plugins.metaReviewed': 'Ditinjau pada',
   'admin.plugins.downloads': 'Unduhan',
   'admin.addons.title': 'Addon',
-  'admin.addons.subtitle': 'Aktifkan atau nonaktifkan fitur untuk menyesuaikan pengalaman TREK kamu.',
+  'admin.addons.subtitle': 'Aktifkan atau nonaktifkan fitur untuk menyesuaikan pengalaman Travla kamu.',
   'admin.addons.catalog.packing.name': 'Daftar',
   'admin.addons.catalog.packing.description': 'Daftar packing dan tugas to-do untuk perjalananmu',
   'admin.addons.catalog.budget.name': 'Biaya',
@@ -508,7 +508,7 @@ const admin: TranslationStrings = {
   'admin.weather.title': 'Data Cuaca',
   'admin.weather.badge': 'Sejak 24 Maret 2026',
   'admin.weather.description':
-    'TREK menggunakan Open-Meteo sebagai sumber data cuaca. Open-Meteo adalah layanan cuaca gratis dan open-source — tidak perlu kunci API.',
+    'Travla menggunakan Open-Meteo sebagai sumber data cuaca. Open-Meteo adalah layanan cuaca gratis dan open-source — tidak perlu kunci API.',
   'admin.weather.forecast': 'Prakiraan 16 hari',
   'admin.weather.forecastDesc': 'Sebelumnya 5 hari (OpenWeatherMap)',
   'admin.weather.climate': 'Data iklim historis',
@@ -566,14 +566,14 @@ const admin: TranslationStrings = {
   'admin.github.loading': 'Memuat...',
   'admin.github.error': 'Gagal memuat rilis',
   'admin.github.by': 'oleh',
-  'admin.github.support': 'Bantu saya terus mengembangkan TREK',
+  'admin.github.support': 'Bantu saya terus mengembangkan Travla',
   'admin.update.available': 'Pembaruan tersedia',
-  'admin.update.text': 'TREK {version} tersedia. Kamu menggunakan {current}.',
+  'admin.update.text': 'Travla {version} tersedia. Kamu menggunakan {current}.',
   'admin.update.button': 'Lihat di GitHub',
   'admin.update.install': 'Pasang Pembaruan',
   'admin.update.confirmTitle': 'Pasang Pembaruan?',
   'admin.update.confirmText':
-    'TREK akan diperbarui dari {current} ke {version}. Server akan restart otomatis setelahnya.',
+    'Travla akan diperbarui dari {current} ke {version}. Server akan restart otomatis setelahnya.',
   'admin.update.dataInfo':
     'Semua datamu (perjalanan, pengguna, kunci API, unggahan, Vacay, Atlas, anggaran) akan dipertahankan.',
   'admin.update.warning': 'Aplikasi akan tidak tersedia sebentar selama restart.',
@@ -585,9 +585,9 @@ const admin: TranslationStrings = {
   'admin.update.backupLink': 'Pergi ke Backup',
   'admin.update.howTo': 'Cara Memperbarui',
   'admin.update.dockerText':
-    'Instans TREK kamu berjalan di Docker. Untuk memperbarui ke {version}, jalankan perintah berikut di servermu:',
+    'Instans Travla kamu berjalan di Docker. Untuk memperbarui ke {version}, jalankan perintah berikut di servermu:',
   'admin.update.nonDockerText':
-    'Instans TREK ini tidak berjalan di Docker. Untuk memperbarui ke {version}, jalankan ulang metode instalasi atau pembaruan yang kamu gunakan — misalnya, pada Proxmox Community Scripts jalankan pembaruan dari konsol LXC:',
+    'Instans Travla ini tidak berjalan di Docker. Untuk memperbarui ke {version}, jalankan ulang metode instalasi atau pembaruan yang kamu gunakan — misalnya, pada Proxmox Community Scripts jalankan pembaruan dari konsol LXC:',
   'admin.update.wikiLink': 'Buka panduan pembaruan',
   'admin.update.reloadHint': 'Muat ulang halaman dalam beberapa detik.',
   'admin.tabs.permissions': 'Izin',

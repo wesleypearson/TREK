@@ -295,7 +295,7 @@ const admin: TranslationStrings = {
   'admin.plugins.sourceRepo': 'Källkodsarkiv',
   'admin.plugins.reportIssue': 'Rapportera ett problem',
   'admin.plugins.homepage': 'Webbplats',
-  'admin.plugins.requiresTrek': 'Kräver TREK {version}+',
+  'admin.plugins.requiresTrek': 'Kräver Travla {version}+',
   'admin.plugins.reviewedOn': 'Granskad {date}',
   'admin.plugins.perm.db:own': 'Lagra sina egna data i en isolerad databas',
   'admin.plugins.perm.db:read:trips': 'Läsa resor som den aktiva användaren har åtkomst till',
@@ -397,26 +397,26 @@ const admin: TranslationStrings = {
   'admin.plugins.updateKeptOff':
     'Uppdateringen är installerad — förblir avstängd tills du godkänner de nya behörigheterna',
   'admin.plugins.reviewedMeaning':
-    '”Granskad” betyder att en TREK-underhållare har skannat pluginet efter skadlig kod i varje version — inte efter kvalitet eller om det fungerar. Det är ingen garanti för att ett plugin är ofarligt.',
+    '”Granskad” betyder att en Travla-underhållare har skannat pluginet efter skadlig kod i varje version — inte efter kvalitet eller om det fungerar. Det är ingen garanti för att ett plugin är ofarligt.',
   'admin.plugins.security.title': 'Så här isoleras plugins — och gränserna för det',
   'admin.plugins.security.isolationTitle': 'Varje plugin körs inkapslat',
   'admin.plugins.security.isolationBody':
-    'Ett plugin körs som en egen låst process som bara kan läsa sina egna filer. Det kan inte läsa din databas, din inloggningshemlighet eller din krypteringsnyckel, kan inte starta andra program och kan inte skriva filer någonstans. Dess gränssnitt körs i en förseglad webbläsarram som inte kan läsa din sessionscookie eller röra TREK-sidan runt omkring.',
+    'Ett plugin körs som en egen låst process som bara kan läsa sina egna filer. Det kan inte läsa din databas, din inloggningshemlighet eller din krypteringsnyckel, kan inte starta andra program och kan inte skriva filer någonstans. Dess gränssnitt körs i en förseglad webbläsarram som inte kan läsa din sessionscookie eller röra Travla-sidan runt omkring.',
   'admin.plugins.security.permsTitle': 'Vad behörigheterna betyder',
   'admin.plugins.security.permsBody':
-    'Behörigheterna som visas innan du installerar är en hård gräns som TREK upprätthåller medan pluginet körs — det kan bokstavligen inte göra något som inte står på listan. Men de talar om vad ett plugin kan göra, inte vad det faktiskt gör. Ett plugin som får läsa dina resor och nå en server kan skicka dina resor till den servern, så läs behörigheterna och de utgående värdarna, inte bara beskrivningen.',
+    'Behörigheterna som visas innan du installerar är en hård gräns som Travla upprätthåller medan pluginet körs — det kan bokstavligen inte göra något som inte står på listan. Men de talar om vad ett plugin kan göra, inte vad det faktiskt gör. Ett plugin som får läsa dina resor och nå en server kan skicka dina resor till den servern, så läs behörigheterna och de utgående värdarna, inte bara beskrivningen.',
   'admin.plugins.security.limitsTitle': 'Vad vi inte kan lova',
   'admin.plugins.security.limitsBody':
-    'Isoleringen är en stark mjukvarugräns, men inte en absolut. Ett plugin agerar med exakt de rättigheter du godkänner, så inom dessa rättigheter kan det bete sig annorlunda än vad beskrivningen antyder, och det kan skicka data som det legitimt innehar till de värdar det har deklarerat. TREK läser eller bedömer inte vad ett plugins kod faktiskt gör.',
+    'Isoleringen är en stark mjukvarugräns, men inte en absolut. Ett plugin agerar med exakt de rättigheter du godkänner, så inom dessa rättigheter kan det bete sig annorlunda än vad beskrivningen antyder, och det kan skicka data som det legitimt innehar till de värdar det har deklarerat. Travla läser eller bedömer inte vad ett plugins kod faktiskt gör.',
   'admin.plugins.security.worstTitle': 'Värsta tänkbara fall',
   'admin.plugins.security.worstBody':
     'Ett fientligt plugin som du aktiverar kan missbruka de data och anslutningar du har gett det — till exempel läcka de resor det får läsa. Det kan inte stjäla lösenord, förfalska en administratörsinloggning, köra kommandon på din server eller nå data som du inte har beviljat. Skadan håller sig inom det du har godkänt, och att stänga av pluginet stoppar det.',
   'admin.plugins.security.reviewedTitle': 'Vad ”Granskad” betyder',
   'admin.plugins.security.reviewedBody':
-    'Ett granskat plugin har manuellt skannats efter skadlig kod av en TREK-underhållare i varje version — kontrollerat för fientlig kod, inte för om det fungerar bra. Det är inget löfte om att pluginet är ofarligt.',
+    'Ett granskat plugin har manuellt skannats efter skadlig kod av en Travla-underhållare i varje version — kontrollerat för fientlig kod, inte för om det fungerar bra. Det är inget löfte om att pluginet är ofarligt.',
   'admin.plugins.security.trustTitle': 'Sammanfattningsvis',
   'admin.plugins.security.trustBody':
-    'Att installera ett plugin är som att installera vilken tredjepartsapp som helst: lägg bara till kod från upphovspersoner du litar på, och granska det själv först om du är osäker. TREK tar inget ansvar för tredjepartsplugins.',
+    'Att installera ett plugin är som att installera vilken tredjepartsapp som helst: lägg bara till kod från upphovspersoner du litar på, och granska det själv först om du är osäker. Travla tar inget ansvar för tredjepartsplugins.',
   'admin.plugins.runtimeOn': 'Körmiljö på',
   'admin.plugins.tabDiscover': 'Upptäck',
   'admin.plugins.searchPlaceholder': 'Sök plugins…',
@@ -483,7 +483,7 @@ const admin: TranslationStrings = {
   'admin.plugins.metaReviewed': 'Granskad',
   'admin.plugins.downloads': 'Nedladdningar',
   'admin.addons.title': 'Tillägg',
-  'admin.addons.subtitle': 'Aktivera eller inaktivera funktioner för att anpassa din TREK-upplevelse.',
+  'admin.addons.subtitle': 'Aktivera eller inaktivera funktioner för att anpassa din Travla-upplevelse.',
   'admin.addons.catalog.packing.name': 'Listor',
   'admin.addons.catalog.packing.description': 'Packlistor och saker att göra inför dina resor',
   'admin.addons.catalog.budget.name': 'Kostnader',
@@ -516,7 +516,7 @@ const admin: TranslationStrings = {
   'admin.weather.title': 'Väderdata',
   'admin.weather.badge': 'Sedan den 24 mars 2026',
   'admin.weather.description':
-    'TREK använder Open-Meteo som källa för väderdata. Open-Meteo är en kostnadsfri vädertjänst med öppen källkod – ingen API-nyckel krävs.',
+    'Travla använder Open-Meteo som källa för väderdata. Open-Meteo är en kostnadsfri vädertjänst med öppen källkod – ingen API-nyckel krävs.',
   'admin.weather.forecast': '16-dagarsprognos',
   'admin.weather.forecastDesc': 'Tidigare 5 dagar (OpenWeatherMap)',
   'admin.weather.climate': 'Historiska klimatdata',
@@ -576,14 +576,14 @@ const admin: TranslationStrings = {
   'admin.github.loading': 'Laddar...',
   'admin.github.error': 'Det gick inte att ladda utgåvorna',
   'admin.github.by': 'av',
-  'admin.github.support': 'Hjälper mig att fortsätta bygga TREK',
+  'admin.github.support': 'Hjälper mig att fortsätta bygga Travla',
   'admin.update.available': 'Uppdatering tillgänglig',
-  'admin.update.text': 'TREK {version} finns tillgängligt. Du kör {current}.',
+  'admin.update.text': 'Travla {version} finns tillgängligt. Du kör {current}.',
   'admin.update.button': 'Visa på GitHub',
   'admin.update.install': 'Installera uppdatering',
   'admin.update.confirmTitle': 'Ska uppdateringen installeras?',
   'admin.update.confirmText':
-    'TREK kommer att uppdateras från {current} till {version}. Servern startas om automatiskt därefter.',
+    'Travla kommer att uppdateras från {current} till {version}. Servern startas om automatiskt därefter.',
   'admin.update.dataInfo':
     'Alla dina data (resor, användare, API-nycklar, uppladdningar, Vacay, Atlas, budgetar) kommer att bevaras.',
   'admin.update.warning': 'Appen kommer att vara tillfälligt otillgänglig under omstarten.',
@@ -595,9 +595,9 @@ const admin: TranslationStrings = {
   'admin.update.backupLink': 'Gå till Säkerhetskopiering',
   'admin.update.howTo': 'Så här uppdaterar du',
   'admin.update.dockerText':
-    'Din TREK-instans körs i Docker. För att uppdatera till {version} kör du följande kommandon på din server:',
+    'Din Travla-instans körs i Docker. För att uppdatera till {version} kör du följande kommandon på din server:',
   'admin.update.nonDockerText':
-    'Denna TREK-instans körs inte i Docker. För att uppdatera till {version}, kör installations- eller uppdateringsmetod du använde på nytt — till exempel, i Proxmox Community Scripts kör du uppdateringen från LXC-konsolen:',
+    'Denna Travla-instans körs inte i Docker. För att uppdatera till {version}, kör installations- eller uppdateringsmetod du använde på nytt — till exempel, i Proxmox Community Scripts kör du uppdateringen från LXC-konsolen:',
   'admin.update.wikiLink': 'Öppna uppdateringsguiden',
   'admin.update.reloadHint': 'Vänligen uppdatera sidan om några sekunder.',
   'admin.tabs.permissions': 'Behörigheter',

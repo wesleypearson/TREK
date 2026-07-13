@@ -210,7 +210,7 @@ const journey: TranslationStrings = {
   'journey.public.sharedVia': 'Được chia sẻ qua',
   'journey.public.madeWith': 'Được làm bằng',
   'journey.pdf.journeyBook': 'Sách hành trình',
-  'journey.pdf.madeWith': 'Được làm bằng TREK',
+  'journey.pdf.madeWith': 'Được làm bằng Travla',
   'journey.pdf.day': 'Ngày',
   'journey.pdf.theEnd': 'Sự kết thúc',
   'journey.pdf.saveAsPdf': 'Lưu dưới dạng PDF',

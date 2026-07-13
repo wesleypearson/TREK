@@ -2,10 +2,10 @@ import type { NotificationLocale } from '../externalNotifications/types';
 
 const ru: NotificationLocale = {
   email: {
-    footer: 'Вы получили это, потому что у вас включены уведомления в TREK.',
+    footer: 'Вы получили это, потому что у вас включены уведомления в Travla.',
     manage: 'Управление настройками',
     madeWith: 'Made with',
-    openTrek: 'Открыть TREK',
+    openTrek: 'Открыть Travla',
   },
   events: {
     trip_invite: (p) => ({
@@ -26,11 +26,11 @@ const ru: NotificationLocale = {
     }),
     vacay_invite: (p) => ({
       title: 'Приглашение Vacay Fusion',
-      body: `${p.actor} приглашает вас объединить планы отпуска. Откройте TREK для подтверждения.`,
+      body: `${p.actor} приглашает вас объединить планы отпуска. Откройте Travla для подтверждения.`,
     }),
     collection_invite: (p) => ({
       title: 'Приглашение в коллекцию',
-      body: `${p.actor} приглашает вас поделиться коллекцией. Откройте TREK для подтверждения.`,
+      body: `${p.actor} приглашает вас поделиться коллекцией. Откройте Travla для подтверждения.`,
     }),
     photos_shared: (p) => ({
       title: `${p.count} фото`,
@@ -45,8 +45,8 @@ const ru: NotificationLocale = {
       body: `${p.actor} назначил вас в категорию "${p.category}" в "${p.trip}".`,
     }),
     version_available: (p) => ({
-      title: 'Доступна новая версия TREK',
-      body: `TREK ${p.version} теперь доступен. Перейдите в панель администратора для обновления.`,
+      title: 'Доступна новая версия Travla',
+      body: `Travla ${p.version} теперь доступен. Перейдите в панель администратора для обновления.`,
     }),
     synology_session_cleared: () => ({
       title: 'Сессия Synology сброшена',
@@ -57,7 +57,7 @@ const ru: NotificationLocale = {
   passwordReset: {
     subject: 'Сброс пароля',
     greeting: 'Здравствуйте',
-    body: 'Мы получили запрос на сброс пароля вашего аккаунта TREK. Нажмите кнопку ниже, чтобы установить новый пароль.',
+    body: 'Мы получили запрос на сброс пароля вашего аккаунта Travla. Нажмите кнопку ниже, чтобы установить новый пароль.',
     ctaIntro: 'Сбросить пароль',
     expiry: 'Ссылка действительна 60 минут.',
     ignore: 'Если вы не запрашивали сброс — просто проигнорируйте это письмо, пароль останется прежним.',

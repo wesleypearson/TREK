@@ -218,11 +218,11 @@ const journey: TranslationStrings = {
   'journey.public.notFound': 'Not Found', // en-fallback
   'journey.public.notFoundMessage': "This journey doesn't exist or the link has expired.", // en-fallback
   'journey.public.readOnly': 'Read-only · Public Journey', // en-fallback
-  'journey.public.tagline': 'Travel Resource & Exploration Kit', // en-fallback
+  'journey.public.tagline': 'Your trips. Your plan. Your server.', // en-fallback
   'journey.public.sharedVia': 'Shared via', // en-fallback
   'journey.public.madeWith': 'Made with', // en-fallback
   'journey.pdf.journeyBook': 'Journey Book', // en-fallback
-  'journey.pdf.madeWith': 'Made with TREK', // en-fallback
+  'journey.pdf.madeWith': 'Made with Travla', // en-fallback
   'journey.pdf.day': 'Day', // en-fallback
   'journey.pdf.theEnd': 'The End', // en-fallback
   'journey.pdf.saveAsPdf': 'Save as PDF', // en-fallback

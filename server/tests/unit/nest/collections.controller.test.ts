@@ -183,7 +183,7 @@ describe('CollectionsController', () => {
       process.env.DEMO_MODE = 'true';
       const demo = { ...user, email: 'demo@trek.app' } as User;
       expect(thrown(() => new CollectionsController(makeService()).uploadCover(demo, '3', file)))
-        .toEqual({ status: 403, body: { error: 'Uploads are disabled in demo mode. Self-host TREK for full functionality.' } });
+        .toEqual({ status: 403, body: { error: 'Uploads are disabled in demo mode. Self-host Travla for full functionality.' } });
     });
     it('400 when no file was uploaded', () => {
       expect(thrown(() => new CollectionsController(makeService()).uploadCover(user, '3', undefined)))

@@ -699,8 +699,8 @@ export function exportICS(tripId: string | number, viewerId?: number): { ics: st
     return `${prop}:${val}\r\n`;
   };
 
-  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//TREK//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
-  ics += `X-WR-CALNAME:${esc(trip.title || 'TREK Trip')}\r\n`;
+  let ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Travla//Travel Planner//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
+  ics += `X-WR-CALNAME:${esc(trip.title || 'Travla Trip')}\r\n`;
 
   // Trip as all-day event. DTEND is exclusive, so it must be the day *after* the last
   // day. addDays() stays in UTC — building a local-time Date here dropped the trip's

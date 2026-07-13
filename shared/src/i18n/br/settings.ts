@@ -100,9 +100,9 @@ const settings: TranslationStrings = {
   'settings.about.featureRequestHint': 'Sugira um novo recurso',
   'settings.about.wikiHint': 'Documentação e guias',
   'settings.about.supporters.badge': 'Apoiadores Mensais',
-  'settings.about.supporters.title': 'Companheiros de viagem do TREK',
+  'settings.about.supporters.title': 'Companheiros de viagem do Travla',
   'settings.about.supporters.subtitle':
-    'Enquanto você planeja sua próxima rota, essas pessoas planejam junto o futuro do TREK. A contribuição mensal delas vai direto para o desenvolvimento e horas reais investidas — para o TREK continuar Open Source.',
+    'Enquanto você planeja sua próxima rota, essas pessoas planejam junto o futuro do Travla. A contribuição mensal delas vai direto para o desenvolvimento e horas reais investidas — para o Travla continuar Open Source.',
   'settings.about.supporters.since': 'apoiador desde {date}',
   'settings.about.supporters.tierEmpty': 'Seja o primeiro',
   'settings.about.supporter.tier.noReturnTicket': 'No Return Ticket',
@@ -111,7 +111,7 @@ const settings: TranslationStrings = {
   'settings.about.supporter.tier.budgetTraveller': 'Budget Traveller',
   'settings.about.supporter.tier.hostelBunkmate': 'Hostel Bunkmate',
   'settings.about.description':
-    'TREK é um planejador de viagens auto-hospedado que ajuda você a organizar suas viagens da primeira ideia à última lembrança. Planejamento diário, orçamento, listas de bagagem, fotos e muito mais — tudo em um só lugar, no seu próprio servidor.',
+    'Travla é um planejador de viagens auto-hospedado que ajuda você a organizar suas viagens da primeira ideia à última lembrança. Planejamento diário, orçamento, listas de bagagem, fotos e muito mais — tudo em um só lugar, no seu próprio servidor.',
   'settings.about.madeWith': 'Feito com',
   'settings.about.madeBy': 'por Maurice e uma crescente comunidade open-source.',
   'settings.username': 'Nome de usuário',
@@ -338,7 +338,7 @@ const settings: TranslationStrings = {
   'settings.airtrail.allowInsecureTlsHint': 'Ative apenas para uma instância confiável na sua própria rede.',
   'settings.airtrail.writeBack': 'Gravar alterações de volta no AirTrail',
   'settings.airtrail.writeBackHint':
-    'Desativado por padrão: o AirTrail é a fonte da verdade e o TREK apenas lê dele. Ative para enviar ao AirTrail as alterações feitas no TREK.',
+    'Desativado por padrão: o AirTrail é a fonte da verdade e o Travla apenas lê dele. Ative para enviar ao AirTrail as alterações feitas no Travla.',
   'settings.airtrail.connected': 'Conectado',
   'settings.airtrail.notConnected': 'Não conectado',
   'settings.airtrail.toast.saved': 'Conexão com o AirTrail salva',

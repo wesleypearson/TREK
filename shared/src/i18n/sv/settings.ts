@@ -226,9 +226,9 @@ const settings: TranslationStrings = {
   'settings.about.featureRequestHint': 'Föreslå en ny funktion',
   'settings.about.wikiHint': 'Dokumentation och handledningar',
   'settings.about.supporters.badge': 'Månatliga bidragsgivare',
-  'settings.about.supporters.title': 'Resekompisar för TREK',
+  'settings.about.supporters.title': 'Resekompisar för Travla',
   'settings.about.supporters.subtitle':
-    'Medan du planerar din nästa rutt bidrar dessa personer till att forma TREK:s framtid. Deras månatliga bidrag går direkt till utveckling och faktisk arbetstid – så att TREK förblir öppen källkod.',
+    'Medan du planerar din nästa rutt bidrar dessa personer till att forma Travla:s framtid. Deras månatliga bidrag går direkt till utveckling och faktisk arbetstid – så att Travla förblir öppen källkod.',
   'settings.about.supporters.since': 'bidragsgivare sedan {date}',
   'settings.about.supporters.tierEmpty': 'Var först',
   'settings.about.supporter.tier.noReturnTicket': 'Ingen returbiljett',
@@ -237,7 +237,7 @@ const settings: TranslationStrings = {
   'settings.about.supporter.tier.budgetTraveller': 'Budgetresenären',
   'settings.about.supporter.tier.hostelBunkmate': 'Rumskamrat på vandrarhem',
   'settings.about.description':
-    'TREK är en resplanerare som du själv kan driva och som hjälper dig att organisera dina resor från den första idén till det sista minnet. Dagsplanering, budget, packlistor, foton och mycket mer – allt på ett och samma ställe, på din egen server.',
+    'Travla är en resplanerare som du själv kan driva och som hjälper dig att organisera dina resor från den första idén till det sista minnet. Dagsplanering, budget, packlistor, foton och mycket mer – allt på ett och samma ställe, på din egen server.',
   'settings.about.madeWith': 'Gjord med',
   'settings.about.madeBy': 'av Maurice och en växande open source-gemenskap.',
   'settings.username': 'Användarnamn',
@@ -338,7 +338,7 @@ const settings: TranslationStrings = {
   'settings.airtrail.allowInsecureTlsHint': 'Aktivera endast för en betrodd instans i ditt eget nätverk.',
   'settings.airtrail.writeBack': 'Skriv tillbaka ändringarna till AirTrail',
   'settings.airtrail.writeBackHint':
-    'Avstängt som standard: AirTrail är den primära källan och TREK läser endast från den. Aktivera funktionen för att skicka ändringar som gjorts i TREK tillbaka till AirTrail.',
+    'Avstängt som standard: AirTrail är den primära källan och Travla läser endast från den. Aktivera funktionen för att skicka ändringar som gjorts i Travla tillbaka till AirTrail.',
   'settings.airtrail.connected': 'Ansluten',
   'settings.airtrail.notConnected': 'Inte ansluten',
   'settings.airtrail.toast.saved': 'AirTrail anslutning sparad',

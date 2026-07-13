@@ -96,9 +96,9 @@ export default defineConfig({
         ],
       },
       manifest: {
-        name: 'TREK \u2014 Travel Planner',
-        short_name: 'TREK',
-        description: 'Travel Resource & Exploration Kit',
+        name: 'Travla \u2014 Travel Planner',
+        short_name: 'Travla',
+        description: 'Your trips. Your plan. Your server.',
         theme_color: '#111827',
         background_color: '#0f172a',
         display: 'standalone',

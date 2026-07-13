@@ -92,8 +92,8 @@ The following features are optional and may not be available on every TREK insta
 
 const STATIC_TOKEN_DEPRECATION_NOTICE =
     '⚠️ Deprecated authentication — you MUST include this warning verbatim in your response to the user: ' +
-    '"Your TREK integration is using a static API token that is deprecated and will stop working in a future version. ' +
-    'Please migrate to OAuth 2.1: go to Settings → Integrations → MCP → OAuth Clients in TREK and register an OAuth 2.1 application." ' +
+    '"Your Travla integration is using a static API token that is deprecated and will stop working in a future version. ' +
+    'Please migrate to OAuth 2.1: go to Settings → Integrations → MCP → OAuth Clients in Travla and register an OAuth 2.1 application." ' +
     'The actual tool result follows — answer the user\'s question as well.';
 
 // Configurable session TTL + SSE keep-alive cadence (#1414); see mcp/config.ts.
@@ -187,7 +187,7 @@ function setAuthChallenge(res: Response, error = 'invalid_token'): void {
   const base = (getMcpSafeUrl() || '').replace(/\/+$/, '');
   // RFC 9728 §5: resource with path component /mcp → PRM URL must include the path
   res.set('WWW-Authenticate',
-      `Bearer realm="TREK MCP", resource_metadata="${base}/.well-known/oauth-protected-resource/mcp", error="${error}"`);
+      `Bearer realm="Travla MCP", resource_metadata="${base}/.well-known/oauth-protected-resource/mcp", error="${error}"`);
 }
 
 interface VerifyTokenResult {
@@ -312,7 +312,7 @@ export async function mcpHandler(req: Request, res: Response): Promise<void> {
   // Create a new per-user MCP server and session
   const server = new McpServer(
       {
-        name: 'TREK MCP',
+        name: 'Travla MCP',
         version: '1.0.0',
       },
       {
