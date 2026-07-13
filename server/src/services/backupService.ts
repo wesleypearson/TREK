@@ -6,6 +6,9 @@ import Database from 'better-sqlite3';
 import { db, closeDb, reinitialize } from '../db/database';
 import * as scheduler from '../scheduler';
 import { invalidatePermissionsCache } from './permissions';
+import { pluginsCodeRoot, pluginsDataRoot } from '../nest/plugins/paths';
+import { stageExtractedPluginTrees, applyStagedRestoreNow } from '../nest/plugins/plugin-backup';
+import { snapshotAllPluginDataDbs } from '../nest/plugins/host/plugin-data.service';
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -15,7 +18,38 @@ const dataDir = path.join(__dirname, '../../data');
 const backupsDir = path.join(dataDir, 'backups');
 const uploadsDir = path.join(__dirname, '../../uploads');
 
-export const MAX_BACKUP_UPLOAD_SIZE = 500 * 1024 * 1024; // 500 MB
+// Compressed upload cap for restore archives. Defaults to 500 MB, raisable via
+// BACKUP_UPLOAD_LIMIT_MB for instances whose backups (uploads/ included) grow
+// past that. Invalid values warn and fall back to the default.
+const DEFAULT_BACKUP_UPLOAD_LIMIT_MB = 500;
+const rawBackupUploadLimit = process.env.BACKUP_UPLOAD_LIMIT_MB?.trim();
+let backupUploadLimitMb = DEFAULT_BACKUP_UPLOAD_LIMIT_MB;
+if (rawBackupUploadLimit) {
+  const parsed = Number(rawBackupUploadLimit);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    backupUploadLimitMb = parsed;
+  } else {
+    console.warn(`BACKUP_UPLOAD_LIMIT_MB="${rawBackupUploadLimit}" is not a positive number. Falling back to ${DEFAULT_BACKUP_UPLOAD_LIMIT_MB} MB.`);
+  }
+}
+export const MAX_BACKUP_UPLOAD_SIZE = backupUploadLimitMb * 1024 * 1024; // compressed
+// Upper bound on the TOTAL decompressed size of a restore archive (the upload
+// limit only caps the compressed bytes). Default 5 GB, raisable via
+// BACKUP_MAX_DECOMPRESSED_MB for an instance whose own backups (now including the
+// plugin trees) legitimately grow past it — otherwise its own backups become
+// unrestorable. Invalid values warn and fall back to the default.
+const DEFAULT_BACKUP_DECOMPRESSED_MB = 5 * 1024;
+const rawDecompressedLimit = process.env.BACKUP_MAX_DECOMPRESSED_MB?.trim();
+let backupDecompressedMb = DEFAULT_BACKUP_DECOMPRESSED_MB;
+if (rawDecompressedLimit) {
+  const parsed = Number(rawDecompressedLimit);
+  if (Number.isFinite(parsed) && parsed > 0) {
+    backupDecompressedMb = parsed;
+  } else {
+    console.warn(`BACKUP_MAX_DECOMPRESSED_MB="${rawDecompressedLimit}" is not a positive number. Falling back to ${DEFAULT_BACKUP_DECOMPRESSED_MB} MB.`);
+  }
+}
+export const MAX_BACKUP_DECOMPRESSED_SIZE = backupDecompressedMb * 1024 * 1024;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -134,6 +168,8 @@ export async function createBackup(): Promise<BackupInfo> {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
   const filename = `backup-${timestamp}.zip`;
   const outputPath = path.join(backupsDir, filename);
+  const pdataSnap = path.join(backupsDir, `.plugins-snap-${timestamp}`);
+  const dbSnap = path.join(backupsDir, `.travel-snap-${timestamp}.db`);
 
   try {
     try { db.exec('PRAGMA wal_checkpoint(TRUNCATE)'); } catch (e) {}
@@ -149,11 +185,86 @@ export async function createBackup(): Promise<BackupInfo> {
 
       const dbPath = path.join(dataDir, 'travel.db');
       if (fs.existsSync(dbPath)) {
-        archive.file(dbPath, { name: 'travel.db' });
+        // Archive a point-in-time snapshot, not the live file. The archiver reads entries
+        // lazily during finalize(), so a WAL auto-checkpoint writing pages back into
+        // travel.db mid-stream would tear the archived copy — and the -wal that would make
+        // it recoverable isn't in the zip. VACUUM INTO takes a consistent snapshot even
+        // under concurrent writes — the same guarantee the plugin DBs get below.
+        let dbToArchive = dbPath;
+        try {
+          if (fs.existsSync(dbSnap)) fs.rmSync(dbSnap, { force: true });
+          db.exec(`VACUUM INTO '${dbSnap.replace(/'/g, "''")}'`);
+          dbToArchive = dbSnap;
+        } catch (e) {
+          // Snapshot failed (disk/lock) — fall back to the checkpointed live file rather
+          // than drop the core DB from the backup entirely.
+        }
+        archive.file(dbToArchive, { name: 'travel.db' });
+      }
+
+      // Bundle the at-rest encryption key so the backup is self-contained: the
+      // DB stores secrets (API keys, MFA, SMTP/OIDC) encrypted with this key, so
+      // a restore onto a different install would otherwise be unable to decrypt
+      // them. NOTE: this makes the backup file as sensitive as the key itself —
+      // store/transfer it securely. Skipped when ENCRYPTION_KEY is provided via
+      // env, since in that case the file is not the source of truth.
+      const encKeyPath = path.join(dataDir, '.encryption_key');
+      if (!process.env.ENCRYPTION_KEY && fs.existsSync(encKeyPath)) {
+        archive.file(encKeyPath, { name: '.encryption_key' });
       }
 
       if (fs.existsSync(uploadsDir)) {
-        archive.directory(uploadsDir, 'uploads');
+        // Exclude the place-photo and trek-memory caches: both are re-derivable
+        // (re-fetched on demand, keyed on stable ids) and would otherwise dominate
+        // backup size. Restores self-heal — the cache dirs are recreated at startup.
+        //
+        // Also exclude backups/ and restore-*/: these live under data/, not uploads/,
+        // but when an install maps data and uploads to the SAME directory (a
+        // misconfiguration, but a catastrophic one) the glob would otherwise sweep
+        // every prior backup zip into the new archive — each run embedding all
+        // previous runs, so size compounds without bound (see issue #1358). Ignoring
+        // them keeps the backup bounded regardless of how the volumes are mounted.
+        archive.glob(
+          '**/*',
+          {
+            cwd: uploadsDir,
+            ignore: ['photos/google/**', 'photos/trek/**', 'backups/**', 'restore-*/**'],
+            nodir: true,
+            dot: true,
+          },
+          { prefix: 'uploads' },
+        );
+      }
+
+      // Plugin data — each plugin's own SQLite file and any blobs. This is the ONLY
+      // copy of the user data a plugin holds, so it belongs in the backup. Checkpoint
+      // every open handle first (the host keeps them open in WAL mode) so the archived
+      // .db files are complete snapshots and not missing recent commits stranded in a
+      // -wal sidecar — the same treatment travel.db gets above.
+      const pdata = pluginsDataRoot();
+      if (fs.existsSync(pdata)) {
+        // Archive a consistent point-in-time snapshot, not the live files: the archiver
+        // reads lazily while streaming, so a plugin writing during the backup (an auto-
+        // checkpoint landing mid-read) would otherwise put a torn .db + out-of-sync -wal
+        // into the zip — the plugin's ONLY data copy, silently corrupt. This VACUUM-INTOs
+        // each open db and drops the sidecars; the snap dir is removed in the finally.
+        snapshotAllPluginDataDbs(pdataSnap);
+        archive.directory(pdataSnap, 'plugins-data');
+      }
+      // Plugin code — so a restore is self-contained (the `plugins` rows reference it).
+      // Dev-links (a plugin dir symlinked/junctioned to an author's source) are skipped
+      // by realpath: we never bundle a linked source tree from outside the code root.
+      const pcode = pluginsCodeRoot();
+      if (fs.existsSync(pcode)) {
+        const realRoot = fs.realpathSync(pcode);
+        for (const entry of fs.readdirSync(pcode)) {
+          const dir = path.join(pcode, entry);
+          let real: string;
+          try { real = fs.realpathSync(dir); } catch { continue; }
+          if (!real.startsWith(realRoot + path.sep)) continue; // dev-link points outside → skip
+          try { if (!fs.statSync(dir).isDirectory()) continue; } catch { continue; }
+          archive.directory(dir, `plugins-code/${entry}`);
+        }
       }
 
       archive.finalize();
@@ -170,6 +281,12 @@ export async function createBackup(): Promise<BackupInfo> {
     console.error('Backup error:', err);
     if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
     throw err;
+  } finally {
+    // The snapshots were staging copies for the archiver only; drop them once streaming is
+    // done (the await above resolves on the output stream's 'close', so the archive is
+    // complete).
+    fs.rmSync(pdataSnap, { recursive: true, force: true });
+    fs.rmSync(dbSnap, { force: true });
   }
 }
 
@@ -185,10 +302,56 @@ export interface RestoreResult {
 
 export async function restoreFromZip(zipPath: string): Promise<RestoreResult> {
   const extractDir = path.join(dataDir, `restore-${Date.now()}`);
+  let reinitFailed: unknown = null;
   try {
-    await fs.createReadStream(zipPath)
-      .pipe(unzipper.Extract({ path: extractDir }))
-      .promise();
+    // Fast reject on the central-directory's declared size, then extract entry-by-entry
+    // enforcing the ACTUAL decompressed bytes. The declared uncompressedSize is
+    // attacker-declarable — a zip bomb can under-report it and expand past the cap during
+    // extraction — so the real guard counts bytes as they are written and aborts once the
+    // running total crosses the cap. Each entry's resolved path is also confined to
+    // extractDir (a `../` entry that escaped the root — zip-slip — is refused).
+    const directory = await unzipper.Open.file(zipPath);
+    const claimedSize = directory.files.reduce((sum, f) => sum + (f.uncompressedSize || 0), 0);
+    if (claimedSize > MAX_BACKUP_DECOMPRESSED_SIZE) {
+      return { success: false, error: 'Backup exceeds the maximum decompressed size.', status: 400 };
+    }
+
+    fs.mkdirSync(extractDir, { recursive: true });
+    let decompressedBytes = 0;
+    for (const entry of directory.files) {
+      if (entry.type === 'Directory') continue;
+      const dest = path.join(extractDir, entry.path);
+      const rel = path.relative(extractDir, dest);
+      if (rel.startsWith('..') || path.isAbsolute(rel)) {
+        fs.rmSync(extractDir, { recursive: true, force: true });
+        return { success: false, error: 'Invalid backup: an entry path escapes the archive root.', status: 400 };
+      }
+      fs.mkdirSync(path.dirname(dest), { recursive: true });
+      try {
+        await new Promise<void>((resolve, reject) => {
+          const source = entry.stream();
+          const out = fs.createWriteStream(dest);
+          source.on('data', (chunk: Buffer) => {
+            decompressedBytes += chunk.length;
+            if (decompressedBytes > MAX_BACKUP_DECOMPRESSED_SIZE) {
+              source.destroy();
+              out.destroy();
+              reject(new Error('DECOMPRESSED_CAP_EXCEEDED'));
+            }
+          });
+          source.on('error', reject);
+          out.on('error', reject);
+          out.on('finish', resolve);
+          source.pipe(out);
+        });
+      } catch (err) {
+        fs.rmSync(extractDir, { recursive: true, force: true });
+        if (err instanceof Error && err.message === 'DECOMPRESSED_CAP_EXCEEDED') {
+          return { success: false, error: 'Backup exceeds the maximum decompressed size.', status: 400 };
+        }
+        throw err;
+      }
+    }
 
     const extractedDb = path.join(extractDir, 'travel.db');
     if (!fs.existsSync(extractedDb)) {
@@ -228,10 +391,27 @@ export async function restoreFromZip(zipPath: string): Promise<RestoreResult> {
 
     try {
       const dbDest = path.join(dataDir, 'travel.db');
-      for (const ext of ['', '-wal', '-shm']) {
+      // Swap the core DB atomically: copy the restored DB to a temp file on the SAME
+      // filesystem, drop the old -wal/-shm sidecars (they belong to the DB being replaced
+      // and would corrupt the new one if left), then rename into place. A rename is atomic,
+      // so a crash mid-swap leaves either the old or the new travel.db intact — never the
+      // deleted-and-not-yet-copied gap that a plain unlink-then-copy could leave.
+      const dbTmp = dbDest + '.restore-tmp';
+      fs.copyFileSync(extractedDb, dbTmp);
+      for (const ext of ['-wal', '-shm']) {
         try { fs.unlinkSync(dbDest + ext); } catch (e) {}
       }
-      fs.copyFileSync(extractedDb, dbDest);
+      fs.renameSync(dbTmp, dbDest);
+
+      // Restore the bundled at-rest encryption key (if the archive carries one)
+      // so the restored DB's encrypted secrets can be decrypted. Only the file
+      // is swapped here; the in-memory key was read at startup, so a restart is
+      // required for it to take effect (and an explicit ENCRYPTION_KEY env var
+      // still overrides the file).
+      const extractedEncKey = path.join(extractDir, '.encryption_key');
+      if (fs.existsSync(extractedEncKey)) {
+        fs.copyFileSync(extractedEncKey, path.join(dataDir, '.encryption_key'));
+      }
 
       const extractedUploads = path.join(extractDir, 'uploads');
       if (fs.existsSync(extractedUploads)) {
@@ -243,10 +423,41 @@ export async function restoreFromZip(zipPath: string): Promise<RestoreResult> {
             }
           }
         }
-        fs.cpSync(extractedUploads, uploadsDir, { recursive: true, force: true });
+        // Copy into the real directory behind uploadsDir. In Docker, uploadsDir
+        // (/app/server/uploads) is a symlink to the mounted /app/uploads volume;
+        // cpSync(dereference:false) would otherwise try to overwrite the symlink
+        // node with a directory and throw ERR_FS_CP_DIR_TO_NON_DIR. realpathSync
+        // is a no-op when uploadsDir is a plain directory (dev/non-Docker).
+        fs.cpSync(extractedUploads, fs.realpathSync(uploadsDir), { recursive: true, force: true });
+      }
+
+      // Plugin trees can't be swapped while the runtime holds their DBs open, so stage
+      // them beside the live trees, then ask the runtime to quiesce its plugins and apply
+      // the swap NOW. If the runtime isn't up (plugins disabled / restore during boot),
+      // the staging waits for the boot reconcile — with nothing running, no data diverges.
+      // Best-effort: a staging error must not fail an otherwise-good core restore.
+      try {
+        stageExtractedPluginTrees(extractDir);
+        // Quiesce regardless of whether trees were staged: the restored travel.db carries
+        // a different `plugins` table, so any plugin still running with its pre-restore
+        // identity/grants is now a ghost — invisible in the restored UI, unstoppable short
+        // of a process restart. applyStagedRestoreNow closes those handles; the tree swap
+        // it also performs is a no-op when nothing was staged (e.g. an older archive).
+        await applyStagedRestoreNow();
+      } catch (e) {
+        console.error('Restore: staging plugin trees failed:', e);
       }
     } finally {
-      reinitialize();
+      // Reopening the DB must always run (even if the copy above threw) so the
+      // process is never left without a connection. Capture a reopen failure
+      // instead of letting it propagate as a generic error — a backup whose
+      // files already landed on disk but whose connection failed to reopen
+      // needs to be reported as "restart required", not swallowed.
+      try {
+        reinitialize();
+      } catch (reinitErr) {
+        reinitFailed = reinitErr;
+      }
       // The restored DB has different permission-override rows from
       // the pre-restore DB, but our process-local permissions cache
       // still holds the pre-restore state. Any request using a cached
@@ -256,6 +467,10 @@ export async function restoreFromZip(zipPath: string): Promise<RestoreResult> {
     }
 
     fs.rmSync(extractDir, { recursive: true, force: true });
+    if (reinitFailed) {
+      console.error('Restore: database reopen failed after file swap:', reinitFailed);
+      return { success: false, error: 'Backup files were restored but the database connection could not be reopened. Restart the server to finish the restore.', status: 500 };
+    }
     return { success: true };
   } catch (err: unknown) {
     console.error('Restore error:', err);

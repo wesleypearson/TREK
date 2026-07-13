@@ -72,7 +72,7 @@ export function ContextMenu({ menu, onClose }: ContextMenuProps) {
       boxShadow: '0 8px 30px rgba(0,0,0,0.15)',
       backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
       minWidth: 160,
-      fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif",
+      fontFamily: "var(--font-system)",
       transformOrigin: 'top left',
     }}>
       {menu.items.filter(Boolean).map((item, i) => {
@@ -83,7 +83,7 @@ export function ContextMenu({ menu, onClose }: ContextMenuProps) {
             display: 'flex', alignItems: 'center', gap: 8, width: '100%',
             padding: '7px 10px', borderRadius: 7, border: 'none',
             background: 'none', cursor: 'pointer', fontFamily: 'inherit',
-            fontSize: 12, fontWeight: 500, textAlign: 'left',
+            fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500, textAlign: 'left',
             color: item.danger ? '#ef4444' : 'var(--text-primary)',
             transition: 'background 0.1s',
           }}

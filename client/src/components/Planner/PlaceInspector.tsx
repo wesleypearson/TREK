@@ -1,15 +1,29 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import { avatarSrc } from '../../utils/avatarSrc'
 import { openFile } from '../../utils/fileDownload'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
-import { X, Clock, MapPin, ExternalLink, Phone, Euro, Edit2, Trash2, Plus, Minus, ChevronDown, ChevronUp, FileText, Upload, File, FileImage, Star, Navigation, Users, Mountain, TrendingUp } from 'lucide-react'
+import { X, Clock, MapPin, ExternalLink, Phone, Euro, Edit2, Trash2, Plus, Minus, ChevronDown, ChevronUp, FileText, Upload, File, FileImage, Star, Navigation, Map as MapIcon, Users, Mountain, TrendingUp, Bookmark, BookmarkCheck, Copy } from 'lucide-react'
 import PlaceAvatar from '../shared/PlaceAvatar'
-import { mapsApi } from '../../api/client'
+import GuestBadge from '../shared/GuestBadge'
+import StatusBadge from '../Collections/StatusBadge'
+import { mapsApi, pluginsApi } from '../../api/client'
+import { collectionsApi } from '../../api/collections'
 import { useSettingsStore } from '../../store/settingsStore'
+import { useAddonStore } from '../../store/addonStore'
+import { useSaveToCollectionStore } from '../../store/saveToCollectionStore'
 import { getCategoryIcon } from '../shared/categoryIcons'
-import { useTranslation } from '../../i18n'
+import { useToast } from '../shared/Toast'
+import { useTranslation, translateApiError } from '../../i18n'
+import { usePluginStore } from '../../store/pluginStore'
+import PluginFrame from '../Plugins/PluginFrame'
 import type { Place, Category, Day, Assignment, Reservation, TripFile, AssignmentsMap } from '../../types'
+import type { CollectionStatus } from '@trek/shared'
+import { splitReservationDateTime, formatTime } from '../../utils/formatters'
+import { formatDistance, formatElevation } from '../../utils/units'
+import { getGoogleMapsUrlForPlace } from './placeGoogleMaps'
+import { getOpenStreetMapUrlForPlace } from './placeOpenStreetMap'
 
 const detailsCache = new Map()
 
@@ -75,24 +89,6 @@ function convertHoursLine(line, timeFormat) {
   return line
 }
 
-function formatTime(timeStr, locale, timeFormat) {
-  if (!timeStr) return ''
-  try {
-    const parts = timeStr.split(':')
-    const h = Number(parts[0]) || 0
-    const m = Number(parts[1]) || 0
-    if (isNaN(h)) return timeStr
-    if (timeFormat === '12h') {
-      const period = h >= 12 ? 'PM' : 'AM'
-      const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h
-      return `${h12}:${String(m).padStart(2, '0')} ${period}`
-    }
-    const str = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`
-    return locale?.startsWith('de') ? `${str} Uhr` : str
-  } catch { return timeStr }
-}
-
-
 function formatFileSize(bytes) {
   if (!bytes) return ''
   if (bytes < 1024) return `${bytes} B`
@@ -103,39 +99,74 @@ function formatFileSize(bytes) {
 interface TripMember {
   id: number
   username: string
+  avatar?: string | null
   avatar_url?: string | null
+  is_guest?: boolean
 }
 
 interface PlaceInspectorProps {
   place: Place | null
   categories: Category[]
-  days: Day[]
-  selectedDayId: number | null
-  selectedAssignmentId: number | null
-  assignments: AssignmentsMap
+  /** 'trip' (default) keeps every existing trip-planner behaviour byte-identical;
+   *  'collection' hides the day/reservation/file sub-panels and swaps the footer
+   *  for the saved-place actions (copy to trip, status, remove from list). */
+  mode?: 'trip' | 'collection'
+  // ── Trip-only props (optional so the collection detail panel can omit them) ──
+  days?: Day[]
+  selectedDayId?: number | null
+  selectedAssignmentId?: number | null
+  assignments?: AssignmentsMap
   reservations?: Reservation[]
   onClose: () => void
-  onEdit: () => void
-  onDelete: () => void
-  onAssignToDay: (placeId: number, dayId: number) => void
-  onRemoveAssignment: (assignmentId: number, dayId: number) => void
-  files: TripFile[]
-  onFileUpload?: (fd: FormData) => Promise<void>
+  onEdit?: () => void
+  onDelete?: () => void
+  onAssignToDay?: (placeId: number, dayId?: number) => void
+  onRemoveAssignment?: (dayId: number, assignmentId: number) => void
+  files?: TripFile[]
+  onFileUpload?: (fd: FormData) => Promise<unknown>
   tripMembers?: TripMember[]
-  onSetParticipants: (assignmentId: number, dayId: number, participantIds: number[]) => void
-  onUpdatePlace: (placeId: number, data: Partial<Place>) => void
+  onSetParticipants?: (assignmentId: number, dayId: number, participantIds: number[]) => void
+  onUpdatePlace?: (placeId: number, data: Partial<Place>) => void
   leftWidth?: number
   rightWidth?: number
+  // ── Collection-mode props ──
+  collectionStatus?: CollectionStatus
+  onCopyToTrip?: () => void
+  onSetStatus?: (status: CollectionStatus) => void
+  onRemoveFromList?: () => void
 }
 
 export default function PlaceInspector({
-  place, categories, days, selectedDayId, selectedAssignmentId, assignments, reservations = [],
+  place, categories, mode = 'trip', days = [], selectedDayId = null, selectedAssignmentId = null,
+  assignments = {}, reservations = [],
   onClose, onEdit, onDelete, onAssignToDay, onRemoveAssignment,
-  files, onFileUpload, tripMembers = [], onSetParticipants, onUpdatePlace,
+  files = [], onFileUpload, tripMembers = [], onSetParticipants, onUpdatePlace,
   leftWidth = 0, rightWidth = 0,
+  collectionStatus, onCopyToTrip, onSetStatus, onRemoveFromList,
 }: PlaceInspectorProps) {
+  // Plugins that declared a place-detail slot mount at the bottom of this panel,
+  // scoped to the open place (trip mode only). Inline-filter like the other sites.
+  const placeDetailPlugins = usePluginStore((s) => s.plugins).filter((p) => p.type === 'widget' && p.slot === 'place-detail')
+  // Extra native rows contributed by placeDetailProvider plugins (#1429). Fail-safe:
+  // any provider error/timeout is dropped server-side, so this only ever adds rows.
+  const [providerDetails, setProviderDetails] = useState<Array<{ pluginId: string; items: Array<{ label: string; value?: string; url?: string }> }>>([])
+  const placeIdForDetails = mode === 'trip' ? place?.id : undefined
+  useEffect(() => {
+    if (placeIdForDetails == null) { setProviderDetails([]); return }
+    let cancelled = false
+    pluginsApi.placeDetails(placeIdForDetails)
+      .then((d) => { if (!cancelled) setProviderDetails((d.providers || []).filter((p) => Array.isArray(p.items) && p.items.length > 0)) })
+      .catch(() => { if (!cancelled) setProviderDetails([]) })
+    return () => { cancelled = true }
+  }, [placeIdForDetails])
   const { t, locale, language } = useTranslation()
+  const toast = useToast()
   const timeFormat = useSettingsStore(s => s.settings.time_format) || '24h'
+  const distanceUnit = useSettingsStore(s => s.settings.distance_unit) || 'metric'
+  const collectionsEnabled = useAddonStore(s => s.isEnabled('collections'))
+  const openSavePicker = useSaveToCollectionStore(s => s.open)
+  const saveVersion = useSaveToCollectionStore(s => s.version)
+  const [savedInCollection, setSavedInCollection] = useState(false)
   const [hoursExpanded, setHoursExpanded] = useState(false)
   const [filesExpanded, setFilesExpanded] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
@@ -144,6 +175,49 @@ export default function PlaceInspector({
   const nameInputRef = useRef(null)
   const fileInputRef = useRef(null)
   const googleDetails = usePlaceDetails(place?.google_place_id, place?.osm_id, language)
+
+  // Library-wide "is this place already saved anywhere I can see?" indicator for
+  // the trip-planner footer bookmark. Re-checks when the place changes or after
+  // the save picker reports a change (saveVersion bump).
+  const showSaveToCollection = mode === 'trip' && collectionsEnabled
+  useEffect(() => {
+    if (!showSaveToCollection || !place) { setSavedInCollection(false); return }
+    let cancelled = false
+    collectionsApi.membership({
+      google_place_id: place.google_place_id ?? undefined,
+      google_ftid: place.google_ftid ?? undefined,
+      name: place.name,
+      lat: place.lat ?? undefined,
+      lng: place.lng ?? undefined,
+    }).then(m => { if (!cancelled) setSavedInCollection(m.saved) }).catch(() => { if (!cancelled) setSavedInCollection(false) })
+    return () => { cancelled = true }
+    // Re-check on place identity + after the picker reports a change; the other
+    // place fields are read at fire-time only, like the existing detail caches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSaveToCollection, place?.id, saveVersion])
+
+  const handleSaveToCollection = useCallback(() => {
+    if (!place) return
+    openSavePicker({
+      name: place.name,
+      source_trip_id: place.trip_id ?? null,
+      source_place_id: place.id,
+      description: place.description ?? null,
+      lat: place.lat ?? null,
+      lng: place.lng ?? null,
+      address: place.address ?? null,
+      category_id: place.category_id ?? null,
+      price: place.price ?? null,
+      currency: place.currency ?? null,
+      notes: place.notes ?? null,
+      image_url: place.image_url ?? null,
+      google_place_id: place.google_place_id ?? null,
+      google_ftid: place.google_ftid ?? null,
+      osm_id: place.osm_id ?? null,
+      website: place.website ?? null,
+      phone: place.phone ?? null,
+    })
+  }, [place, openSavePicker])
 
   const startNameEdit = () => {
     if (!onUpdatePlace) return
@@ -176,6 +250,12 @@ export default function PlaceInspector({
 
   const openingHours = googleDetails?.opening_hours || null
   const openNow = googleDetails?.open_now ?? null
+  // Prefer the place's stored ftid; if it has none yet, use the one just fetched from Google.
+  const googleMapsUrl = getGoogleMapsUrlForPlace(
+    place ? { ...place, google_ftid: place.google_ftid || googleDetails?.google_ftid || null } : null,
+    googleDetails?.google_maps_url,
+  )
+  const openStreetMapUrl = getOpenStreetMapUrlForPlace(place)
   const selectedDay = days?.find(d => d.id === selectedDayId)
   const weekdayIndex = getWeekdayIndex(selectedDay?.date)
 
@@ -189,17 +269,18 @@ export default function PlaceInspector({
       for (const file of selectedFiles) {
         const fd = new FormData()
         fd.append('file', file)
-        fd.append('place_id', place.id)
+        fd.append('place_id', String(place.id))
         await onFileUpload(fd)
       }
       setFilesExpanded(true)
     } catch (err: unknown) {
       console.error('Upload failed', err)
+      toast.error(translateApiError(t, err, 'files.uploadError'))
     } finally {
       setIsUploading(false)
       if (fileInputRef.current) fileInputRef.current.value = ''
     }
-  }, [onFileUpload, place.id])
+  }, [onFileUpload, place.id, toast, t])
 
   return (
     <div
@@ -210,11 +291,10 @@ export default function PlaceInspector({
         transform: 'translateX(-50%)',
         width: `min(800px, calc(100% - ${leftWidth}px - ${rightWidth}px - 32px))`,
         zIndex: 50,
-        fontFamily: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif",
+        fontFamily: "var(--font-system)",
       }}
     >
-      <div style={{
-        background: 'var(--bg-elevated)',
+      <div className="bg-surface-elevated" style={{
         backdropFilter: 'blur(40px) saturate(180%)',
         WebkitBackdropFilter: 'blur(40px) saturate(180%)',
         borderRadius: 20,
@@ -225,93 +305,13 @@ export default function PlaceInspector({
         flexDirection: 'column',
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: openNow !== null ? 26 : 14, padding: openNow !== null ? '18px 16px 14px 28px' : '18px 16px 14px', borderBottom: '1px solid var(--border-faint)' }}>
-          {/* Avatar with open/closed ring + tag */}
-          <div style={{ position: 'relative', flexShrink: 0, marginBottom: openNow !== null ? 8 : 0 }}>
-            <div style={{
-              borderRadius: '50%', padding: 2.5,
-              background: openNow === true ? '#22c55e' : openNow === false ? '#ef4444' : 'transparent',
-            }}>
-              <PlaceAvatar place={place} category={category} size={52} />
-            </div>
-            {openNow !== null && (
-              <span style={{
-                position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)',
-                fontSize: 9, fontWeight: 500, letterSpacing: '0.02em',
-                color: 'white',
-                background: openNow ? '#16a34a' : '#dc2626',
-                padding: '1.5px 7px', borderRadius: 99,
-                whiteSpace: 'nowrap',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
-              }}>
-                {openNow ? t('inspector.opened') : t('inspector.closed')}
-              </span>
-            )}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-              {editingName ? (
-                <input
-                  ref={nameInputRef}
-                  value={nameValue}
-                  onChange={e => setNameValue(e.target.value)}
-                  onBlur={commitNameEdit}
-                  onKeyDown={handleNameKeyDown}
-                  style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-primary)', lineHeight: '1.3', background: 'var(--bg-secondary)', border: '1px solid var(--border-primary)', borderRadius: 6, padding: '1px 6px', fontFamily: 'inherit', outline: 'none', width: '100%' }}
-                />
-              ) : (
-                <span
-                  onDoubleClick={startNameEdit}
-                  style={{ fontWeight: 600, fontSize: 15, color: 'var(--text-primary)', lineHeight: '1.3', cursor: onUpdatePlace ? 'text' : 'default' }}
-                >{place.name}</span>
-              )}
-              {category && (() => {
-                const CatIcon = getCategoryIcon(category.icon)
-                return (
-                  <span style={{
-                    display: 'inline-flex', alignItems: 'center', gap: 4,
-                    fontSize: 11, fontWeight: 500,
-                    color: category.color || '#6b7280',
-                    background: category.color ? `${category.color}18` : 'rgba(0,0,0,0.06)',
-                    border: `1px solid ${category.color ? `${category.color}30` : 'transparent'}`,
-                    padding: '2px 8px', borderRadius: 99,
-                  }}>
-                    <CatIcon size={10} />
-                    <span className="hidden sm:inline">{category.name}</span>
-                  </span>
-                )
-              })()}
-            </div>
-            {place.address && (
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginTop: 6 }}>
-                <MapPin size={11} color="var(--text-faint)" style={{ flexShrink: 0, marginTop: 2 }} />
-                <span style={{ fontSize: 12, color: 'var(--text-muted)', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{place.address}</span>
-              </div>
-            )}
-            {place.place_time && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
-                <Clock size={10} color="var(--text-faint)" style={{ flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: 'var(--text-muted)' }}>{formatTime(place.place_time, locale, timeFormat)}{place.end_time ? ` – ${formatTime(place.end_time, locale, timeFormat)}` : ''}</span>
-              </div>
-            )}
-            {place.lat && place.lng && (
-              <div className="hidden sm:block" style={{ fontSize: 11, color: 'var(--text-faint)', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
-                {Number(place.lat).toFixed(6)}, {Number(place.lng).toFixed(6)}
-              </div>
-            )}
-          </div>
-          <button
-            onClick={onClose}
-            style={{ width: 28, height: 28, borderRadius: '50%', background: 'var(--bg-hover)', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, alignSelf: 'flex-start', transition: 'background 0.15s' }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-          >
-            <X size={14} strokeWidth={2} color="var(--text-secondary)" />
-          </button>
-        </div>
+        <PlaceInspectorHeader openNow={openNow} place={place} category={category} t={t} editingName={editingName}
+          nameInputRef={nameInputRef} nameValue={nameValue} setNameValue={setNameValue} commitNameEdit={commitNameEdit}
+          handleNameKeyDown={handleNameKeyDown} startNameEdit={startNameEdit} onUpdatePlace={onUpdatePlace}
+          locale={locale} timeFormat={timeFormat} onClose={onClose} />
 
         {/* Content — scrollable */}
-        <div style={{ overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div data-testid="inspector-scroll" style={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch', overscrollBehavior: 'contain', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>
 
           {/* Info-Chips — hidden on mobile, shown on desktop */}
           <div className="hidden sm:flex" style={{ flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
@@ -338,7 +338,8 @@ export default function PlaceInspector({
           {(place.phone || googleDetails?.phone) && (
             <div style={{ display: 'flex', gap: 12 }}>
               <a href={`tel:${place.phone || googleDetails.phone}`}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-primary)', textDecoration: 'none' }}>
+                className="text-content"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 'calc(12px * var(--fs-scale-body, 1))', textDecoration: 'none' }}>
                 <Phone size={12} /> {place.phone || googleDetails.phone}
               </a>
             </div>
@@ -346,19 +347,400 @@ export default function PlaceInspector({
 
           {/* Description / Summary */}
           {(place.description || googleDetails?.summary) && (
-            <div className="collab-note-md" style={{ background: 'var(--bg-hover)', borderRadius: 10, overflow: 'hidden', fontSize: 12, color: 'var(--text-muted)', lineHeight: '1.5', padding: '8px 12px' }}>
-              <Markdown remarkPlugins={[remarkGfm]}>{place.description || googleDetails?.summary || ''}</Markdown>
+            <div className="collab-note-md bg-surface-hover text-content-muted" style={{ borderRadius: 10, overflow: 'hidden', flexShrink: 0, fontSize: 'calc(12px * var(--fs-scale-body, 1))', lineHeight: '1.5', padding: '8px 12px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+              <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>{place.description || googleDetails?.summary || ''}</Markdown>
             </div>
           )}
 
           {/* Notes */}
           {place.notes && (
-            <div className="collab-note-md" style={{ background: 'var(--bg-hover)', borderRadius: 10, overflow: 'hidden', fontSize: 12, color: 'var(--text-muted)', lineHeight: '1.5', padding: '8px 12px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
+            <div className="collab-note-md bg-surface-hover text-content-muted" style={{ borderRadius: 10, overflow: 'hidden', flexShrink: 0, fontSize: 'calc(12px * var(--fs-scale-body, 1))', lineHeight: '1.5', padding: '8px 12px', wordBreak: 'break-word', overflowWrap: 'anywhere' }}>
               <Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>{place.notes}</Markdown>
             </div>
           )}
 
-          {/* Reservation + Participants — side by side */}
+          {/* Reservation + Participants — trip-only (collections have no days) */}
+          {mode === 'trip' && (
+            <PlaceReservationParticipants selectedAssignmentId={selectedAssignmentId} reservations={reservations}
+              assignments={assignments} selectedDayId={selectedDayId} tripMembers={tripMembers} locale={locale}
+              timeFormat={timeFormat} t={t} onSetParticipants={onSetParticipants} />
+          )}
+
+          {/* Opening hours + Files — side by side on desktop only if both exist */}
+          <PlaceExtras openingHours={openingHours} weekdayIndex={weekdayIndex} hoursExpanded={hoursExpanded}
+            setHoursExpanded={setHoursExpanded} timeFormat={timeFormat} t={t} place={place} placeFiles={placeFiles}
+            onFileUpload={onFileUpload} filesExpanded={filesExpanded} setFilesExpanded={setFilesExpanded}
+            fileInputRef={fileInputRef} handleFileUpload={handleFileUpload} isUploading={isUploading}
+            distanceUnit={distanceUnit} />
+
+          {/* Extra native rows from placeDetailProvider plugins (#1429). */}
+          {mode === 'trip' && providerDetails.length > 0 && (
+            <div className="bg-surface-hover" style={{ borderRadius: 10, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {providerDetails.flatMap((p) => p.items.map((it, i) => (
+                <div key={`${p.pluginId}-${i}`} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', gap: 8, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))' }}>
+                  <span className="text-content-secondary" style={{ fontWeight: 500, flexShrink: 0 }}>{it.label}</span>
+                  {it.url
+                    ? <a href={it.url} target="_blank" rel="noreferrer noopener" className="text-accent" style={{ textDecoration: 'none', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.value ?? '↗'}</a>
+                    : <span className="text-content-muted" style={{ textAlign: 'right' }}>{it.value}</span>}
+                </div>
+              )))}
+            </div>
+          )}
+
+          {/* Place-detail plugin slots (#1429): sandboxed, scoped to this place. */}
+          {mode === 'trip' && placeDetailPlugins.length > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {placeDetailPlugins.map((p) => {
+                const tid = (place as { trip_id?: number | string }).trip_id
+                return (
+                  <div key={p.id} className="bg-surface-hover" style={{ borderRadius: 10, overflow: 'hidden' }}>
+                    <PluginFrame pluginId={p.id} tripId={tid != null ? String(tid) : null} placeId={String(place.id)} title={p.name} />
+                  </div>
+                )
+              })}
+            </div>
+          )}
+
+        </div>
+
+        {/* Footer actions */}
+        <div className="border-t border-edge-faint" style={{ padding: '10px 16px', display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 }}>
+          {/* Collection mode — copy to trip + per-place status */}
+          {mode === 'collection' && onCopyToTrip && (
+            <ActionButton onClick={onCopyToTrip} variant="primary" icon={<Copy size={13} />}
+              label={<span className="hidden sm:inline">{t('collections.copyToTrip')}</span>} />
+          )}
+          {mode === 'collection' && collectionStatus && onSetStatus && (
+            <StatusBadge status={collectionStatus} onChange={onSetStatus} t={t} />
+          )}
+          {/* Trip mode — day assignment */}
+          {mode === 'trip' && selectedDayId && (
+            assignmentInDay ? (
+              <ActionButton onClick={() => onRemoveAssignment?.(selectedDayId, assignmentInDay.id)} variant="ghost" icon={<Minus size={13} />}
+                label={<span className="hidden sm:inline">{t('inspector.removeFromDay')}</span>} />
+            ) : (
+              <ActionButton onClick={() => onAssignToDay?.(place.id)} variant="primary" icon={<Plus size={13} />} label={t('inspector.addToDay')} />
+            )
+          )}
+          {/* Save to Collection — trip mode, independent of the Google Maps link */}
+          {showSaveToCollection && (
+            <ActionButton onClick={handleSaveToCollection} variant="ghost"
+              icon={savedInCollection ? <BookmarkCheck size={13} /> : <Bookmark size={13} />}
+              label={<span className="hidden sm:inline">{savedInCollection ? t('inspector.savedToCollection') : t('inspector.saveToCollection')}</span>} />
+          )}
+          {googleMapsUrl && (
+            <ActionButton onClick={() => window.open(googleMapsUrl, '_blank')} variant="ghost" icon={<Navigation size={13} />}
+              label={<span className="hidden sm:inline">{t('inspector.google')}</span>} />
+          )}
+          {openStreetMapUrl && (
+            <ActionButton onClick={() => window.open(openStreetMapUrl, '_blank')} variant="ghost" icon={<MapIcon size={13} />}
+              label={<span className="hidden sm:inline">{t('inspector.openStreetMap')}</span>} />
+          )}
+          {(place.website || googleDetails?.website) && (
+            <ActionButton onClick={() => window.open(place.website || googleDetails?.website, '_blank')} variant="ghost" icon={<ExternalLink size={13} />}
+              label={<span className="hidden sm:inline">{t('inspector.website')}</span>} />
+          )}
+          <div style={{ flex: 1 }} />
+          {mode === 'trip' && onEdit && (
+            <ActionButton onClick={onEdit} variant="ghost" icon={<Edit2 size={13} />} label={<span className="hidden sm:inline">{t('common.edit')}</span>} />
+          )}
+          {mode === 'collection'
+            ? (onRemoveFromList && (
+                <ActionButton onClick={onRemoveFromList} variant="danger" icon={<Trash2 size={13} />}
+                  label={<span className="hidden sm:inline">{t('collections.removeFromList')}</span>} />
+              ))
+            : (onDelete && (
+                <ActionButton onClick={onDelete} variant="danger" icon={<Trash2 size={13} />} label={<span className="hidden sm:inline">{t('common.delete')}</span>} />
+              ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+interface ChipProps {
+  icon: React.ReactNode
+  text: React.ReactNode
+  color?: string
+  bg?: string
+}
+
+function Chip({ icon, text, color = 'var(--text-secondary)', bg = 'var(--bg-hover)' }: ChipProps) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 99, background: bg, color, fontSize: 'calc(12px * var(--fs-scale-body, 1))', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+      <span style={{ flexShrink: 0, display: 'flex' }}>{icon}</span>
+      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
+    </div>
+  )
+}
+
+interface RowProps {
+  icon: React.ReactNode
+  children: React.ReactNode
+}
+
+function Row({ icon, children }: RowProps) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <div style={{ flexShrink: 0 }}>{icon}</div>
+      <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
+    </div>
+  )
+}
+
+interface ActionButtonProps {
+  onClick: () => void
+  variant: 'primary' | 'ghost' | 'danger'
+  icon: React.ReactNode
+  label: React.ReactNode
+}
+
+export function ActionButton({ onClick, variant, icon, label }: ActionButtonProps) {
+  const base = {
+    primary: { background: 'var(--accent)', color: 'var(--accent-text)', border: 'none', hoverBg: 'var(--text-secondary)' },
+    ghost: { background: 'var(--bg-hover)', color: 'var(--text-secondary)', border: 'none', hoverBg: 'var(--bg-tertiary)' },
+    danger: { background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: 'none', hoverBg: 'rgba(239,68,68,0.16)' },
+  }
+  const s = base[variant] || base.ghost
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 5,
+        padding: '6px 12px', borderRadius: 10, minHeight: 30,
+        fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer',
+        fontFamily: 'inherit', transition: 'background 0.15s, opacity 0.15s',
+        background: s.background, color: s.color, border: s.border,
+      }}
+      onMouseEnter={e => e.currentTarget.style.background = s.hoverBg}
+      onMouseLeave={e => e.currentTarget.style.background = s.background}
+    >
+      {icon}{label}
+    </button>
+  )
+}
+
+interface ParticipantsBoxProps {
+  tripMembers: TripMember[]
+  participantIds: number[]
+  allJoined: boolean
+  onSetParticipants: (assignmentId: number, dayId: number, participantIds: number[]) => void
+  selectedAssignmentId: number | null
+  selectedDayId: number | null
+  t: (key: string) => string
+}
+
+function ParticipantsBox({ tripMembers, participantIds, allJoined, onSetParticipants, selectedAssignmentId, selectedDayId, t }: ParticipantsBoxProps) {
+  const [showAdd, setShowAdd] = React.useState(false)
+  const [hoveredId, setHoveredId] = React.useState(null)
+
+  // Active participants: if allJoined, show all members; otherwise show only those in participantIds
+  const activeMembers = allJoined ? tripMembers : tripMembers.filter(m => participantIds.includes(m.id))
+  const availableToAdd = allJoined ? [] : tripMembers.filter(m => !participantIds.includes(m.id))
+
+  const handleRemove = (userId) => {
+    if (!onSetParticipants) return
+    let newIds
+    if (allJoined) {
+      newIds = tripMembers.filter(m => m.id !== userId).map(m => m.id)
+    } else {
+      newIds = participantIds.filter(id => id !== userId)
+    }
+    if (newIds.length === tripMembers.length) newIds = []
+    onSetParticipants(selectedAssignmentId, selectedDayId, newIds)
+  }
+
+  const handleAdd = (userId) => {
+    if (!onSetParticipants) return
+    const newIds = [...participantIds, userId]
+    if (newIds.length === tripMembers.length) {
+      onSetParticipants(selectedAssignmentId, selectedDayId, [])
+    } else {
+      onSetParticipants(selectedAssignmentId, selectedDayId, newIds)
+    }
+    setShowAdd(false)
+  }
+
+  return (
+    <div style={{ borderRadius: 12, border: '1px solid var(--border-faint)', padding: '8px 10px' }}>
+      <div className="text-content-faint" style={{ fontSize: 'calc(9px * var(--fs-scale-caption, 1))', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
+        <Users size={10} /> {t('inspector.participants')}
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
+        {activeMembers.map(member => {
+          const isHovered = hoveredId === member.id
+          const canRemove = activeMembers.length > 1
+          return (
+            <div key={member.id}
+              onMouseEnter={() => setHoveredId(member.id)}
+              onMouseLeave={() => setHoveredId(null)}
+              onClick={() => { if (canRemove) handleRemove(member.id) }}
+              className={isHovered && canRemove ? 'bg-[rgba(239,68,68,0.06)] text-[#ef4444]' : 'bg-surface-hover text-content'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px 2px 3px', borderRadius: 99,
+                border: `1.5px solid ${isHovered && canRemove ? 'rgba(239,68,68,0.4)' : 'var(--accent)'}`,
+                fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 500,
+                cursor: canRemove ? 'pointer' : 'default',
+                transition: 'all 0.15s',
+              }}>
+              <div className="bg-surface-tertiary text-content-muted" style={{
+                width: 16, height: 16, borderRadius: '50%',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'calc(7px * var(--fs-scale-caption, 1))', fontWeight: 700,
+                overflow: 'hidden', flexShrink: 0,
+              }}>
+                {(member.avatar_url || member.avatar) ? <img src={member.avatar_url || avatarSrc(member.avatar)!} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : member.username?.[0]?.toUpperCase()}
+              </div>
+              <span style={{ textDecoration: isHovered && canRemove ? 'line-through' : 'none' }}>{member.username}</span>
+            </div>
+          )
+        })}
+
+        {/* Add button */}
+        {availableToAdd.length > 0 && (
+          <div style={{ position: 'relative' }}>
+            <button onClick={() => setShowAdd(!showAdd)} className="text-content-faint" style={{
+              width: 22, height: 22, borderRadius: '50%', border: '1.5px dashed var(--border-primary)',
+              background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 'calc(12px * var(--fs-scale-body, 1))', transition: 'all 0.12s',
+            }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-primary)' }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-primary)'; e.currentTarget.style.color = 'var(--text-faint)' }}
+            >+</button>
+
+            {showAdd && (
+              <div className="bg-surface-card" style={{
+                position: 'absolute', top: 26, left: 0, zIndex: 100,
+                border: '1px solid var(--border-primary)', borderRadius: 10,
+                boxShadow: '0 4px 16px rgba(0,0,0,0.12)', padding: 4, minWidth: 140,
+              }}>
+                {availableToAdd.map(member => (
+                  <button key={member.id} onClick={() => handleAdd(member.id)} className="text-content" style={{
+                    display: 'flex', alignItems: 'center', gap: 6, width: '100%', padding: '5px 8px',
+                    borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer',
+                    fontFamily: 'inherit', fontSize: 'calc(11px * var(--fs-scale-caption, 1))', textAlign: 'left',
+                    transition: 'background 0.1s',
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
+                  >
+                    <div className="bg-surface-tertiary text-content-muted" style={{
+                      width: 18, height: 18, borderRadius: '50%',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'calc(8px * var(--fs-scale-caption, 1))', fontWeight: 700,
+                      overflow: 'hidden', flexShrink: 0,
+                    }}>
+                      {(member.avatar_url || member.avatar) ? <img src={member.avatar_url || avatarSrc(member.avatar)!} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : member.username?.[0]?.toUpperCase()}
+                    </div>
+                    <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis' }}>{member.username}</span>
+                    {member.is_guest && <GuestBadge size="xs" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+
+function PlaceInspectorHeader({ openNow, place, category, t, editingName, nameInputRef, nameValue, setNameValue,
+  commitNameEdit, handleNameKeyDown, startNameEdit, onUpdatePlace, locale, timeFormat, onClose }: any) {
+  return (
+        <div style={{ display: 'flex', alignItems: 'center', gap: openNow !== null ? 26 : 14, padding: openNow !== null ? '18px 16px 14px 28px' : '18px 16px 14px', borderBottom: '1px solid var(--border-faint)', flexShrink: 0 }}>
+          {/* Avatar with open/closed ring + tag */}
+          <div style={{ position: 'relative', flexShrink: 0, marginBottom: openNow !== null ? 8 : 0 }}>
+            <div style={{
+              borderRadius: '50%', padding: 2.5,
+              background: openNow === true ? '#22c55e' : openNow === false ? '#ef4444' : 'transparent',
+            }}>
+              <PlaceAvatar place={place} category={category} size={52} />
+            </div>
+            {openNow !== null && (
+              <span style={{
+                position: 'absolute', bottom: -7, left: '50%', transform: 'translateX(-50%)',
+                fontSize: 'calc(9px * var(--fs-scale-caption, 1))', fontWeight: 500, letterSpacing: '0.02em',
+                color: 'white',
+                background: openNow ? '#16a34a' : '#dc2626',
+                padding: '1.5px 7px', borderRadius: 99,
+                whiteSpace: 'nowrap',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.2)',
+              }}>
+                {openNow ? t('inspector.opened') : t('inspector.closed')}
+              </span>
+            )}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              {editingName ? (
+                <input
+                  ref={nameInputRef}
+                  value={nameValue}
+                  onChange={e => setNameValue(e.target.value)}
+                  onBlur={commitNameEdit}
+                  onKeyDown={handleNameKeyDown}
+                  className="text-content bg-surface-secondary"
+                  style={{ fontWeight: 600, fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', lineHeight: '1.3', border: '1px solid var(--border-primary)', borderRadius: 6, padding: '1px 6px', fontFamily: 'inherit', outline: 'none', width: '100%' }}
+                />
+              ) : (
+                <span
+                  onDoubleClick={startNameEdit}
+                  className="text-content"
+                  style={{ fontWeight: 600, fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', lineHeight: '1.3', cursor: onUpdatePlace ? 'text' : 'default' }}
+                >{place.name}</span>
+              )}
+              {category && (() => {
+                const CatIcon = getCategoryIcon(category.icon)
+                return (
+                  <span style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 500,
+                    color: category.color || '#6b7280',
+                    background: category.color ? `${category.color}18` : 'rgba(0,0,0,0.06)',
+                    border: `1px solid ${category.color ? `${category.color}30` : 'transparent'}`,
+                    padding: '2px 8px', borderRadius: 99,
+                  }}>
+                    <CatIcon size={10} />
+                    <span className="hidden sm:inline">{category.name}</span>
+                  </span>
+                )
+              })()}
+            </div>
+            {place.address && (
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: 4, marginTop: 6 }}>
+                <MapPin size={11} color="var(--text-faint)" style={{ flexShrink: 0, marginTop: 2 }} />
+                <span className="text-content-muted" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{place.address}</span>
+              </div>
+            )}
+            {place.place_time && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+                <Clock size={10} color="var(--text-faint)" style={{ flexShrink: 0 }} />
+                <span className="text-content-muted" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))' }}>{formatTime(place.place_time, locale, timeFormat)}{place.end_time ? ` – ${formatTime(place.end_time, locale, timeFormat)}` : ''}</span>
+              </div>
+            )}
+            {place.lat && place.lng && (
+              <div className="hidden sm:block text-content-faint" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', marginTop: 4, fontVariantNumeric: 'tabular-nums' }}>
+                {Number(place.lat).toFixed(6)}, {Number(place.lng).toFixed(6)}
+              </div>
+            )}
+          </div>
+          <button
+            onClick={onClose}
+            className="bg-surface-hover"
+            style={{ width: 28, height: 28, borderRadius: '50%', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0, alignSelf: 'flex-start', transition: 'background 0.15s' }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-tertiary)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+          >
+            <X size={14} strokeWidth={2} color="var(--text-secondary)" />
+          </button>
+        </div>
+  )
+}
+
+function PlaceReservationParticipants({ selectedAssignmentId, reservations, assignments, selectedDayId,
+  tripMembers, locale, timeFormat, t, onSetParticipants }: any) {
+  return (
+    <>
           {(() => {
             const res = selectedAssignmentId ? reservations.find(r => r.assignment_id === selectedAssignmentId) : null
             const assignment = selectedAssignmentId ? (assignments[String(selectedDayId)] || []).find(a => a.id === selectedAssignmentId) : null
@@ -374,36 +756,44 @@ export default function PlaceInspector({
                   const confirmed = res.status === 'confirmed'
                   return (
                     <div style={{ borderRadius: 12, overflow: 'hidden', border: `1px solid ${confirmed ? 'rgba(22,163,74,0.2)' : 'rgba(217,119,6,0.2)'}` }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', background: confirmed ? 'rgba(22,163,74,0.08)' : 'rgba(217,119,6,0.08)' }}>
-                        <div style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0, background: confirmed ? '#16a34a' : '#d97706' }} />
-                        <span style={{ fontSize: 10, fontWeight: 700, color: confirmed ? '#16a34a' : '#d97706' }}>{confirmed ? t('reservations.confirmed') : t('reservations.pending')}</span>
+                      <div className={confirmed ? 'bg-[rgba(22,163,74,0.08)]' : 'bg-[rgba(217,119,6,0.08)]'} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px' }}>
+                        <div className={confirmed ? 'bg-[#16a34a]' : 'bg-[#d97706]'} style={{ width: 6, height: 6, borderRadius: '50%', flexShrink: 0 }} />
+                        <span className={confirmed ? 'text-[#16a34a]' : 'text-[#d97706]'} style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 700 }}>{confirmed ? t('reservations.confirmed') : t('reservations.pending')}</span>
                         <span style={{ flex: 1 }} />
-                        <span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-primary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{res.title}</span>
+                        <span className="text-content" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{res.title}</span>
                       </div>
                       <div style={{ padding: '6px 10px', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                        {res.reservation_time && (
-                          <div>
-                            <div style={{ fontSize: 8, fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase' }}>{t('reservations.date')}</div>
-                            <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-primary)', marginTop: 1 }}>{new Date((res.reservation_time.includes('T') ? res.reservation_time.split('T')[0] : res.reservation_time) + 'T00:00:00Z').toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })}</div>
-                          </div>
-                        )}
-                        {res.reservation_time?.includes('T') && (
-                          <div>
-                            <div style={{ fontSize: 8, fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase' }}>{t('reservations.time')}</div>
-                            <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-primary)', marginTop: 1 }}>
-                              {new Date(res.reservation_time).toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', hour12: timeFormat === '12h' })}
-                              {res.reservation_end_time && ` – ${res.reservation_end_time}`}
-                            </div>
-                          </div>
-                        )}
+                        {(() => {
+                          const { date, time: startTime } = splitReservationDateTime(res.reservation_time)
+                          const { time: endTime } = splitReservationDateTime(res.reservation_end_time)
+                          return (
+                            <>
+                              {date && (
+                                <div>
+                                  <div className="text-content-faint" style={{ fontSize: 'calc(8px * var(--fs-scale-caption, 1))', fontWeight: 600, textTransform: 'uppercase' }}>{t('reservations.date')}</div>
+                                  <div className="text-content" style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 500, marginTop: 1 }}>{new Date(date + 'T00:00:00Z').toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })}</div>
+                                </div>
+                              )}
+                              {(startTime || endTime) && (
+                                <div>
+                                  <div className="text-content-faint" style={{ fontSize: 'calc(8px * var(--fs-scale-caption, 1))', fontWeight: 600, textTransform: 'uppercase' }}>{t('reservations.time')}</div>
+                                  <div className="text-content" style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 500, marginTop: 1 }}>
+                                    {startTime ? formatTime(startTime, locale, timeFormat) : ''}
+                                    {endTime ? ` – ${formatTime(endTime, locale, timeFormat)}` : ''}
+                                  </div>
+                                </div>
+                              )}
+                            </>
+                          )
+                        })()}
                         {res.confirmation_number && (
                           <div>
-                            <div style={{ fontSize: 8, fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase' }}>{t('reservations.confirmationCode')}</div>
-                            <div style={{ fontSize: 10, fontWeight: 500, color: 'var(--text-primary)', marginTop: 1 }}>{res.confirmation_number}</div>
+                            <div className="text-content-faint" style={{ fontSize: 'calc(8px * var(--fs-scale-caption, 1))', fontWeight: 600, textTransform: 'uppercase' }}>{t('reservations.confirmationCode')}</div>
+                            <div className="text-content" style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 500, marginTop: 1 }}>{res.confirmation_number}</div>
                           </div>
                         )}
                       </div>
-                      {res.notes && <div className="collab-note-md" style={{ padding: '0 10px 6px', fontSize: 10, color: 'var(--text-faint)', lineHeight: 1.4, wordBreak: 'break-word', overflowWrap: 'anywhere' }}><Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>{res.notes}</Markdown></div>}
+                      {res.notes && <div className="collab-note-md text-content-faint" style={{ padding: '0 10px 6px', fontSize: 'calc(10px * var(--fs-scale-caption, 1))', lineHeight: 1.4, wordBreak: 'break-word', overflowWrap: 'anywhere' }}><Markdown remarkPlugins={[remarkGfm, remarkBreaks]}>{res.notes}</Markdown></div>}
                       {(() => {
                         const meta = typeof res.metadata === 'string' ? JSON.parse(res.metadata || '{}') : (res.metadata || {})
                         if (!meta || Object.keys(meta).length === 0) return null
@@ -416,7 +806,7 @@ export default function PlaceInspector({
                         if (meta.check_in_time) parts.push(`Check-in ${meta.check_in_time}`)
                         if (meta.check_out_time) parts.push(`Check-out ${meta.check_out_time}`)
                         if (parts.length === 0) return null
-                        return <div style={{ padding: '0 10px 6px', fontSize: 10, color: 'var(--text-muted)', fontWeight: 500 }}>{parts.join(' · ')}</div>
+                        return <div className="text-content-muted" style={{ padding: '0 10px 6px', fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 500 }}>{parts.join(' · ')}</div>
                       })()}
                     </div>
                   )
@@ -437,11 +827,16 @@ export default function PlaceInspector({
               </div>
             )
           })()}
+    </>
+  )
+}
 
-          {/* Opening hours + Files — side by side on desktop only if both exist */}
+function PlaceExtras({ openingHours, weekdayIndex, hoursExpanded, setHoursExpanded, timeFormat, t, place,
+  placeFiles, onFileUpload, filesExpanded, setFilesExpanded, fileInputRef, handleFileUpload, isUploading, distanceUnit }: any) {
+  return (
           <div className={`grid grid-cols-1 ${openingHours?.length > 0 ? 'sm:grid-cols-2' : ''} gap-2`}>
           {openingHours && openingHours.length > 0 && (
-            <div style={{ background: 'var(--bg-hover)', borderRadius: 10, overflow: 'hidden' }}>
+            <div className="bg-surface-hover" style={{ borderRadius: 10, overflow: 'hidden' }}>
               <button
                 onClick={() => setHoursExpanded(h => !h)}
                 style={{
@@ -452,7 +847,7 @@ export default function PlaceInspector({
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Clock size={13} color="#9ca3af" />
-                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500 }}>
                     {hoursExpanded ? t('inspector.openingHours') : (convertHoursLine(openingHours[weekdayIndex] || '', timeFormat) || t('inspector.showHours'))}
                   </span>
                 </div>
@@ -461,8 +856,8 @@ export default function PlaceInspector({
               {hoursExpanded && (
                 <div style={{ padding: '0 12px 10px' }}>
                   {openingHours.map((line, i) => (
-                    <div key={i} style={{
-                      fontSize: 12, color: i === weekdayIndex ? 'var(--text-primary)' : 'var(--text-muted)',
+                    <div key={i} className={i === weekdayIndex ? 'text-content' : 'text-content-muted'} style={{
+                      fontSize: 'calc(12px * var(--fs-scale-body, 1))',
                       fontWeight: i === weekdayIndex ? 600 : 400,
                       padding: '2px 0',
                     }}>{convertHoursLine(line, timeFormat)}</div>
@@ -522,34 +917,34 @@ export default function PlaceInspector({
               }
 
               return (
-                <div style={{ background: 'var(--bg-hover)', borderRadius: 10, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div className="bg-surface-hover" style={{ borderRadius: 10, padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                     <TrendingUp size={13} color="#9ca3af" />
-                    <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>{t('inspector.trackStats')}</span>
+                    <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{t('inspector.trackStats')}</span>
                   </div>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>
+                    <div className="text-content" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600 }}>
                       <MapPin size={12} color="#3b82f6" />
-                      {distKm < 1 ? `${Math.round(totalDist)} m` : `${distKm.toFixed(1)} km`}
+                      {formatDistance(distKm, distanceUnit)}
                     </div>
                     {hasEle && (
                       <>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>
+                        <div className="text-content" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600 }}>
                           <Mountain size={12} color="#22c55e" />
-                          {Math.round(maxEle)} m
+                          {formatElevation(maxEle, distanceUnit)}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 12, color: 'var(--text-primary)', fontWeight: 600 }}>
+                        <div className="text-content" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600 }}>
                           <Mountain size={12} color="#ef4444" />
-                          {Math.round(minEle)} m
+                          {formatElevation(minEle, distanceUnit)}
                         </div>
-                        <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>
-                          ↑{Math.round(totalUp)} m &nbsp;↓{Math.round(totalDown)} m
+                        <div className="text-content-muted" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))' }}>
+                          ↑{formatElevation(totalUp, distanceUnit)} &nbsp;↓{formatElevation(totalDown, distanceUnit)}
                         </div>
                       </>
                     )}
                   </div>
                   {pathD && (
-                    <svg width="100%" viewBox={`0 0 ${chartW} ${chartH}`} preserveAspectRatio="none" style={{ display: 'block', borderRadius: 6, background: 'var(--bg-tertiary)' }}>
+                    <svg width="100%" viewBox={`0 0 ${chartW} ${chartH}`} preserveAspectRatio="none" className="bg-surface-tertiary" style={{ display: 'block', borderRadius: 6 }}>
                       <defs>
                         <linearGradient id={`ele-grad-${place.id}`} x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
@@ -567,23 +962,23 @@ export default function PlaceInspector({
 
           {/* Files section */}
           {(placeFiles.length > 0 || onFileUpload) && (
-            <div style={{ background: 'var(--bg-hover)', borderRadius: 10, overflow: 'hidden' }}>
+            <div className="bg-surface-hover" style={{ borderRadius: 10, overflow: 'hidden' }}>
               <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', gap: 6 }}>
                 <button
                   onClick={() => setFilesExpanded(f => !f)}
                   style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textAlign: 'left' }}
                 >
                   <FileText size={13} color="#9ca3af" />
-                  <span style={{ fontSize: 12, color: 'var(--text-secondary)', fontWeight: 500 }}>
+                  <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500 }}>
                     {placeFiles.length > 0 ? t('inspector.filesCount', { count: placeFiles.length }) : t('inspector.files')}
                   </span>
                   {filesExpanded ? <ChevronUp size={12} color="#9ca3af" /> : <ChevronDown size={12} color="#9ca3af" />}
                 </button>
                 {onFileUpload && (
-                  <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11, color: 'var(--text-muted)', padding: '2px 6px', borderRadius: 6, background: 'var(--bg-tertiary)' }}>
+                  <label className="text-content-muted bg-surface-tertiary" style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(11px * var(--fs-scale-caption, 1))', padding: '2px 6px', borderRadius: 6 }}>
                     <input ref={fileInputRef} type="file" multiple style={{ display: 'none' }} onChange={handleFileUpload} />
                     {isUploading ? (
-                      <span style={{ fontSize: 11 }}>…</span>
+                      <span style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>…</span>
                     ) : (
                       <><Upload size={11} strokeWidth={2} /> {t('common.upload')}</>
                     )}
@@ -595,8 +990,8 @@ export default function PlaceInspector({
                   {placeFiles.map(f => (
                     <button key={f.id} onClick={() => openFile(f.url).catch(() => {})} style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', cursor: 'pointer', background: 'none', border: 'none', width: '100%', textAlign: 'left' }}>
                       {(f.mime_type || '').startsWith('image/') ? <FileImage size={12} color="#6b7280" /> : <File size={12} color="#6b7280" />}
-                      <span style={{ fontSize: 12, color: 'var(--text-secondary)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.original_name}</span>
-                      {f.file_size && <span style={{ fontSize: 11, color: 'var(--text-faint)', flexShrink: 0 }}>{formatFileSize(f.file_size)}</span>}
+                      <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.original_name}</span>
+                      {f.file_size && <span className="text-content-faint" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', flexShrink: 0 }}>{formatFileSize(f.file_size)}</span>}
                     </button>
                   ))}
                 </div>
@@ -604,221 +999,5 @@ export default function PlaceInspector({
             </div>
           )}
           </div>
-
-        </div>
-
-        {/* Footer actions */}
-        <div style={{ padding: '10px 16px', borderTop: '1px solid var(--border-faint)', display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-          {selectedDayId && (
-            assignmentInDay ? (
-              <ActionButton onClick={() => onRemoveAssignment(selectedDayId, assignmentInDay.id)} variant="ghost" icon={<Minus size={13} />}
-                label={<><span className="hidden sm:inline">{t('inspector.removeFromDay')}</span><span className="sm:hidden">{t('inspector.remove')}</span></>} />
-            ) : (
-              <ActionButton onClick={() => onAssignToDay(place.id)} variant="primary" icon={<Plus size={13} />} label={t('inspector.addToDay')} />
-            )
-          )}
-          {googleDetails?.google_maps_url && (
-            <ActionButton onClick={() => window.open(googleDetails.google_maps_url, '_blank')} variant="ghost" icon={<Navigation size={13} />}
-              label={<span className="hidden sm:inline">{t('inspector.google')}</span>} />
-          )}
-          {!googleDetails?.google_maps_url && place.lat && place.lng && (
-            <ActionButton onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${place.google_place_id ? encodeURIComponent(place.name) + '&query_place_id=' + place.google_place_id : place.lat + ',' + place.lng}`, '_blank')} variant="ghost" icon={<Navigation size={13} />}
-              label={<span className="hidden sm:inline">Google Maps</span>} />
-          )}
-          {(place.website || googleDetails?.website) && (
-            <ActionButton onClick={() => window.open(place.website || googleDetails?.website, '_blank')} variant="ghost" icon={<ExternalLink size={13} />}
-              label={<span className="hidden sm:inline">{t('inspector.website')}</span>} />
-          )}
-          <div style={{ flex: 1 }} />
-          <ActionButton onClick={onEdit} variant="ghost" icon={<Edit2 size={13} />} label={<span className="hidden sm:inline">{t('common.edit')}</span>} />
-          <ActionButton onClick={onDelete} variant="danger" icon={<Trash2 size={13} />} label={<span className="hidden sm:inline">{t('common.delete')}</span>} />
-        </div>
-      </div>
-    </div>
-  )
-}
-
-interface ChipProps {
-  icon: React.ReactNode
-  text: React.ReactNode
-  color?: string
-  bg?: string
-}
-
-function Chip({ icon, text, color = 'var(--text-secondary)', bg = 'var(--bg-hover)' }: ChipProps) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '3px 9px', borderRadius: 99, background: bg, color, fontSize: 12, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
-      <span style={{ flexShrink: 0, display: 'flex' }}>{icon}</span>
-      <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{text}</span>
-    </div>
-  )
-}
-
-interface RowProps {
-  icon: React.ReactNode
-  children: React.ReactNode
-}
-
-function Row({ icon, children }: RowProps) {
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <div style={{ flexShrink: 0 }}>{icon}</div>
-      <div style={{ flex: 1, minWidth: 0 }}>{children}</div>
-    </div>
-  )
-}
-
-interface ActionButtonProps {
-  onClick: () => void
-  variant: 'primary' | 'ghost' | 'danger'
-  icon: React.ReactNode
-  label: React.ReactNode
-}
-
-function ActionButton({ onClick, variant, icon, label }: ActionButtonProps) {
-  const base = {
-    primary: { background: 'var(--accent)', color: 'var(--accent-text)', border: 'none', hoverBg: 'var(--text-secondary)' },
-    ghost: { background: 'var(--bg-hover)', color: 'var(--text-secondary)', border: 'none', hoverBg: 'var(--bg-tertiary)' },
-    danger: { background: 'rgba(239,68,68,0.08)', color: '#dc2626', border: 'none', hoverBg: 'rgba(239,68,68,0.16)' },
-  }
-  const s = base[variant] || base.ghost
-  return (
-    <button
-      onClick={onClick}
-      style={{
-        display: 'flex', alignItems: 'center', gap: 5,
-        padding: '6px 12px', borderRadius: 10, minHeight: 30,
-        fontSize: 12, fontWeight: 500, cursor: 'pointer',
-        fontFamily: 'inherit', transition: 'background 0.15s, opacity 0.15s',
-        background: s.background, color: s.color, border: s.border,
-      }}
-      onMouseEnter={e => e.currentTarget.style.background = s.hoverBg}
-      onMouseLeave={e => e.currentTarget.style.background = s.background}
-    >
-      {icon}{label}
-    </button>
-  )
-}
-
-interface ParticipantsBoxProps {
-  tripMembers: TripMember[]
-  participantIds: number[]
-  allJoined: boolean
-  onSetParticipants: (assignmentId: number, dayId: number, participantIds: number[]) => void
-  selectedAssignmentId: number | null
-  selectedDayId: number | null
-  t: (key: string) => string
-}
-
-function ParticipantsBox({ tripMembers, participantIds, allJoined, onSetParticipants, selectedAssignmentId, selectedDayId, t }: ParticipantsBoxProps) {
-  const [showAdd, setShowAdd] = React.useState(false)
-  const [hoveredId, setHoveredId] = React.useState(null)
-
-  // Active participants: if allJoined, show all members; otherwise show only those in participantIds
-  const activeMembers = allJoined ? tripMembers : tripMembers.filter(m => participantIds.includes(m.id))
-  const availableToAdd = allJoined ? [] : tripMembers.filter(m => !participantIds.includes(m.id))
-
-  const handleRemove = (userId) => {
-    if (!onSetParticipants) return
-    let newIds
-    if (allJoined) {
-      newIds = tripMembers.filter(m => m.id !== userId).map(m => m.id)
-    } else {
-      newIds = participantIds.filter(id => id !== userId)
-    }
-    if (newIds.length === tripMembers.length) newIds = []
-    onSetParticipants(selectedAssignmentId, selectedDayId, newIds)
-  }
-
-  const handleAdd = (userId) => {
-    if (!onSetParticipants) return
-    const newIds = [...participantIds, userId]
-    if (newIds.length === tripMembers.length) {
-      onSetParticipants(selectedAssignmentId, selectedDayId, [])
-    } else {
-      onSetParticipants(selectedAssignmentId, selectedDayId, newIds)
-    }
-    setShowAdd(false)
-  }
-
-  return (
-    <div style={{ borderRadius: 12, border: '1px solid var(--border-faint)', padding: '8px 10px' }}>
-      <div style={{ fontSize: 9, fontWeight: 600, color: 'var(--text-faint)', textTransform: 'uppercase', letterSpacing: '0.03em', marginBottom: 6, display: 'flex', alignItems: 'center', gap: 4 }}>
-        <Users size={10} /> {t('inspector.participants')}
-      </div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, alignItems: 'center' }}>
-        {activeMembers.map(member => {
-          const isHovered = hoveredId === member.id
-          const canRemove = activeMembers.length > 1
-          return (
-            <div key={member.id}
-              onMouseEnter={() => setHoveredId(member.id)}
-              onMouseLeave={() => setHoveredId(null)}
-              onClick={() => { if (canRemove) handleRemove(member.id) }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 4, padding: '2px 7px 2px 3px', borderRadius: 99,
-                border: `1.5px solid ${isHovered && canRemove ? 'rgba(239,68,68,0.4)' : 'var(--accent)'}`,
-                background: isHovered && canRemove ? 'rgba(239,68,68,0.06)' : 'var(--bg-hover)',
-                fontSize: 10, fontWeight: 500,
-                color: isHovered && canRemove ? '#ef4444' : 'var(--text-primary)',
-                cursor: canRemove ? 'pointer' : 'default',
-                transition: 'all 0.15s',
-              }}>
-              <div style={{
-                width: 16, height: 16, borderRadius: '50%', background: 'var(--bg-tertiary)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 7, fontWeight: 700,
-                color: 'var(--text-muted)', overflow: 'hidden', flexShrink: 0,
-              }}>
-                {(member.avatar_url || member.avatar) ? <img src={member.avatar_url || `/uploads/avatars/${member.avatar}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : member.username?.[0]?.toUpperCase()}
-              </div>
-              <span style={{ textDecoration: isHovered && canRemove ? 'line-through' : 'none' }}>{member.username}</span>
-            </div>
-          )
-        })}
-
-        {/* Add button */}
-        {availableToAdd.length > 0 && (
-          <div style={{ position: 'relative' }}>
-            <button onClick={() => setShowAdd(!showAdd)} style={{
-              width: 22, height: 22, borderRadius: '50%', border: '1.5px dashed var(--border-primary)',
-              background: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'var(--text-faint)', fontSize: 12, transition: 'all 0.12s',
-            }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--text-muted)'; e.currentTarget.style.color = 'var(--text-primary)' }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-primary)'; e.currentTarget.style.color = 'var(--text-faint)' }}
-            >+</button>
-
-            {showAdd && (
-              <div style={{
-                position: 'absolute', top: 26, left: 0, zIndex: 100,
-                background: 'var(--bg-card)', border: '1px solid var(--border-primary)', borderRadius: 10,
-                boxShadow: '0 4px 16px rgba(0,0,0,0.12)', padding: 4, minWidth: 140,
-              }}>
-                {availableToAdd.map(member => (
-                  <button key={member.id} onClick={() => handleAdd(member.id)} style={{
-                    display: 'flex', alignItems: 'center', gap: 6, width: '100%', padding: '5px 8px',
-                    borderRadius: 6, border: 'none', background: 'none', cursor: 'pointer',
-                    fontFamily: 'inherit', fontSize: 11, color: 'var(--text-primary)', textAlign: 'left',
-                    transition: 'background 0.1s',
-                  }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'none'}
-                  >
-                    <div style={{
-                      width: 18, height: 18, borderRadius: '50%', background: 'var(--bg-tertiary)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 8, fontWeight: 700,
-                      color: 'var(--text-muted)', overflow: 'hidden', flexShrink: 0,
-                    }}>
-                      {(member.avatar_url || member.avatar) ? <img src={member.avatar_url || `/uploads/avatars/${member.avatar}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : member.username?.[0]?.toUpperCase()}
-                    </div>
-                    {member.username}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
   )
 }

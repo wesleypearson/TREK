@@ -3,7 +3,9 @@ import { render, screen, waitFor, fireEvent } from '../../tests/helpers/render';
 import { Routes, Route } from 'react-router-dom';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../tests/helpers/msw/server';
-import { resetAllStores } from '../../tests/helpers/store';
+import { resetAllStores, seedStore } from '../../tests/helpers/store';
+import { buildSettings } from '../../tests/helpers/factories';
+import { useSettingsStore } from '../store/settingsStore';
 import SharedTripPage from './SharedTripPage';
 
 // Mock react-leaflet (SharedTripPage renders a map)
@@ -233,7 +235,7 @@ describe('SharedTripPage', () => {
         expect(screen.getByText('Shared Paris Trip')).toBeInTheDocument();
       });
 
-      const budgetTab = screen.getByRole('button', { name: /budget/i });
+      const budgetTab = screen.getByRole('button', { name: /costs/i });
       expect(budgetTab).toBeInTheDocument();
 
       fireEvent.click(budgetTab);
@@ -403,6 +405,171 @@ describe('SharedTripPage', () => {
       await waitFor(() => {
         expect(screen.getByText('Flight to Paris')).toBeInTheDocument();
       });
+    });
+  });
+
+  describe('FE-PAGE-SHARED-017: Multi-leg flight shows each leg in the Day Plan', () => {
+    const day = { id: 101, trip_id: 1, day_number: 1, date: '2026-07-01', title: 'Day One', notes: null };
+    const multiLegFlight = {
+      id: 9, trip_id: 1, title: 'Flight', type: 'flight', status: 'confirmed',
+      day_id: 101, end_day_id: 101,
+      reservation_time: '2026-07-01T08:00:00', reservation_end_time: '2026-07-01T20:00:00',
+      metadata: JSON.stringify({
+        legs: [
+          { from: 'FRA', to: 'BER', airline: 'Lufthansa', flight_number: 'LH1', dep_day_id: 101, dep_time: '08:00', arr_day_id: 101, arr_time: '09:00' },
+          { from: 'BER', to: 'HND', airline: 'Lufthansa', flight_number: 'LH2', dep_day_id: 101, dep_time: '10:00', arr_day_id: 101, arr_time: '20:00' },
+        ],
+        departure_airport: 'FRA', arrival_airport: 'HND', airline: 'Lufthansa', flight_number: 'LH1',
+      }),
+    };
+
+    function serveMultiLeg(token: string) {
+      server.use(
+        http.get('/api/shared/:token', ({ params }) => {
+          if (params.token !== token) return;
+          return HttpResponse.json({
+            trip: { id: 1, title: 'Shared Paris Trip', start_date: '2026-07-01', end_date: '2026-07-05' },
+            days: [day],
+            assignments: {},
+            dayNotes: {},
+            places: [],
+            reservations: [multiLegFlight],
+            accommodations: [],
+            packing: [],
+            budget: [],
+            categories: [],
+            permissions: { share_bookings: true, share_packing: false, share_budget: false, share_collab: false },
+            collab: [],
+          });
+        }),
+      );
+    }
+
+    it('renders each leg with its own route, not the overall start/end', async () => {
+      serveMultiLeg('multileg-token');
+      renderSharedTrip('multileg-token');
+
+      await waitFor(() => {
+        expect(screen.getByText('Shared Paris Trip')).toBeInTheDocument();
+      });
+
+      // Expand the day to reveal the timeline
+      fireEvent.click(screen.getByText('Day One'));
+
+      await waitFor(() => {
+        expect(screen.getByText(/FRA → BER/)).toBeInTheDocument();
+      });
+      // Second leg shows its OWN route + flight number (the bug showed the overall route here)
+      expect(screen.getByText(/BER → HND/)).toBeInTheDocument();
+      expect(screen.getByText(/LH2/)).toBeInTheDocument();
+      // The overall start→end must NOT appear on any leg
+      expect(screen.queryByText(/FRA → HND/)).toBeNull();
+    });
+
+    it('lists each leg flight number in the Bookings tab', async () => {
+      serveMultiLeg('multileg-bookings-token');
+      renderSharedTrip('multileg-bookings-token');
+
+      await waitFor(() => {
+        expect(screen.getByText('Shared Paris Trip')).toBeInTheDocument();
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: /bookings/i }));
+
+      await waitFor(() => {
+        expect(screen.getByText(/LH1/)).toBeInTheDocument();
+      });
+      expect(screen.getByText(/LH2/)).toBeInTheDocument();
+    });
+  });
+
+  describe('FE-PAGE-SHARED-018: untitled day uses the translated day label (#1296)', () => {
+    it('renders the day-number label via i18n (German), not a hardcoded English string', async () => {
+      seedStore(useSettingsStore, { settings: buildSettings({ language: 'de' }) });
+      const day = { id: 101, trip_id: 1, day_number: 1, date: '2026-07-01', title: null, notes: null };
+      server.use(
+        http.get('/api/shared/:token', () => HttpResponse.json({
+          trip: { id: 1, title: 'Shared Paris Trip', start_date: '2026-07-01', end_date: '2026-07-05' },
+          days: [day],
+          assignments: {},
+          dayNotes: {},
+          places: [],
+          reservations: [],
+          accommodations: [],
+          packing: [],
+          budget: [],
+          categories: [],
+          permissions: { share_bookings: false, share_packing: false, share_budget: false, share_collab: false },
+          collab: [],
+        })),
+      );
+      renderSharedTrip('test-token');
+      // The untitled day shows the German label "Tag 1", proving the hardcoded English
+      // "Day 1" was replaced by the i18n key t('dayplan.dayN').
+      await waitFor(() => expect(screen.getByText('Tag 1')).toBeInTheDocument());
+    });
+  });
+
+  describe('FE-PAGE-SHARED-019: budget renders in the owner\'s baseCurrency, not the EUR trip fallback (#1361)', () => {
+    it('labels totals with the payload baseCurrency even when the trip currency is EUR', async () => {
+      server.use(
+        // No FX needed when the expense is already in the base; stub frankfurter so
+        // the live-rate fetch never hits the network in tests.
+        http.get('https://api.frankfurter.dev/v2/rates', () => HttpResponse.json([])),
+        http.get('/api/shared/:token', ({ params }) => {
+          if (params.token !== 'cad-token') return;
+          return HttpResponse.json({
+            trip: { id: 1, title: 'Shared Paris Trip', start_date: '2026-07-01', end_date: '2026-07-05', currency: 'EUR' },
+            baseCurrency: 'CAD',
+            days: [], assignments: {}, dayNotes: {}, places: [], reservations: [], accommodations: [], packing: [],
+            budget: [{ id: 1, name: 'Hotel', total_price: '200', category: 'Accommodation', currency: 'CAD' }],
+            categories: [],
+            permissions: { share_bookings: false, share_packing: false, share_budget: true, share_collab: false },
+            collab: [],
+          });
+        }),
+      );
+
+      renderSharedTrip('cad-token');
+      await waitFor(() => expect(screen.getByText('Shared Paris Trip')).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: /costs/i }));
+
+      await waitFor(() => expect(screen.getByText('Hotel')).toBeInTheDocument());
+      // Total + per-row labelled CAD; never the EUR fallback.
+      expect(screen.getAllByText(/200\.00 CAD/).length).toBeGreaterThan(0);
+      expect(screen.queryByText(/EUR/)).toBeNull();
+    });
+  });
+
+  describe('FE-PAGE-SHARED-020: mixed-currency expenses convert into baseCurrency via live FX (#1361)', () => {
+    it('converts a EUR expense into the base using fetched rates', async () => {
+      // Distinct base (NZD) so this test can't read the cached CAD rates seeded by
+      // FE-PAGE-SHARED-019 (useExchangeRates caches per base in module memory).
+      server.use(
+        // rates[X] = units of X per 1 base(NZD); 0.8 EUR per NZD → 100 EUR = 125.00 NZD
+        // (a clean 2-decimal result, distinct from the unconverted 100).
+        http.get('https://api.frankfurter.dev/v2/rates', () => HttpResponse.json([{ quote: 'EUR', rate: 0.8 }])),
+        http.get('/api/shared/:token', ({ params }) => {
+          if (params.token !== 'mixed-token') return;
+          return HttpResponse.json({
+            trip: { id: 1, title: 'Shared Paris Trip', start_date: '2026-07-01', end_date: '2026-07-05', currency: 'EUR' },
+            baseCurrency: 'NZD',
+            days: [], assignments: {}, dayNotes: {}, places: [], reservations: [], accommodations: [], packing: [],
+            budget: [{ id: 1, name: 'Dinner', total_price: '100', category: 'Food', currency: 'EUR' }],
+            categories: [],
+            permissions: { share_bookings: false, share_packing: false, share_budget: true, share_collab: false },
+            collab: [],
+          });
+        }),
+      );
+
+      renderSharedTrip('mixed-token');
+      await waitFor(() => expect(screen.getByText('Shared Paris Trip')).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: /costs/i }));
+
+      await waitFor(() => expect(screen.getByText('Dinner')).toBeInTheDocument());
+      // 100 EUR / 0.8 = 125.00 NZD once the rate resolves.
+      await waitFor(() => expect(screen.getAllByText(/125\.00 NZD/).length).toBeGreaterThan(0));
     });
   });
 });

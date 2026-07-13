@@ -47,6 +47,9 @@ beforeEach(() => {
     http.get('/api/maps/place-photo/:placeId', () =>
       HttpResponse.json({ photoUrl: null })
     ),
+    http.get('/api/pdf-sections/:tripId', () =>
+      HttpResponse.json({ sections: [] })
+    ),
   )
 })
 
@@ -82,6 +85,22 @@ const transportReservation = {
   reservation_time: '2025-06-01T14:30:00',
   confirmation_number: 'ABC123',
   metadata: JSON.stringify({ airline: 'Air Italia', flight_number: 'AI123', departure_airport: 'CDG', arrival_airport: 'FCO' }),
+} as any
+
+const multiLegFlight = {
+  id: 401,
+  title: 'Flight to Tokyo',
+  type: 'flight',
+  day_id: 10,
+  reservation_time: '2025-06-01T08:00:00',
+  confirmation_number: 'XYZ789',
+  metadata: JSON.stringify({
+    legs: [
+      { from: 'FRA', to: 'BER', airline: 'Lufthansa', flight_number: 'LH1' },
+      { from: 'BER', to: 'HND', airline: 'Lufthansa', flight_number: 'LH2' },
+    ],
+    departure_airport: 'FRA', arrival_airport: 'HND', airline: 'Lufthansa', flight_number: 'LH1',
+  }),
 } as any
 
 const richArgs = {
@@ -133,6 +152,22 @@ describe('downloadTripPDF', () => {
     await downloadTripPDF(args)
     const iframe = getIframe()
     expect(iframe!.srcdoc).toContain('Day One')
+  })
+
+  it('FE-COMP-TRIPPDF-005b: day is a table with a thead header that repeats on overflow pages (#1471)', async () => {
+    await downloadTripPDF(richArgs)
+    const iframe = getIframe()
+    const srcdoc = iframe!.srcdoc
+    // The day is a real <table> whose <thead> is repeated by the browser's print
+    // engine on every page an overflowing day spills onto.
+    expect(srcdoc).toContain('<table class="day-section')
+    expect(srcdoc).toContain('<thead class="day-header">')
+    expect(srcdoc).toContain('<tbody class="day-body-group">')
+    // The dark bar (background/padding/flex) lives in an inner wrapper inside the thead.
+    expect(srcdoc).toContain('class="day-header-bar"')
+    // Day content still renders inside the new structure.
+    expect(srcdoc).toContain('Rome Day')
+    expect(srcdoc).toContain('Colosseum')
   })
 
   it('FE-COMP-TRIPPDF-006: escHtml prevents XSS in trip title', async () => {
@@ -196,6 +231,16 @@ describe('downloadTripPDF', () => {
     const iframe = getIframe()
     expect(iframe!.srcdoc).toContain('Flight to Rome')
     expect(iframe!.srcdoc).toContain('ABC123')
+    // Single-leg flight keeps its full-route subtitle.
+    expect(iframe!.srcdoc).toContain('Air Italia · AI123 · CDG → FCO')
+  })
+
+  it('FE-COMP-TRIPPDF-013b: renders every flight number for a multi-leg flight', async () => {
+    await downloadTripPDF({ ...richArgs, reservations: [multiLegFlight] })
+    const iframe = getIframe()
+    // One subtitle line per leg, each with its own flight number and segment route.
+    expect(iframe!.srcdoc).toContain('Lufthansa · LH1 · FRA → BER')
+    expect(iframe!.srcdoc).toContain('Lufthansa · LH2 · BER → HND')
   })
 
   it('FE-COMP-TRIPPDF-014: renders cover image when trip has cover_image', async () => {
@@ -259,6 +304,23 @@ describe('downloadTripPDF', () => {
     expect(iframe!.srcdoc).toContain('colosseum.jpg')
   })
 
+  it('FE-COMP-TRIPPDF-018b: renders a persisted place-photo proxy image_url as an <img>, not the category icon (#1130)', async () => {
+    const args = {
+      ...richArgs,
+      assignments: {
+        '10': [{
+          ...assignmentForDay,
+          place: { ...placeWithDetails, image_url: '/api/maps/place-photo/ChIJabc/bytes' },
+        }],
+      } as any,
+    }
+    await downloadTripPDF(args)
+    const iframe = getIframe()
+    // The proxy path (no file extension) must still embed as an absolute <img>.
+    expect(iframe!.srcdoc).toContain('http://localhost:3000/api/maps/place-photo/ChIJabc/bytes')
+    expect(iframe!.srcdoc).toContain('class="place-thumb"')
+  })
+
   it('FE-COMP-TRIPPDF-019: fetches google place photos for places with google_place_id', async () => {
     let photoCalled = false
     server.use(
@@ -280,6 +342,28 @@ describe('downloadTripPDF', () => {
     expect(photoCalled).toBe(true)
   })
 
+  it('FE-COMP-TRIPPDF-019b: fetches photos for OSM places via osm_id recovered from the places pool (#1130)', async () => {
+    let fetchedId: string | null = null
+    server.use(
+      http.get('/api/maps/place-photo/:placeId', ({ params }) => {
+        fetchedId = params.placeId as string
+        return HttpResponse.json({ photoUrl: 'https://example.com/osm.jpg' })
+      }),
+    )
+    // The assignment projection drops osm_id; the full place in `places` carries it.
+    const osmPlace = { ...placeWithDetails, id: 101, image_url: null, google_place_id: null, osm_id: 'node/240109189', lat: 41.89, lng: 12.49 }
+    const args = {
+      ...richArgs,
+      places: [osmPlace],
+      assignments: {
+        '10': [{ ...assignmentForDay, id: 201, place_id: 101, place: { ...placeWithDetails, id: 101, image_url: null, google_place_id: null } }],
+      } as any,
+    }
+    await downloadTripPDF(args)
+    // osm_id is used as the photo key (not the coords fallback), proving the pool lookup works.
+    expect(fetchedId).toBe('node/240109189')
+  })
+
   it('FE-COMP-TRIPPDF-020: renders empty day message when no items assigned', async () => {
     const args = {
       ...minimalArgs,
@@ -290,5 +374,36 @@ describe('downloadTripPDF', () => {
     const iframe = getIframe()
     // The empty-day div should appear (contains the translation key for empty day)
     expect(iframe!.srcdoc).toContain('dayplan.emptyDay')
+  })
+
+  it('FE-COMP-TRIPPDF-021: appends plugin pdf sections after the days, escaped', async () => {
+    server.use(
+      http.get('/api/pdf-sections/:tripId', () =>
+        HttpResponse.json({
+          sections: [{
+            pluginId: 'weather',
+            title: 'Weather <b>Forecast</b>',
+            paragraphs: ['Sunny all week'],
+            table: { headers: ['Day', 'Temp'], rows: [['Mon', '24°C']] },
+          }],
+        })
+      ),
+    )
+    await downloadTripPDF(richArgs)
+    const srcdoc = getIframe()!.srcdoc
+    expect(srcdoc).toContain('class="plugin-section"')
+    // Plugin text is escHtml'd like the core content — no markup passes through.
+    expect(srcdoc).not.toContain('<b>Forecast</b>')
+    expect(srcdoc).toContain('Weather &lt;b&gt;Forecast&lt;/b&gt;')
+    expect(srcdoc).toContain('Sunny all week')
+    expect(srcdoc).toContain('24°C')
+    // Sections come after the last day section.
+    expect(srcdoc.indexOf('class="plugin-sections')).toBeGreaterThan(srcdoc.lastIndexOf('class="day-section'))
+  })
+
+  it('FE-COMP-TRIPPDF-022: renders no plugin block when the sections fetch fails (fail-safe)', async () => {
+    server.use(http.get('/api/pdf-sections/:tripId', () => HttpResponse.error()))
+    await expect(downloadTripPDF(minimalArgs)).resolves.not.toThrow()
+    expect(getIframe()!.srcdoc).not.toContain('class="plugin-sections')
   })
 })

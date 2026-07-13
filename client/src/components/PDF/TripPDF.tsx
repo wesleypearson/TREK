@@ -1,10 +1,12 @@
 // Trip PDF via browser print window
 import { createElement } from 'react'
 import { getCategoryIcon } from '../shared/categoryIcons'
-import { FileText, Info, Clock, MapPin, Navigation, Train, Plane, Bus, Car, Ship, Coffee, Ticket, Star, Heart, Camera, Flag, Lightbulb, AlertTriangle, ShoppingBag, Bookmark, Hotel, LogIn, LogOut, KeyRound, BedDouble, Utensils, Users, LucideIcon } from 'lucide-react'
-import { accommodationsApi, mapsApi } from '../../api/client'
-import type { Trip, Day, Place, Category, AssignmentsMap, DayNotesMap } from '../../types'
+import { FileText, Info, Clock, MapPin, Navigation, Train, Plane, Bus, Car, Ship, Sailboat, Bike, CarTaxiFront, Route, Coffee, Ticket, Star, Heart, Camera, Flag, Lightbulb, AlertTriangle, ShoppingBag, Bookmark, Hotel, LogIn, LogOut, KeyRound, BedDouble, Utensils, Users, LucideIcon } from 'lucide-react'
+import { accommodationsApi, mapsApi, pluginsApi } from '../../api/client'
+import type { Trip, Day, Place, Category, AssignmentsMap, DayNote } from '../../types'
 import { isDayInAccommodationRange, getDayOrder } from '../../utils/dayOrder'
+import { splitReservationDateTime } from '../../utils/formatters'
+import { getFlightLegs, getTrainLegs } from '../../utils/flightLegs'
 
 function renderLucideIcon(icon:LucideIcon, props = {}) {
   if (!_renderToStaticMarkup) return ''
@@ -19,8 +21,8 @@ function noteIconSvg(iconId) {
   return renderLucideIcon(Icon, { size: 14, strokeWidth: 1.8, color: '#94a3b8' })
 }
 
-const RESERVATION_ICON_MAP = { flight: Plane, train: Train, bus: Bus, car: Car, cruise: Ship, restaurant: Utensils, event: Ticket, tour: Users, other: FileText }
-const RESERVATION_COLOR_MAP = { flight: '#3b82f6', train: '#06b6d4', bus: '#6b7280', car: '#6b7280', cruise: '#0ea5e9', restaurant: '#ef4444', event: '#f59e0b', tour: '#10b981', other: '#6b7280' }
+const RESERVATION_ICON_MAP = { flight: Plane, train: Train, bus: Bus, car: Car, taxi: CarTaxiFront, bicycle: Bike, cruise: Ship, ferry: Sailboat, transport_other: Route, restaurant: Utensils, event: Ticket, tour: Users, other: FileText }
+const RESERVATION_COLOR_MAP = { flight: '#3b82f6', train: '#06b6d4', bus: '#059669', car: '#6b7280', taxi: '#ca8a04', bicycle: '#84cc16', cruise: '#0ea5e9', ferry: '#0d9488', transport_other: '#6b7280', restaurant: '#ef4444', event: '#f59e0b', tour: '#10b981', other: '#6b7280' }
 function reservationIconSvg(type) {
   const Icon = RESERVATION_ICON_MAP[type] || Ticket
   const color = RESERVATION_COLOR_MAP[type] || '#3b82f6'
@@ -54,6 +56,10 @@ function absUrl(url) {
 function safeImg(url) {
   if (!url) return null
   if (url.startsWith('https://') || url.startsWith('http://')) return url
+  // The in-app place-photo proxy always streams a JPEG but has no file extension
+  // (it ends in …/bytes), so the extension check below would wrongly reject it —
+  // which is why persisted place photos showed as category icons in the PDF.
+  if (url.startsWith('/api/maps/place-photo/')) return absUrl(url)
   return /\.(jpe?g|png|webp|bmp|tiff?)(\?.*)?$/i.test(url) ? absUrl(url) : null
 }
 
@@ -91,19 +97,29 @@ function dayCost(assignments, dayId, locale) {
   return total > 0 ? `${total.toLocaleString(locale)} EUR` : null
 }
 
-// Pre-fetch Google Place photos for all assigned places
-async function fetchPlacePhotos(assignments) {
+// Pre-fetch place photos for all assigned places.
+// Assignment places are a server-side projection that drops osm_id, so we recover
+// the full place from the trip's places pool and key the photo off the same id the
+// app UI uses (google_place_id || osm_id || coords) — otherwise OSM/coords-only
+// places fell back to category icons in the PDF even though they show photos in-app.
+async function fetchPlacePhotos(assignments: AssignmentsMap, places: Place[]) {
   const photoMap = {} // placeId → photoUrl
+  // The assignment projection drops osm_id, so recover it from the full places pool.
+  const osmById = new Map((places || []).map(p => [p.id, p.osm_id]))
   const allPlaces = Object.values(assignments).flatMap(a => a.map(x => x.place)).filter(Boolean)
   const unique = [...new Map(allPlaces.map(p => [p.id, p])).values()]
 
-  const toFetch = unique.filter(p => !p.image_url && (p.google_place_id || p.osm_id))
+  const toFetch = unique
+    .map(p => ({ p, osm_id: osmById.get(p.id) }))
+    .filter(({ p, osm_id }) => !p.image_url && (p.google_place_id || osm_id || (p.lat != null && p.lng != null)))
 
   await Promise.allSettled(
-    toFetch.map(async (place) => {
+    toFetch.map(async ({ p, osm_id }) => {
+      // Same key the app UI uses: google_place_id || osm_id || coords.
+      const photoId = p.google_place_id || osm_id || `coords:${p.lat}:${p.lng}`
       try {
-        const data = await mapsApi.placePhoto(place.google_place_id || place.osm_id, place.lat, place.lng, place.name)
-        if (data.photoUrl) photoMap[place.id] = data.photoUrl
+        const data = await mapsApi.placePhoto(photoId, p.lat, p.lng, p.name)
+        if (data.photoUrl) photoMap[p.id] = data.photoUrl
       } catch {}
     })
   )
@@ -116,7 +132,8 @@ interface downloadTripPDFProps {
   places: Place[]
   assignments: AssignmentsMap
   categories: Category[]
-  dayNotes: DayNotesMap
+  // Flattened across days: each note carries its own day_id (see downloadTripPDF callers).
+  dayNotes: DayNote[]
   reservations?: any[]
   t: (key: string, params?: Record<string, string | number>) => string
   locale: string
@@ -132,14 +149,19 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
   //retrieve accommodations for the trip to display on the day sections and prefetch their photos if needed
   const accommodations = await accommodationsApi.list(trip.id);
 
-  // Pre-fetch place photos from Google
-  const photoMap = await fetchPlacePhotos(assignments)
+  // Sections contributed by pdfSectionProvider plugins — server-normalized plain
+  // text (counts + lengths capped), appended after the days. Fail-safe: an error
+  // just means no extra sections, the core export is untouched.
+  const pluginSections = await pluginsApi.pdfSections(trip.id).then(r => r.sections || []).catch(() => [])
+
+  // Pre-fetch place photos (Google, OSM and coords-only places)
+  const photoMap = await fetchPlacePhotos(assignments, places)
 
   const totalAssigned = new Set(
     Object.values(assignments || {}).flatMap(a => a.map(x => x.place?.id)).filter(Boolean)
   ).size
   const totalCost = Object.values(assignments || {})
-    .flatMap(a => a).reduce((s, a) => s + (parseFloat(a.place?.price) || 0), 0)
+    .flatMap(a => a).reduce((s, a) => s + (Number(a.place?.price) || 0), 0)
 
   // Span helpers for multi-day transport (mirrors DayPlanSidebar logic)
   const pdfGetDayOrder = (d: Day) => d.day_number
@@ -189,7 +211,7 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
       .filter(r => !(r.type === 'car' && pdfGetSpanPhase(r, day.id) === 'middle'))
 
     const merged = []
-    assigned.forEach(a => merged.push({ type: 'place', k: a.order_index ?? a.sort_order ?? 0, data: a }))
+    assigned.forEach(a => merged.push({ type: 'place', k: a.order_index ?? 0, data: a }))
     notes.forEach(n    => merged.push({ type: 'note',  k: n.sort_order ?? 0, data: n }))
     dayReservations.forEach(r => {
       const pos = r.day_positions?.[day.id] ?? r.day_positions?.[String(day.id)] ?? r.day_plan_position ?? (merged.length > 0 ? Math.max(...merged.map(m => m.k)) + 0.5 : 0.5)
@@ -207,16 +229,49 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
             const icon = reservationIconSvg(r.type)
             const color = RESERVATION_COLOR_MAP[r.type] || '#3b82f6'
             let subtitle = ''
-            if (r.type === 'flight') subtitle = [meta.airline, meta.flight_number, meta.departure_airport && meta.arrival_airport ? `${meta.departure_airport} → ${meta.arrival_airport}` : ''].filter(Boolean).join(' · ')
-            else if (r.type === 'train') subtitle = [meta.train_number, meta.platform ? `Gl. ${meta.platform}` : '', meta.seat ? `Seat ${meta.seat}` : ''].filter(Boolean).join(' · ')
+            // Flights render one subtitle line per leg (see below); everything else is a single line.
+            let subtitleLines: string[] = []
+            if (r.type === 'flight') {
+              const legs = getFlightLegs(r)
+              if (legs.length > 1) {
+                // Multi-leg: one line per leg so every flight number + segment route is shown.
+                subtitleLines = legs.map(l =>
+                  [l.airline, l.flight_number,
+                   (l.from || l.to) ? [l.from, l.to].filter(Boolean).join(' → ') : '']
+                    .filter(Boolean).join(' · '))
+                  .filter(Boolean)
+              } else {
+                // Single-leg: full route over all waypoints (FRA → BER → HND), falling back to the
+                // flat metadata pair for legacy single-leg flights without endpoints.
+                const stops = (r.endpoints || []).slice().sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)).map(e => e.code || e.name)
+                const route = stops.length >= 2 ? stops.join(' → ') : (meta.departure_airport && meta.arrival_airport ? `${meta.departure_airport} → ${meta.arrival_airport}` : '')
+                subtitle = [meta.airline, meta.flight_number, route].filter(Boolean).join(' · ')
+              }
+            }
+            else if (r.type === 'train') {
+              const legs = getTrainLegs(r)
+              if (legs.length > 1) {
+                // Multi-leg: one line per leg so every train number + segment route shows.
+                subtitleLines = legs.map(l =>
+                  [l.train_number, l.platform ? `Gl. ${l.platform}` : '',
+                   (l.from || l.to) ? [l.from, l.to].filter(Boolean).join(' → ') : '']
+                    .filter(Boolean).join(' · '))
+                  .filter(Boolean)
+              } else {
+                const stops = (r.endpoints || []).slice().sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0)).map(e => e.code || e.name)
+                const route = stops.length >= 2 ? stops.join(' → ') : ''
+                subtitle = [meta.train_number, meta.platform ? `Gl. ${meta.platform}` : '', meta.seat ? `Seat ${meta.seat}` : '', route].filter(Boolean).join(' · ')
+              }
+            }
             else if (r.type === 'restaurant') subtitle = [meta.party_size ? `${meta.party_size} guests` : ''].filter(Boolean).join(' · ')
             else if (r.type === 'event') subtitle = [meta.venue].filter(Boolean).join(' · ')
             else if (r.type === 'tour') subtitle = [meta.operator].filter(Boolean).join(' · ')
+            if (subtitleLines.length === 0 && subtitle) subtitleLines = [subtitle]
             const locationLine = r.location || meta.location || ''
             const phase = pdfGetSpanPhase(r, day.id)
             const spanLabel = pdfGetSpanLabel(r, phase)
             const displayTime = pdfGetDisplayTime(r, day.id)
-            const time = displayTime?.includes('T') ? displayTime.split('T')[1]?.substring(0, 5) : ''
+            const time = splitReservationDateTime(displayTime).time ?? ''
             const titleHtml = `${spanLabel ? escHtml(spanLabel) + ': ' : ''}${escHtml(r.title)}`
             return `
               <div class="note-card" style="border-left: 3px solid ${color};">
@@ -224,7 +279,7 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
                 <span class="note-icon">${icon}</span>
                 <div class="note-body">
                   <div class="note-text" style="font-weight: 600;">${titleHtml}${time ? ` <span style="color:#6b7280;font-weight:400;font-size:10px;">${time}</span>` : ''}</div>
-                  ${subtitle ? `<div class="note-time">${escHtml(subtitle)}</div>` : ''}
+                  ${subtitleLines.filter(Boolean).map(s => `<div class="note-time">${escHtml(s)}</div>`).join('')}
                   ${locationLine ? `<div class="note-time">${escHtml(locationLine)}</div>` : ''}
                   ${r.confirmation_number ? `<div class="note-time" style="font-size:9px;">Code: ${escHtml(r.confirmation_number)}</div>` : ''}
                 </div>
@@ -250,9 +305,10 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
           const cat = categories.find(c => c.id === place.category_id)
           const color = cat?.color || '#6366f1'
 
-          // Image: direct > google photo > fallback icon
+          // Image: direct > google photo > fallback icon. Both go through safeImg
+          // so the proxy path is resolved to an absolute URL the PDF can load.
           const directImg = safeImg(place.image_url)
-          const googleImg = photoMap[place.id] || null
+          const googleImg = safeImg(photoMap[place.id])
           const img = directImg || googleImg
 
           const iconSvg = categoryIconSvg(cat?.icon, color, 24)
@@ -278,6 +334,7 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
                   ${cat ? `<span class="cat-badge" style="background:${color}">${escHtml(cat.name)}</span>` : ''}
                 </div>
                 ${place.address ? `<div class="info-row">${svgPin}<span class="info-text">${escHtml(place.address)}</span></div>` : ''}
+                ${(place.lat != null && place.lng != null) ? `<div class="info-row"><span class="info-spacer"></span><span class="info-text muted">${Number(place.lat).toFixed(5)}, ${Number(place.lng).toFixed(5)}</span></div>` : ''}
                 ${place.description ? `<div class="info-row"><span class="info-spacer"></span><span class="info-text muted italic">${escHtml(place.description)}</span></div>` : ''}
                 ${chips ? `<div class="chips">${chips}</div>` : ''}
                 ${place.notes ? `<div class="info-row"><span class="info-spacer"></span><span class="info-text muted italic">${escHtml(place.notes)}</span></div>` : ''}
@@ -323,17 +380,40 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
         </div>`
       : ''
 
+    // A real <table> so the browser repeats the <thead> day header at the top of
+    // every page an overflowing day spills onto (#1471). CSS `table-header-group`
+    // on a <div> is NOT repeated by Chromium's print engine — only real thead is.
     return `
-      <div class="day-section${di > 0 ? ' page-break' : ''}">
-        <div class="day-header">
-          <span class="day-tag">${escHtml(tr('dayplan.dayN', { n: day.day_number })).toUpperCase()}</span>
-          <span class="day-title">${escHtml(day.title || tr('dayplan.dayN', { n: day.day_number }))}</span>
-          ${day.date ? `<span class="day-date">${shortDate(day.date, loc)}</span>` : ''}
-          ${cost ? `<span class="day-cost">${cost}</span>` : ''}
-        </div>
-        <div class="day-body">${accommodationsHtml}${itemsHtml}</div>
-      </div>`  
+      <table class="day-section${di > 0 ? ' page-break' : ''}">
+        <thead class="day-header"><tr><td>
+          <div class="day-header-bar">
+            <span class="day-tag">${escHtml(tr('dayplan.dayN', { n: day.day_number })).toUpperCase()}</span>
+            <span class="day-title">${escHtml(day.title || tr('dayplan.dayN', { n: day.day_number }))}</span>
+            ${day.date ? `<span class="day-date">${shortDate(day.date, loc)}</span>` : ''}
+            ${cost ? `<span class="day-cost">${cost}</span>` : ''}
+          </div>
+        </td></tr></thead>
+        <tbody class="day-body-group"><tr><td>
+          <div class="day-body">${accommodationsHtml}${itemsHtml}</div>
+        </td></tr></tbody>
+      </table>`
   }).join('')
+
+  // Plugin sections after the days — every value is host-vetted plain text and
+  // still escHtml'd here (same treatment as the core content above).
+  const pluginSectionsHtml = pluginSections.length === 0 ? '' : `
+    <div class="plugin-sections page-break">
+      ${pluginSections.map(s => `
+      <div class="plugin-section">
+        <div class="plugin-section-title">${escHtml(s.title)}</div>
+        ${(s.paragraphs || []).map(p => `<p class="plugin-section-text">${escHtml(p)}</p>`).join('')}
+        ${s.table ? `
+        <table class="plugin-section-table">
+          <thead><tr>${s.table.headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead>
+          <tbody>${s.table.rows.map(row => `<tr>${row.map(cell => `<td>${escHtml(cell)}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table>` : ''}
+      </div>`).join('')}
+    </div>`
 
   const html = `<!DOCTYPE html>
 <html lang="${loc.split('-')[0]}">
@@ -404,8 +484,10 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
   .cover-stat-lbl { font-size: 9px; font-weight: 500; color: rgba(255,255,255,0.4); letter-spacing: 1px; margin-top: 4px; text-transform: uppercase; }
 
   /* ── Day ───────────────────────────────────────── */
+  /* .day-section is a real <table>; its <thead> day header repeats on overflow pages. */
   .page-break { page-break-before: always; }
-  .day-header {
+  .day-section { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .day-header-bar {
     background: #0f172a; padding: 11px 28px;
     display: flex; align-items: center; gap: 8px;
   }
@@ -486,6 +568,15 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
 
   .empty-day { font-size: 9.5px; color: #cbd5e1; font-style: italic; text-align: center; padding: 14px 0; }
 
+  /* ── Plugin sections ───────────────────────────── */
+  .plugin-sections { padding: 16px 28px 6px; }
+  .plugin-section { margin-bottom: 16px; page-break-inside: avoid; }
+  .plugin-section-title { font-size: 12px; font-weight: 600; color: #1e293b; margin-bottom: 6px; padding-bottom: 4px; border-bottom: 1px solid #e2e8f0; }
+  .plugin-section-text { font-size: 9.5px; color: #334155; line-height: 1.55; margin-bottom: 5px; }
+  .plugin-section-table { width: 100%; border-collapse: collapse; margin-top: 6px; }
+  .plugin-section-table th { font-size: 8px; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; text-align: left; padding: 4px 8px; border-bottom: 1px solid #e2e8f0; }
+  .plugin-section-table td { font-size: 9px; color: #334155; padding: 4px 8px; border-bottom: 1px solid #f1f5f9; }
+
   /* ── Print ─────────────────────────────────────── */
   @media print {
     body { margin: 0; }
@@ -539,7 +630,7 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
 
 <!-- Days -->
 ${daysHtml}
-
+${pluginSectionsHtml}
 </body></html>`
 
   // Open in modal with srcdoc iframe (no URL loading = no X-Frame-Options issue)
@@ -565,7 +656,9 @@ ${daysHtml}
 
   const iframe = document.createElement('iframe')
   iframe.style.cssText = 'flex:1;width:100%;border:none;'
-  iframe.sandbox = 'allow-same-origin allow-modals allow-scripts'
+  // No script runs inside the document (print is parent-initiated), so withhold
+  // allow-scripts to keep the sandbox tight.
+  iframe.sandbox = 'allow-same-origin allow-modals'
   iframe.srcdoc = html
 
   card.appendChild(header)
@@ -573,6 +666,8 @@ ${daysHtml}
   overlay.appendChild(card)
   document.body.appendChild(overlay)
 
-  header.querySelector('#pdf-close-btn').onclick = () => overlay.remove()
-  header.querySelector('#pdf-print-btn').onclick = () => { iframe.contentWindow?.print() }
+  const closeBtn = header.querySelector<HTMLElement>('#pdf-close-btn')
+  if (closeBtn) closeBtn.onclick = () => overlay.remove()
+  const printBtn = header.querySelector<HTMLElement>('#pdf-print-btn')
+  if (printBtn) printBtn.onclick = () => { iframe.contentWindow?.print() }
 }

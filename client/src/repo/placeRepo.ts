@@ -1,25 +1,28 @@
 import { placesApi } from '../api/client'
 import { offlineDb, upsertPlaces } from '../db/offlineDb'
-import { mutationQueue, generateUUID } from '../sync/mutationQueue'
+import { mutationQueue, generateUUID, nextTempId } from '../sync/mutationQueue'
+import { isEffectivelyOffline } from '../sync/networkMode'
+import { onlineThenCache } from './withOfflineFallback'
 import type { Place } from '../types'
 
 export const placeRepo = {
   async list(tripId: number | string, params?: Record<string, unknown>): Promise<{ places: Place[] }> {
-    if (!navigator.onLine) {
-      const cached = await offlineDb.places
-        .where('trip_id')
-        .equals(Number(tripId))
-        .toArray()
-      return { places: cached }
-    }
-    const result = await placesApi.list(tripId, params)
-    upsertPlaces(result.places)
-    return result
+    return onlineThenCache(
+      async () => {
+        const result = await placesApi.list(tripId, params)
+        upsertPlaces(result.places)
+        return result
+      },
+      async () => ({
+        places: await offlineDb.places
+          .where('trip_id').equals(Number(tripId)).toArray(),
+      }),
+    )
   },
 
-  async create(tripId: number | string, data: Record<string, unknown>): Promise<{ place: Place }> {
-    if (!navigator.onLine) {
-      const tempId = -(Date.now())
+  async create(tripId: number | string, data: Record<string, unknown> & { name: string }): Promise<{ place: Place }> {
+    if (isEffectivelyOffline()) {
+      const tempId = nextTempId()
       const tempPlace: Place = {
         ...(data as Partial<Place>),
         id: tempId,
@@ -45,18 +48,22 @@ export const placeRepo = {
   },
 
   async update(tripId: number | string, id: number | string, data: Record<string, unknown>): Promise<{ place: Place }> {
-    if (!navigator.onLine) {
+    if (isEffectivelyOffline()) {
       const existing = await offlineDb.places.get(Number(id))
       const optimistic: Place = { ...(existing ?? {} as Place), ...(data as Partial<Place>), id: Number(id) }
       await offlineDb.places.put(optimistic)
       const mutId = generateUUID()
+      const isTemp = Number(id) < 0
       await mutationQueue.enqueue({
         id: mutId,
         tripId: Number(tripId),
         method: 'PUT',
-        url: `/trips/${tripId}/places/${id}`,
+        url: isTemp ? `/trips/${tripId}/places/{id}` : `/trips/${tripId}/places/${id}`,
         body: data,
         resource: 'places',
+        entityId: Number(id),
+        baseUpdatedAt: existing?.updated_at ?? null,
+        ...(isTemp ? { tempEntityId: Number(id) } : {}),
       })
       return { place: optimistic }
     }
@@ -66,17 +73,19 @@ export const placeRepo = {
   },
 
   async delete(tripId: number | string, id: number | string): Promise<unknown> {
-    if (!navigator.onLine) {
+    if (isEffectivelyOffline()) {
       await offlineDb.places.delete(Number(id))
       const mutId = generateUUID()
+      const isTemp = Number(id) < 0
       await mutationQueue.enqueue({
         id: mutId,
         tripId: Number(tripId),
         method: 'DELETE',
-        url: `/trips/${tripId}/places/${id}`,
+        url: isTemp ? `/trips/${tripId}/places/{id}` : `/trips/${tripId}/places/${id}`,
         body: undefined,
         resource: 'places',
         entityId: Number(id),
+        ...(isTemp ? { tempEntityId: Number(id) } : {}),
       })
       return { success: true }
     }
@@ -86,24 +95,54 @@ export const placeRepo = {
   },
 
   async deleteMany(tripId: number | string, ids: number[]): Promise<unknown> {
-    if (!navigator.onLine) {
+    if (isEffectivelyOffline()) {
       await offlineDb.places.bulkDelete(ids)
       for (const id of ids) {
         const mutId = generateUUID()
+        const isTemp = id < 0
         await mutationQueue.enqueue({
           id: mutId,
           tripId: Number(tripId),
           method: 'DELETE',
-          url: `/trips/${tripId}/places/${id}`,
+          url: isTemp ? `/trips/${tripId}/places/{id}` : `/trips/${tripId}/places/${id}`,
           body: undefined,
           resource: 'places',
           entityId: id,
+          ...(isTemp ? { tempEntityId: id } : {}),
         })
       }
       return { deleted: ids, count: ids.length }
     }
     const result = await placesApi.bulkDelete(tripId, ids)
     await offlineDb.places.bulkDelete(ids)
+    return result
+  },
+
+  async updateMany(tripId: number | string, ids: number[], data: Record<string, unknown>): Promise<{ updated: number[]; count: number }> {
+    if (isEffectivelyOffline()) {
+      // Offline fans out one queued PUT per id (mirrors deleteMany's DELETE fan-out).
+      for (const id of ids) {
+        const existing = await offlineDb.places.get(id)
+        if (existing) await offlineDb.places.put({ ...existing, ...(data as Partial<Place>) })
+        const mutId = generateUUID()
+        const isTemp = id < 0
+        await mutationQueue.enqueue({
+          id: mutId,
+          tripId: Number(tripId),
+          method: 'PUT',
+          url: isTemp ? `/trips/${tripId}/places/{id}` : `/trips/${tripId}/places/${id}`,
+          body: data,
+          resource: 'places',
+          entityId: id,
+          baseUpdatedAt: existing?.updated_at ?? null,
+          ...(isTemp ? { tempEntityId: id } : {}),
+        })
+      }
+      return { updated: ids, count: ids.length }
+    }
+    const result = await placesApi.bulkUpdate(tripId, ids, data as Parameters<typeof placesApi.bulkUpdate>[2])
+    const cached = await offlineDb.places.bulkGet(ids)
+    await offlineDb.places.bulkPut(cached.filter(Boolean).map(p => ({ ...(p as Place), ...(data as Partial<Place>) })))
     return result
   },
 }

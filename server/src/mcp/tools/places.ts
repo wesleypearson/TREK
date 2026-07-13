@@ -2,15 +2,15 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp';
 import { z } from 'zod';
 import { canAccessTrip, db } from '../../db/database';
 import { isDemoUser } from '../../services/authService';
-import { deletePlacesMany, importGoogleList, importNaverList, listPlaces, createPlace, updatePlace, deletePlace } from '../../services/placeService';
+import { deletePlacesMany, updatePlacesMany, importGoogleList, importNaverList, listPlaces, createPlace, updatePlace, deletePlace } from '../../services/placeService';
 import { createAssignment, dayExists } from '../../services/assignmentService';
-import { onPlaceDeleted } from '../../services/journeyService';
+import { onPlaceDeleted, reconcileTripSkeletons } from '../../services/journeyService';
 import { listCategories } from '../../services/categoryService';
 import { searchPlaces } from '../../services/mapsService';
 import {
   safeBroadcast, TOOL_ANNOTATIONS_READONLY, TOOL_ANNOTATIONS_WRITE,
   TOOL_ANNOTATIONS_DELETE, TOOL_ANNOTATIONS_NON_IDEMPOTENT,
-  demoDenied, noAccess, ok,
+  demoDenied, noAccess, ok, hasTripPermission, permissionDenied,
 } from './_shared';
 import { canRead, canWrite } from '../scopes';
 
@@ -23,7 +23,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
   if (W) server.registerTool(
     'create_place',
     {
-      description: 'Add a new place/POI to a trip. Set google_place_id or osm_id (from search_place) so the app can show opening hours and ratings.',
+      description: 'Add a new place/POI to a trip. Set google_place_id, google_ftid, or osm_id (from search_place) so the app can show opening hours, ratings, and direct Google Maps links. Set price + currency to record the cost so it shows on the item.',
       inputSchema: {
         tripId: z.number().int().positive(),
         name: z.string().min(1).max(200),
@@ -33,17 +33,21 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
         address: z.string().max(500).optional(),
         category_id: z.number().int().positive().optional().describe('Category ID — use list_categories to see available options'),
         google_place_id: z.string().optional().describe('Google Place ID from search_place — enables opening hours display'),
+        google_ftid: z.string().optional().describe('Google Maps feature ID from search_place — enables direct Google Maps links'),
         osm_id: z.string().optional().describe('OpenStreetMap ID from search_place (e.g. "way:12345") — enables opening hours if no Google ID'),
         notes: z.string().max(2000).optional(),
         website: z.string().max(500).optional(),
         phone: z.string().max(50).optional(),
+        price: z.number().nonnegative().optional().describe('Cost of this place/activity (e.g. ticket price, entry fee)'),
+        currency: z.string().length(3).optional().describe('ISO 4217 currency code (e.g. "EUR", "USD")'),
       },
       annotations: TOOL_ANNOTATIONS_NON_IDEMPOTENT,
     },
-    async ({ tripId, name, description, lat, lng, address, category_id, google_place_id, osm_id, notes, website, phone }) => {
+    async ({ tripId, name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, notes, website, phone, price, currency }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
-      const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, osm_id, notes, website, phone });
+      if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
+      const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, notes, website, phone, price, currency }, userId);
       safeBroadcast(tripId, 'place:created', { place });
       return ok({ place });
     }
@@ -52,7 +56,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
   if (W) server.registerTool(
     'create_and_assign_place',
     {
-      description: 'Create a new place and immediately assign it to a day in one atomic operation. Use place details from search_place results. Only use when the place does not yet exist — if it already exists, use assign_place_to_day directly.',
+      description: 'Create a new place and immediately assign it to a day in one atomic operation. Use place details from search_place results. Only use when the place does not yet exist — if it already exists, use assign_place_to_day directly. Set price + currency to record the cost so it shows on the item.',
       inputSchema: {
         tripId: z.number().int().positive(),
         dayId: z.number().int().positive().describe('Day to assign the place to'),
@@ -63,27 +67,32 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
         address: z.string().max(500).optional(),
         category_id: z.number().int().positive().optional().describe('Category ID — use list_categories to see available options'),
         google_place_id: z.string().optional().describe('Google Place ID from search_place — enables opening hours display'),
+        google_ftid: z.string().optional().describe('Google Maps feature ID from search_place — enables direct Google Maps links'),
         osm_id: z.string().optional().describe('OpenStreetMap ID from search_place (e.g. "way:12345")'),
         place_notes: z.string().max(2000).optional().describe('Notes for the place'),
         website: z.string().max(500).optional(),
         phone: z.string().max(50).optional(),
         assignment_notes: z.string().max(500).optional().describe('Notes for this day assignment'),
+        price: z.number().nonnegative().optional().describe('Cost of this place/activity (e.g. ticket price, entry fee)'),
+        currency: z.string().length(3).optional().describe('ISO 4217 currency code (e.g. "EUR", "USD")'),
       },
       annotations: TOOL_ANNOTATIONS_NON_IDEMPOTENT,
     },
-    async ({ tripId, dayId, name, description, lat, lng, address, category_id, google_place_id, osm_id, place_notes, website, phone, assignment_notes }) => {
+    async ({ tripId, dayId, name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, place_notes, website, phone, assignment_notes, price, currency }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
+      if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
       if (!dayExists(dayId, tripId)) return { content: [{ type: 'text' as const, text: 'Day not found.' }], isError: true };
       try {
         const run = db.transaction(() => {
-          const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, osm_id, notes: place_notes, website, phone });
+          const place = createPlace(String(tripId), { name, description, lat, lng, address, category_id, google_place_id, google_ftid, osm_id, notes: place_notes, website, phone, price, currency }, userId);
           const assignment = createAssignment(dayId, place.id, assignment_notes ?? null);
           return { place, assignment };
         });
         const result = run();
         safeBroadcast(tripId, 'place:created', { place: result.place });
         safeBroadcast(tripId, 'assignment:created', { assignment: result.assignment });
+        try { reconcileTripSkeletons(tripId); } catch { /* non-fatal */ }
         return ok(result);
       } catch {
         return { content: [{ type: 'text' as const, text: 'Failed to create place and assignment.' }], isError: true };
@@ -115,13 +124,15 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
         transport_mode: z.enum(['walking', 'driving', 'cycling', 'transit', 'flight']).optional(),
         osm_id: z.string().optional().describe('OpenStreetMap ID (e.g. "way:12345")'),
         google_place_id: z.string().optional().describe('Google Place ID (e.g. "ChIJd8BlQ2BZwokRAFUEcm_qrcA")'),
+        google_ftid: z.string().optional().describe('Google Maps feature ID (e.g. "0x89c259b7abdd4769:0x103aaf1c8bf8a050")'),
       },
       annotations: TOOL_ANNOTATIONS_WRITE,
     },
-    async ({ tripId, placeId, name, description, lat, lng, address, category_id, price, currency, place_time, end_time, duration_minutes, notes, website, phone, transport_mode, osm_id, google_place_id }) => {
+    async ({ tripId, placeId, name, description, lat, lng, address, category_id, price, currency, place_time, end_time, duration_minutes, notes, website, phone, transport_mode, osm_id, google_place_id, google_ftid }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
-      const place = updatePlace(String(tripId), String(placeId), { name, description, lat, lng, address, category_id, price, currency, place_time, end_time, duration_minutes, notes, website, phone, transport_mode, osm_id, google_place_id });
+      if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
+      const place = updatePlace(String(tripId), String(placeId), { name, description, lat, lng, address, category_id, price, currency, place_time, end_time, duration_minutes, notes, website, phone, transport_mode, osm_id, google_place_id, google_ftid }, undefined, userId);
       if (!place) return { content: [{ type: 'text' as const, text: 'Place not found.' }], isError: true };
       safeBroadcast(tripId, 'place:updated', { place });
       return ok({ place });
@@ -141,7 +152,9 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
     async ({ tripId, placeId }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
-      const deleted = deletePlace(String(tripId), String(placeId));
+      if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
+      try { onPlaceDeleted(placeId); } catch {} // sync journeys before the row is gone
+      const deleted = deletePlace(String(tripId), String(placeId), userId);
       if (!deleted) return { content: [{ type: 'text' as const, text: 'Place not found.' }], isError: true };
       safeBroadcast(tripId, 'place:deleted', { placeId });
       return ok({ success: true });
@@ -163,7 +176,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
     },
     async ({ tripId, search, category, tag, assignment }) => {
       if (!canAccessTrip(tripId, userId)) return noAccess();
-      const places = listPlaces(String(tripId), { search, category, tag, assignment });
+      const places = listPlaces(String(tripId), { search, category, tag, assignment }, userId);
       return ok({ places });
     }
   );
@@ -188,7 +201,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
   if (R) server.registerTool(
     'search_place',
     {
-      description: 'Search for a real-world place by name or address. Returns results with osm_id (and google_place_id if configured). Use these IDs when calling create_place so the app can display opening hours and ratings.',
+      description: 'Search for a real-world place by name or address. Returns results with osm_id (and google_place_id/google_ftid if configured). Use these IDs when calling create_place so the app can display opening hours, ratings, and map links.',
       inputSchema: {
         query: z.string().min(1).max(500).describe('Place name or address to search for'),
       },
@@ -218,6 +231,7 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
     async ({ tripId, url, source }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
+      if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
 
       const result = source === 'google-list'
         ? await importGoogleList(String(tripId), url)
@@ -247,13 +261,51 @@ export function registerPlaceTools(server: McpServer, userId: number, scopes: st
     async ({ tripId, placeIds }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
+      if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
 
-      const deleted = deletePlacesMany(String(tripId), placeIds);
+      const deleted = deletePlacesMany(String(tripId), placeIds, userId);
       for (const id of deleted) {
         safeBroadcast(tripId, 'place:deleted', { placeId: id });
         try { onPlaceDeleted(id); } catch {}
       }
       return ok({ deleted, count: deleted.length });
+    }
+  );
+
+  if (W) server.registerTool(
+    'bulk_update_places',
+    {
+      description: 'Update many places in a trip at once, applying the SAME field values to every listed place. Use this for sweeping edits — e.g. re-categorising a batch of POIs (set category_id for 80 places) — in a single call instead of one update_place per place. Only the fields you set are changed; everything else on each place is preserved. Use list_categories for category_id.',
+      inputSchema: {
+        tripId: z.number().int().positive(),
+        placeIds: z.array(z.number().int().positive()).min(1).max(500).describe('IDs of the places to update (from list_places)'),
+        category_id: z.number().int().positive().optional().describe('Category ID — use list_categories'),
+        price: z.number().optional(),
+        currency: z.string().length(3).optional(),
+        transport_mode: z.enum(['walking', 'driving', 'cycling', 'transit', 'flight']).optional(),
+        place_time: z.string().max(50).optional().describe('Scheduled time (e.g. "09:00")'),
+        end_time: z.string().max(50).optional().describe('End time (e.g. "11:00")'),
+        duration_minutes: z.number().int().positive().optional(),
+        notes: z.string().max(2000).optional(),
+        website: z.string().max(500).optional(),
+        phone: z.string().max(50).optional(),
+        description: z.string().max(2000).optional(),
+      },
+      annotations: TOOL_ANNOTATIONS_WRITE,
+    },
+    async ({ tripId, placeIds, category_id, price, currency, transport_mode, place_time, end_time, duration_minutes, notes, website, phone, description }) => {
+      if (isDemoUser(userId)) return demoDenied();
+      if (!canAccessTrip(tripId, userId)) return noAccess();
+      if (!hasTripPermission('place_edit', tripId, userId)) return permissionDenied();
+
+      const fields = { category_id, price, currency, transport_mode, place_time, end_time, duration_minutes, notes, website, phone, description };
+      if (Object.values(fields).every(v => v === undefined)) {
+        return { content: [{ type: 'text' as const, text: 'Provide at least one field to update.' }], isError: true };
+      }
+
+      const updated = updatePlacesMany(String(tripId), placeIds, fields, userId);
+      for (const place of updated) safeBroadcast(tripId, 'place:updated', { place });
+      return ok({ count: updated.length, updatedIds: updated.map(p => p.id), skipped: placeIds.length - updated.length });
     }
   );
 }

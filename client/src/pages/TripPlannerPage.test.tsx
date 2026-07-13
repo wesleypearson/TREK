@@ -6,6 +6,7 @@ import { resetAllStores, seedStore } from '../../tests/helpers/store';
 import { buildUser, buildTrip, buildDay, buildPlace, buildAssignment } from '../../tests/helpers/factories';
 import { useAuthStore } from '../store/authStore';
 import { useTripStore } from '../store/tripStore';
+import { usePluginStore } from '../store/pluginStore';
 import TripPlannerPage from './TripPlannerPage';
 import { server } from '../../tests/helpers/msw/server';
 import { http, HttpResponse } from 'msw';
@@ -97,8 +98,8 @@ vi.mock('../components/Files/FileManager', () => ({
   },
 }));
 
-vi.mock('../components/Budget/BudgetPanel', () => ({
-  default: () => React.createElement('div', { 'data-testid': 'budget-panel' }),
+vi.mock('../components/Budget/CostsPanel', () => ({
+  default: () => React.createElement('div', { 'data-testid': 'costs-panel' }),
 }));
 
 vi.mock('../components/Packing/PackingListPanel', () => ({
@@ -252,7 +253,7 @@ describe('TripPlannerPage', () => {
       renderPlannerPage(42);
 
       await waitFor(() => {
-        expect(mockLoadTrip).toHaveBeenCalledWith('42');
+        expect(mockLoadTrip).toHaveBeenCalledWith(42);
       });
     });
   });
@@ -298,7 +299,7 @@ describe('TripPlannerPage', () => {
       renderPlannerPage(999);
 
       await waitFor(() => {
-        expect(mockLoadTrip).toHaveBeenCalledWith('999');
+        expect(mockLoadTrip).toHaveBeenCalledWith(999);
       });
     });
   });
@@ -359,13 +360,13 @@ describe('TripPlannerPage', () => {
   });
 
   describe('FE-PAGE-PLANNER-008: WebSocket hook mounted', () => {
-    it('calls useTripWebSocket with the trip ID string', async () => {
+    it('calls useTripWebSocket with the trip ID from URL params', async () => {
       seedTripStore({ id: 15 });
 
       renderPlannerPage(15);
 
       await waitFor(() => {
-        expect(mockUseTripWebSocket).toHaveBeenCalledWith('15');
+        expect(mockUseTripWebSocket).toHaveBeenCalledWith(15);
       });
     });
   });
@@ -436,8 +437,8 @@ describe('TripPlannerPage', () => {
     });
   });
 
-  describe('FE-PAGE-PLANNER-012: Budget tab renders BudgetPanel', () => {
-    it('shows BudgetPanel after clicking the Budget tab with budget addon enabled', async () => {
+  describe('FE-PAGE-PLANNER-012: Costs tab renders CostsPanel', () => {
+    it('shows CostsPanel after clicking the Costs tab with budget addon enabled', async () => {
       server.use(
         http.get('/api/addons', () =>
           HttpResponse.json({ addons: [{ id: 'budget', type: 'budget' }] })
@@ -454,11 +455,11 @@ describe('TripPlannerPage', () => {
 
       vi.useRealTimers();
 
-      const budgetTab = await screen.findByTitle('Budget');
-      fireEvent.click(budgetTab);
+      const costsTab = await screen.findByTitle('Costs');
+      fireEvent.click(costsTab);
 
       await waitFor(() => {
-        expect(screen.getByTestId('budget-panel')).toBeInTheDocument();
+        expect(screen.getByTestId('costs-panel')).toBeInTheDocument();
       });
     });
   });
@@ -653,6 +654,30 @@ describe('TripPlannerPage', () => {
       await act(async () => {
         capturedDayPlanSidebarProps.current.onSelectDay?.(day.id);
       });
+    });
+  });
+
+  describe('FE-PAGE-PLANNER-020b: the transit (tram) action needs trip dates', () => {
+    async function renderWithTripDates(dates: { start_date: string | null; end_date: string | null }) {
+      vi.useFakeTimers();
+      const { trip } = seedTripStore({ id: 42 });
+      seedStore(useTripStore, { trip: { ...trip, ...dates } } as any);
+      renderPlannerPage(42);
+      act(() => { vi.runAllTimers(); });
+      vi.useRealTimers();
+      await waitFor(() => {
+        expect(screen.getByTestId('day-plan-sidebar')).toBeInTheDocument();
+      });
+    }
+
+    it('passes onPlanTransit when the trip has a start and end date', async () => {
+      await renderWithTripDates({ start_date: '2025-06-01', end_date: '2025-06-05' });
+      expect(capturedDayPlanSidebarProps.current.onPlanTransit).toBeInstanceOf(Function);
+    });
+
+    it('omits onPlanTransit — hiding the tram button — when the trip has no dates', async () => {
+      await renderWithTripDates({ start_date: null, end_date: null });
+      expect(capturedDayPlanSidebarProps.current.onPlanTransit).toBeUndefined();
     });
   });
 
@@ -1160,10 +1185,13 @@ describe('TripPlannerPage', () => {
   });
 
   describe('FE-PAGE-PLANNER-041: handleSaveReservation edit path covers update reservation', () => {
-    it('calls onEdit then onSave on ReservationModal to exercise the edit-reservation handler', async () => {
+    it('does not force a day_id on edit so the server keeps/derives it (#1237)', async () => {
       vi.useFakeTimers();
 
       seedTripStore({ id: 42 });
+      // Capture the update payload — tripActions is a snapshot of the store at mount.
+      const updateReservationSpy = vi.fn().mockResolvedValue({ id: 1, day_id: 7 });
+      seedStore(useTripStore, { updateReservation: updateReservationSpy } as any);
 
       renderPlannerPage(42);
 
@@ -1179,20 +1207,24 @@ describe('TripPlannerPage', () => {
         expect(screen.getByTestId('reservations-panel')).toBeInTheDocument();
       });
 
-      // Set editingReservation via captured onEdit prop (inline lambda in JSX)
-      const fakeReservation = { id: 1, trip_id: 42, name: 'Test', type: 'restaurant', status: 'confirmed' };
+      // Edit a reservation that lives on day 7 (no day is selected — Book tab).
+      const fakeReservation = { id: 1, trip_id: 42, name: 'Test', type: 'other', status: 'confirmed', day_id: 7 };
       await act(async () => {
         capturedReservationsPanelProps.current.onEdit?.(fakeReservation);
       });
 
-      // Call onSave — now takes edit path (editingReservation is set)
       await act(async () => {
         await capturedReservationModalProps.current.onSave?.({
           name: 'Updated Booking',
-          type: 'restaurant',
+          type: 'tour',
           status: 'confirmed',
         });
       });
+
+      // The client must NOT send a day_id (no forcing to the selected day, no
+      // stale value) — the server keeps/derives it from the booking's date.
+      expect(updateReservationSpy).toHaveBeenCalled();
+      expect(updateReservationSpy.mock.calls[0][2]).not.toHaveProperty('day_id');
     });
   });
 
@@ -1323,6 +1355,43 @@ describe('TripPlannerPage', () => {
       renderPlannerPage(42);
 
       // The useEffect should detect the invalid tab and reset it
+      await waitFor(() => {
+        expect(sessionStorage.getItem('trip-tab-42')).toBe('plan');
+      });
+    });
+  });
+
+  describe('FE-PAGE-PLANNER-048: trip-page plugins can replace core tabs and pick a position', () => {
+    afterEach(() => usePluginStore.setState({ plugins: [], loaded: false }));
+
+    it('hides the replaced core tab and splices the plugin tab at its position', async () => {
+      usePluginStore.setState({
+        plugins: [{ id: 'transit-pro', name: 'Transit Pro', type: 'trip-page', icon: null, tripPage: { replaces: ['transports'], position: 1 } }],
+        loaded: true,
+      });
+      seedTripStore({ id: 42 });
+
+      renderPlannerPage(42);
+
+      // the plugin tab is present, the replaced Transports tab is not (the splash
+      // screen holds the page for 1.5s, so give the query room)
+      const pluginTab = await screen.findByTitle('Transit Pro', {}, { timeout: 4000 });
+      expect(pluginTab).toBeInTheDocument();
+      expect(screen.queryByTitle('Transports')).not.toBeInTheDocument();
+      // an unreplaced core tab stays reachable
+      expect(screen.getByTitle('Bookings')).toBeInTheDocument();
+    });
+
+    it('a saved session tab that a plugin replaced resets to plan once plugins load', async () => {
+      sessionStorage.setItem('trip-tab-42', 'transports');
+      usePluginStore.setState({
+        plugins: [{ id: 'transit-pro', name: 'Transit Pro', type: 'trip-page', icon: null, tripPage: { replaces: ['transports'] } }],
+        loaded: true,
+      });
+      seedTripStore({ id: 42 });
+
+      renderPlannerPage(42);
+
       await waitFor(() => {
         expect(sessionStorage.getItem('trip-tab-42')).toBe('plan');
       });

@@ -1,6 +1,7 @@
 import { WebSocketServer, WebSocket } from 'ws';
 import { db, canAccessTrip } from './db/database';
-import { consumeEphemeralToken } from './services/ephemeralTokens';
+import { consumeEphemeralTokenWithMeta } from './services/ephemeralTokens';
+import { emitPluginEvent, pluginEventMeta } from './plugin-event-sink';
 import { User } from './types';
 import http from 'node:http';
 
@@ -69,20 +70,33 @@ function setupWebSocket(server: http.Server): void {
       return;
     }
 
-    const userId = consumeEphemeralToken(token, 'ws');
-    if (!userId) {
+    const consumed = consumeEphemeralTokenWithMeta(token, 'ws');
+    if (!consumed) {
       nws.close(4001, 'Invalid or expired token');
       return;
     }
+    const { userId } = consumed;
 
-    let user: User | undefined;
-    user = db.prepare(
-      'SELECT id, username, email, role, mfa_enabled FROM users WHERE id = ?'
-    ).get(userId) as User | undefined;
-    if (!user) {
+    let row: (User & { password_version?: number }) | undefined;
+    row = db.prepare(
+      'SELECT id, username, email, role, mfa_enabled, password_version FROM users WHERE id = ?'
+    ).get(userId) as (User & { password_version?: number }) | undefined;
+    if (!row) {
       nws.close(4001, 'User not found');
       return;
     }
+    // Session gate (defence-in-depth): reject a ws-token minted before a
+    // password change. Tokens carry the pv they were issued with; tokens
+    // minted without a pv (legacy) are treated as version 0, matching the
+    // JWT `pv` claim semantics in verifyJwtAndLoadUser.
+    const tokenPv = typeof consumed.pv === 'number' ? consumed.pv : 0;
+    const currentPv = typeof row.password_version === 'number' ? row.password_version : 0;
+    if (tokenPv !== currentPv) {
+      nws.close(4001, 'Invalid or expired token');
+      return;
+    }
+    // Don't leak password_version beyond the handshake.
+    const { password_version: _pv, ...user } = row;
     const requireMfa = (db.prepare("SELECT value FROM app_settings WHERE key = 'require_mfa'").get() as { value: string } | undefined)?.value === 'true';
     const mfaOk = user.mfa_enabled === 1 || user.mfa_enabled === true;
     if (requireMfa && !mfaOk) {
@@ -173,9 +187,18 @@ function leaveRoom(ws: NomadWebSocket, tripId: number): void {
 
 /**
  * Broadcast an event to all sockets in a trip room, optionally excluding a socket.
+ * When `onlyUserId` is given the event is delivered only to that user's sockets in
+ * the room — used to keep private packing items (#858) off other members' screens
+ * while still syncing the owner's own tabs. `excludeUserId` is the inverse: deliver
+ * to everyone BUT that user — used when an item flips shared→private so other
+ * members drop it while the owner (who keeps seeing it) isn't told to.
  */
-function broadcast(tripId: number | string, eventType: string, payload: Record<string, unknown>, excludeSid?: number | string): void {
+function broadcast(tripId: number | string, eventType: string, payload: Record<string, unknown>, excludeSid?: number | string, onlyUserId?: number, excludeUserId?: number): void {
   tripId = Number(tripId);
+  // Announce every CORE trip event (name only, never the payload) to subscribed
+  // plugins — before the room check so it fires even with no connected viewers, and
+  // skipping plugin:* re-broadcasts so a plugin's own events can't loop back.
+  if (!eventType.startsWith('plugin:')) emitPluginEvent(tripId, eventType, pluginEventMeta(eventType, payload));
   const room = rooms.get(tripId);
   if (!room || room.size === 0) return;
 
@@ -185,6 +208,8 @@ function broadcast(tripId: number | string, eventType: string, payload: Record<s
     if (ws.readyState !== 1) continue; // WebSocket.OPEN === 1
     // Exclude the specific socket that triggered the change
     if (excludeNum && socketId.get(ws) === excludeNum) continue;
+    if (onlyUserId != null && socketUser.get(ws)?.id !== onlyUserId) continue;
+    if (excludeUserId != null && socketUser.get(ws)?.id === excludeUserId) continue;
     ws.send(JSON.stringify({ type: eventType, tripId, ...payload }));
   }
 }

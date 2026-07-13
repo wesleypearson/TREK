@@ -179,7 +179,7 @@ describe('TripMembersModal', () => {
   it('FE-COMP-MEMBERS-016: share link section not rendered for non-owner', async () => {
     const nonOwner = buildUser({ id: 99, username: 'stranger' });
     seedStore(useAuthStore, { user: nonOwner, isAuthenticated: true });
-    seedStore(useTripStore, { trip: buildTrip({ id: 1, owner_id: 1 }) });
+    seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: 1 }) });
     seedStore(usePermissionsStore, { permissions: { share_manage: 'trip_owner' } });
 
     render(<TripMembersModal {...defaultProps} />);
@@ -190,7 +190,7 @@ describe('TripMembersModal', () => {
 
   it('FE-COMP-MEMBERS-017: share link section visible for owner', async () => {
     seedStore(usePermissionsStore, { permissions: { share_manage: 'trip_owner' } });
-    seedStore(useTripStore, { trip: buildTrip({ id: 1, owner_id: ownerUser.id }) });
+    seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: ownerUser.id }) });
 
     render(<TripMembersModal {...defaultProps} />);
     await screen.findByText('Public Link');
@@ -199,7 +199,7 @@ describe('TripMembersModal', () => {
   it('FE-COMP-MEMBERS-018: create share link shows URL after clicking create', async () => {
     const user = userEvent.setup();
     seedStore(usePermissionsStore, { permissions: { share_manage: 'trip_owner' } });
-    seedStore(useTripStore, { trip: buildTrip({ id: 1, owner_id: ownerUser.id }) });
+    seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: ownerUser.id }) });
 
     // GET returns null token initially; POST returns a new token
     server.use(
@@ -229,7 +229,7 @@ describe('TripMembersModal', () => {
   it('FE-COMP-MEMBERS-019: copy share link calls clipboard.writeText', async () => {
     const user = userEvent.setup();
     seedStore(usePermissionsStore, { permissions: { share_manage: 'trip_owner' } });
-    seedStore(useTripStore, { trip: buildTrip({ id: 1, owner_id: ownerUser.id }) });
+    seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: ownerUser.id }) });
 
     const writeText = vi.fn().mockResolvedValue(undefined);
     Object.defineProperty(navigator, 'clipboard', {
@@ -261,7 +261,7 @@ describe('TripMembersModal', () => {
   it('FE-COMP-MEMBERS-020: delete share link removes URL and shows create button', async () => {
     const user = userEvent.setup();
     seedStore(usePermissionsStore, { permissions: { share_manage: 'trip_owner' } });
-    seedStore(useTripStore, { trip: buildTrip({ id: 1, owner_id: ownerUser.id }) });
+    seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: ownerUser.id }) });
 
     let deleteHandlerCalled = false;
     server.use(
@@ -292,7 +292,7 @@ describe('TripMembersModal', () => {
   it('FE-COMP-MEMBERS-021: clicking permission toggle calls POST with updated perms', async () => {
     const user = userEvent.setup();
     seedStore(usePermissionsStore, { permissions: { share_manage: 'trip_owner' } });
-    seedStore(useTripStore, { trip: buildTrip({ id: 1, owner_id: ownerUser.id }) });
+    seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: ownerUser.id }) });
 
     let postedPerms: Record<string, unknown> | null = null;
     server.use(
@@ -349,8 +349,9 @@ describe('TripMembersModal', () => {
     const aliceOption = await screen.findByRole('button', { name: 'alice' });
     await user.click(aliceOption);
 
-    // Click Invite button
-    const inviteBtn = screen.getByRole('button', { name: /Invite/i });
+    // Click the member "Invite" button (exact — the Share area also has a
+    // "Create invite link" button that a loose /Invite/i would match too).
+    const inviteBtn = screen.getByRole('button', { name: 'Invite' });
     await user.click(inviteBtn);
 
     await waitFor(() => {
@@ -376,7 +377,7 @@ describe('TripMembersModal', () => {
     });
 
     seedStore(useAuthStore, { user: memberUser, isAuthenticated: true });
-    seedStore(useTripStore, { trip: buildTrip({ id: 1, owner_id: ownerUser.id }) });
+    seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: ownerUser.id }) });
 
     let deleteCalledForUserId: string | null = null;
     server.use(
@@ -422,5 +423,43 @@ describe('TripMembersModal', () => {
 
     render(<TripMembersModal {...defaultProps} />);
     await screen.findByText('All users already have access.');
+  });
+
+  it('FE-COMP-MEMBERS-026: owner sees the guests section and can add a guest (#1362)', async () => {
+    let createdName: string | null = null;
+    server.use(
+      http.post('/api/trips/1/guests', async ({ request }) => {
+        createdName = ((await request.json()) as { name: string }).name;
+        return HttpResponse.json({ member: { id: 99, username: createdName, is_guest: true } });
+      }),
+    );
+    render(<TripMembersModal {...defaultProps} />);
+    // The guests section + add affordance is shown to the owner.
+    await screen.findByText('Guests');
+    const input = screen.getByPlaceholderText('Guest name');
+    await userEvent.type(input, 'Grandpa');
+    await userEvent.click(screen.getByRole('button', { name: /Add guest/i }));
+    await waitFor(() => expect(createdName).toBe('Grandpa'));
+  });
+
+  it('FE-COMP-MEMBERS-027: a guest member is shown in the guests section with a Guest badge, not the members list (#1362)', async () => {
+    server.use(
+      http.get('/api/trips/1/members', () =>
+        HttpResponse.json({
+          owner: { id: ownerUser.id, username: ownerUser.username, avatar_url: null, is_guest: false },
+          members: [
+            { id: 2, username: 'alice', avatar_url: null, is_guest: false },
+            { id: 3, username: 'Grandma', avatar_url: null, is_guest: true },
+          ],
+          current_user_id: ownerUser.id,
+        })
+      ),
+    );
+    render(<TripMembersModal {...defaultProps} />);
+    await screen.findByText('Grandma');
+    // The guest carries a "Guest" badge.
+    expect(screen.getAllByText('Guest').length).toBeGreaterThan(0);
+    // Access count covers owner + the real member only (2), not the guest.
+    expect(screen.getByText(/Access \(2/)).toBeInTheDocument();
   });
 });

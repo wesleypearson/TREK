@@ -42,21 +42,20 @@ export function registerMcpPrompts(server: McpServer, _userId: number, isStaticT
       if (!canAccessTrip(tripId, userId)) {
         return { messages: [{ role: 'user', content: { type: 'text', text: 'Trip not found or access denied.' } }] };
       }
-      const summary = getTripSummary(tripId);
+      const summary = getTripSummary(tripId, userId);
       if (!summary) {
         return { messages: [{ role: 'user', content: { type: 'text', text: 'Trip not found.' } }] };
       }
-      const { trip, days, members, budget, packing, reservations, collabNotes } = summary;
-      const packingStats = packing ? { total: packing.length, packed: packing.filter((p: any) => p.checked).length } : { total: 0, packed: 0 };
-      const budgetTotal = budget?.reduce((sum: number, b: any) => sum + (b.total_price || 0), 0) || 0;
+      const { trip, days, members, budget, packing, reservations, collab_notes } = summary;
+      const memberList = [members?.owner, ...(members?.collaborators || [])].filter(Boolean);
       const text = `Trip: ${trip?.title || 'Untitled'}${trip?.description ? `\n${trip.description}` : ''}
 Dates: ${trip?.start_date || '?'} to ${trip?.end_date || '?'}
-Members: ${members?.length || 0} (${members?.map((m: any) => m.name || m.email).join(', ') || 'none'})
+Members: ${memberList.length} (${memberList.map((m: any) => m.name || m.email).join(', ') || 'none'})
 Days: ${days?.length || 0}
-Packing: ${packingStats.packed}/${packingStats.total} items packed
-Budget: ${budgetTotal} ${trip?.currency || 'EUR'} total
+Packing: ${packing?.checked || 0}/${packing?.total || 0} items packed
+Budget: ${budget?.total || 0} ${trip?.currency || 'EUR'} total
 Reservations: ${reservations?.length || 0}
-Collab Notes: ${collabNotes?.length || 0}
+Collab Notes: ${collab_notes?.length || 0}
 ${days?.map((d: any, i: number) => `Day ${i + 1} (${d.date}): ${d.assignments?.length || 0} places${d.title ? ` - ${d.title}` : ''}`).join('\n') || 'No days yet'}`;
       return {
         description: `Summary of trip "${trip?.title || tripId}"`,
@@ -78,7 +77,8 @@ ${days?.map((d: any, i: number) => `Day ${i + 1} (${d.date}): ${d.assignments?.l
       if (!canAccessTrip(tripId, userId)) {
         return { messages: [{ role: 'user', content: { type: 'text', text: 'Trip not found or access denied.' } }] };
       }
-      const items = listPackingItems(tripId);
+      // Hide other members' private items (#858) from the requesting user.
+      const items = listPackingItems(tripId, userId);
       if (!items.length) {
         return { messages: [{ role: 'user', content: { type: 'text', text: 'No packing items found for this trip.' } }] };
       }
@@ -91,7 +91,7 @@ ${days?.map((d: any, i: number) => `Day ${i + 1} (${d.date}): ${d.assignments?.l
       const lines = Object.entries(grouped).map(([cat, items]) =>
         `## ${cat}\n${(items as any[]).map((i: any) => `- [${i.checked ? 'x' : ' '}] ${i.name}`).join('\n')}`
       ).join('\n\n');
-      const { trip } = getTripSummary(tripId) || {};
+      const { trip } = getTripSummary(tripId, userId) || {};
       return {
         description: `Packing list for "${trip?.title || tripId}"`,
         messages: [{ role: 'user', content: { type: 'text', text: `# Packing List: ${trip?.title || 'Trip'}\n\n${lines}\n\n_${items.length} items across ${Object.keys(grouped).length} categories_` } }],
@@ -112,13 +112,13 @@ ${days?.map((d: any, i: number) => `Day ${i + 1} (${d.date}): ${d.assignments?.l
       if (!canAccessTrip(tripId, userId)) {
         return { messages: [{ role: 'user', content: { type: 'text', text: 'Trip not found or access denied.' } }] };
       }
-      const summary = getTripSummary(tripId);
+      const summary = getTripSummary(tripId, userId);
       if (!summary) {
         return { messages: [{ role: 'user', content: { type: 'text', text: 'Trip not found.' } }] };
       }
       const { trip, budget } = summary;
       const currency = trip?.currency || 'EUR';
-      const byCategory = (budget || []).reduce((acc: Record<string, number>, item: any) => {
+      const byCategory = (budget?.items || []).reduce((acc: Record<string, number>, item: any) => {
         const cat = item.category || 'Uncategorized';
         acc[cat] = (acc[cat] || 0) + (item.total_price || 0);
         return acc;
@@ -128,7 +128,8 @@ ${days?.map((d: any, i: number) => `Day ${i + 1} (${d.date}): ${d.assignments?.l
         .sort(([, a], [, b]) => b - a)
         .map(([cat, amount]) => `- ${cat}: ${amount} ${currency}`)
         .join('\n');
-      const perPerson = (summary.members?.length || 1) > 0 ? (total / (summary.members?.length || 1)).toFixed(2) : total.toFixed(2);
+      const memberCount = Math.max(1, [summary.members?.owner, ...(summary.members?.collaborators || [])].filter(Boolean).length);
+      const perPerson = (total / memberCount).toFixed(2);
       return {
         description: `Budget overview for "${trip?.title || tripId}"`,
         messages: [{ role: 'user', content: { type: 'text', text: `# Budget: ${trip?.title || 'Trip'}\n\n**Total: ${total} ${currency}** (${perPerson} ${currency} per person)\n\n${lines || 'No expenses recorded.'}` } }],

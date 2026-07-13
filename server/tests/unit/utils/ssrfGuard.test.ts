@@ -21,7 +21,7 @@ vi.mock('undici', () => ({
 }));
 
 import dns from 'dns/promises';
-import { checkSsrf, SsrfBlockedError, safeFetch, createPinnedDispatcher } from '../../../src/utils/ssrfGuard';
+import { checkSsrf, SsrfBlockedError, safeFetch, safeFetchLlm, safeFetchFollow, createPinnedDispatcher } from '../../../src/utils/ssrfGuard';
 
 const mockLookup = vi.mocked(dns.lookup);
 
@@ -163,7 +163,7 @@ describe('checkSsrf', () => {
       const result = await checkSsrf('http://nxdomain.example.com');
       expect(result.allowed).toBe(false);
       expect(result.isPrivate).toBe(false);
-      expect(result.error).toBe('Could not resolve hostname');
+      expect(result.error).toContain('Could not resolve hostname');
     });
   });
 
@@ -215,6 +215,117 @@ describe('safeFetch', () => {
   });
 });
 
+describe('safeFetchFollow (manual per-hop redirect SSRF)', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+    mockLookup.mockReset();
+  });
+
+  /** Build a minimal Response-like object for a given hop. */
+  function fakeResponse(opts: { status: number; location?: string; url: string; ok?: boolean }) {
+    return {
+      status: opts.status,
+      ok: opts.ok ?? (opts.status >= 200 && opts.status < 300),
+      url: opts.url,
+      headers: { get: (h: string) => (h.toLowerCase() === 'location' ? opts.location ?? null : null) },
+      body: { cancel: () => Promise.resolve() },
+    };
+  }
+
+  it('follows a legitimate cross-host redirect (goo.gl -> maps.google.com) to the final response', async () => {
+    // Both hops resolve to public IPs.
+    mockLookup.mockResolvedValue({ address: '142.250.0.0', family: 4 });
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce(fakeResponse({ status: 302, location: 'https://maps.google.com/maps/place/Foo', url: 'https://goo.gl/abc' }))
+      .mockResolvedValueOnce(fakeResponse({ status: 200, url: 'https://maps.google.com/maps/place/Foo' }));
+    vi.stubGlobal('fetch', mockFetch);
+
+    const res = await safeFetchFollow('https://goo.gl/abc');
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(res.status).toBe(200);
+    expect(res.url).toBe('https://maps.google.com/maps/place/Foo');
+  });
+
+  it('blocks a redirect whose target resolves to an internal IP', async () => {
+    vi.stubEnv('ALLOW_INTERNAL_NETWORK', 'false');
+    // First hop (public) is allowed; the redirect target resolves to a private IP.
+    mockLookup
+      .mockResolvedValueOnce({ address: '142.250.0.0', family: 4 }) // goo.gl
+      .mockResolvedValue({ address: '169.254.169.254', family: 4 }); // redirect → metadata
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce(fakeResponse({ status: 302, location: 'http://169.254.169.254/latest/meta-data/', url: 'https://goo.gl/evil' }));
+    vi.stubGlobal('fetch', mockFetch);
+
+    await expect(safeFetchFollow('https://goo.gl/evil')).rejects.toThrow(SsrfBlockedError);
+    // Only the first hop should have been fetched; the internal hop is blocked BEFORE fetch.
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('blocks a redirect to a loopback address even with ALLOW_INTERNAL_NETWORK=true', async () => {
+    mockLookup
+      .mockResolvedValueOnce({ address: '142.250.0.0', family: 4 })
+      .mockResolvedValue({ address: '127.0.0.1', family: 4 });
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce(fakeResponse({ status: 301, location: 'http://internal/', url: 'https://goo.gl/x' }));
+    vi.stubGlobal('fetch', mockFetch);
+
+    await expect(safeFetchFollow('https://goo.gl/x', undefined, { bypassInternalIpAllowed: true }))
+      .rejects.toThrow(SsrfBlockedError);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects the initial URL if it is already internal', async () => {
+    mockLookup.mockResolvedValue({ address: '10.0.0.5', family: 4 });
+    const mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    await expect(safeFetchFollow('http://intranet.example')).rejects.toThrow(SsrfBlockedError);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('returns the response immediately when not a redirect', async () => {
+    mockLookup.mockResolvedValue({ address: '8.8.8.8', family: 4 });
+    const mockFetch = vi.fn().mockResolvedValue(fakeResponse({ status: 200, url: 'https://example.com' }));
+    vi.stubGlobal('fetch', mockFetch);
+    const res = await safeFetchFollow('https://example.com');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(res.status).toBe(200);
+  });
+
+  it('returns a 3xx with no Location header as-is (nothing to follow)', async () => {
+    mockLookup.mockResolvedValue({ address: '8.8.8.8', family: 4 });
+    const mockFetch = vi.fn().mockResolvedValue(fakeResponse({ status: 304, url: 'https://example.com' }));
+    vi.stubGlobal('fetch', mockFetch);
+    const res = await safeFetchFollow('https://example.com');
+    expect(res.status).toBe(304);
+  });
+
+  it('throws after exceeding the max redirect hops', async () => {
+    mockLookup.mockResolvedValue({ address: '8.8.8.8', family: 4 });
+    // Always 302 to a new public host → loops until the hop cap.
+    let n = 0;
+    const mockFetch = vi.fn().mockImplementation(() =>
+      Promise.resolve(fakeResponse({ status: 302, location: `https://h${++n}.example.com/`, url: `https://h${n}.example.com/` })),
+    );
+    vi.stubGlobal('fetch', mockFetch);
+    await expect(safeFetchFollow('https://start.example.com', undefined, { maxRedirects: 2 }))
+      .rejects.toThrow(SsrfBlockedError);
+    // initial + 2 allowed redirects = 3 fetches, then the 4th hop is rejected before fetch
+    expect(mockFetch).toHaveBeenCalledTimes(3);
+  });
+
+  it('resolves relative redirect Location against the current URL', async () => {
+    mockLookup.mockResolvedValue({ address: '8.8.8.8', family: 4 });
+    const mockFetch = vi.fn()
+      .mockResolvedValueOnce(fakeResponse({ status: 302, location: '/resolved/path', url: 'https://example.com/start' }))
+      .mockResolvedValueOnce(fakeResponse({ status: 200, url: 'https://example.com/resolved/path' }));
+    vi.stubGlobal('fetch', mockFetch);
+    await safeFetchFollow('https://example.com/start');
+    // Second fetch must target the absolute resolution of the relative Location.
+    expect(mockFetch.mock.calls[1][0]).toBe('https://example.com/resolved/path');
+  });
+});
+
 describe('createPinnedDispatcher', () => {
   it('returns an object (Agent instance)', () => {
     const dispatcher = createPinnedDispatcher('93.184.216.34');
@@ -245,5 +356,150 @@ describe('createPinnedDispatcher', () => {
     const cb = vi.fn();
     lookup('example.com', { all: true }, cb);
     expect(cb).toHaveBeenCalledWith(null, [{ address: '93.184.216.34', family: 4 }]);
+  });
+});
+
+describe('safeFetchLlm', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('blocks the cloud-metadata address (169.254.169.254)', async () => {
+    mockIp('169.254.169.254');
+    const mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    await expect(safeFetchLlm('http://169.254.169.254/latest/meta-data/')).rejects.toThrow(SsrfBlockedError);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('blocks a hostname that resolves to the metadata range', async () => {
+    mockIp('169.254.169.254');
+    const mockFetch = vi.fn();
+    vi.stubGlobal('fetch', mockFetch);
+    await expect(safeFetchLlm('http://ollama.evil.example/chat')).rejects.toThrow(/link-local/i);
+    expect(mockFetch).not.toHaveBeenCalled();
+  });
+
+  it('blocks IPv6 link-local (fe80::)', async () => {
+    mockIp('fe80::1');
+    vi.stubGlobal('fetch', vi.fn());
+    await expect(safeFetchLlm('http://[fe80::1]/chat')).rejects.toThrow(SsrfBlockedError);
+  });
+
+  it('blocks the rest of the fe80::/10 range, not just the fe80: prefix', async () => {
+    mockIp('febf::1');
+    vi.stubGlobal('fetch', vi.fn());
+    await expect(safeFetchLlm('http://[febf::1]/chat')).rejects.toThrow(SsrfBlockedError);
+  });
+
+  it('blocks IPv4-mapped and IPv4-compatible metadata spellings', async () => {
+    vi.stubGlobal('fetch', vi.fn());
+    mockIp('::ffff:169.254.169.254');
+    await expect(safeFetchLlm('http://host.example/chat')).rejects.toThrow(SsrfBlockedError);
+    mockIp('::a9fe:a9fe');
+    await expect(safeFetchLlm('http://host.example/chat')).rejects.toThrow(SsrfBlockedError);
+  });
+
+  it('blocks the AWS IMDSv6 ULA endpoint but allows other ULA (a LAN model server)', async () => {
+    const okFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
+    vi.stubGlobal('fetch', okFetch);
+    mockIp('fd00:ec2::254');
+    await expect(safeFetchLlm('http://imds.example/chat')).rejects.toThrow(SsrfBlockedError);
+    mockIp('fd12:3456::1');
+    await safeFetchLlm('http://lan-model.example/chat');
+    expect(okFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects a non-http(s) protocol', async () => {
+    vi.stubGlobal('fetch', vi.fn());
+    await expect(safeFetchLlm('file:///etc/passwd')).rejects.toThrow(SsrfBlockedError);
+  });
+
+  // The whole point of the LLM-specific guard: a self-hosted Ollama on localhost
+  // must still work — unlike safeFetch(), loopback is allowed here.
+  it('allows a loopback target (local Ollama)', async () => {
+    mockIp('127.0.0.1');
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
+    vi.stubGlobal('fetch', mockFetch);
+    await safeFetchLlm('http://localhost:11434/v1/chat/completions', { method: 'POST' });
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    expect(mockFetch.mock.calls[0][0]).toBe('http://localhost:11434/v1/chat/completions');
+  });
+
+  it('allows a private/LAN target (self-hosted model server)', async () => {
+    mockIp('192.168.1.50');
+    const mockFetch = vi.fn().mockResolvedValue({ ok: true } as Response);
+    vi.stubGlobal('fetch', mockFetch);
+    await safeFetchLlm('http://192.168.1.50:8000/v1/chat/completions');
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  // Regression (GHSA-fmq9-ggh3-647p follow-up): the guard must re-validate on EVERY
+  // redirect hop, not just the initial URL. A public endpoint that 302s to the
+  // metadata IP-literal would otherwise slip through — the DNS pin does not cover an
+  // IP-literal redirect hop (Node's net.connect skips the pinned lookup for a literal IP).
+  function llmResponse(opts: { status: number; location?: string }) {
+    return {
+      status: opts.status,
+      ok: opts.status >= 200 && opts.status < 300,
+      headers: { get: (h: string) => (h.toLowerCase() === 'location' ? (opts.location ?? null) : null) },
+      body: { cancel: () => Promise.resolve() },
+    };
+  }
+
+  it('requests each hop with redirect:manual so the platform never auto-follows', async () => {
+    mockIp('203.0.113.10');
+    const mockFetch = vi.fn().mockResolvedValue(llmResponse({ status: 200 }));
+    vi.stubGlobal('fetch', mockFetch);
+    await safeFetchLlm('https://api.provider.example/v1/chat/completions');
+    expect(mockFetch.mock.calls[0][1]).toMatchObject({ redirect: 'manual' });
+  });
+
+  it('blocks a redirect from a public endpoint to the metadata IP-literal', async () => {
+    mockLookup
+      .mockResolvedValueOnce({ address: '203.0.113.10', family: 4 }) // configured endpoint (public)
+      .mockResolvedValue({ address: '169.254.169.254', family: 4 }); // redirect target → metadata
+    const mockFetch = vi.fn().mockResolvedValueOnce(
+      llmResponse({ status: 302, location: 'http://169.254.169.254/latest/meta-data/' }),
+    );
+    vi.stubGlobal('fetch', mockFetch);
+    await expect(
+      safeFetchLlm('https://api.provider.example/v1/chat/completions', { method: 'POST' }),
+    ).rejects.toThrow(SsrfBlockedError);
+    // The metadata hop is refused BEFORE its fetch — only the initial hop ran.
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('follows a legitimate redirect between allowed hosts (http→https upgrade) to the final response', async () => {
+    mockLookup
+      .mockResolvedValueOnce({ address: '127.0.0.1', family: 4 }) // http Ollama
+      .mockResolvedValue({ address: '127.0.0.1', family: 4 }); // https upgrade, same host
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce(llmResponse({ status: 301, location: 'https://localhost:11434/v1/chat/completions' }))
+      .mockResolvedValueOnce(llmResponse({ status: 200 }));
+    vi.stubGlobal('fetch', mockFetch);
+    const res = await safeFetchLlm('http://localhost:11434/v1/chat/completions', { method: 'POST' });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(res.status).toBe(200);
+  });
+
+  it('blocks the Alibaba Cloud metadata IPs directly (CGNAT range is otherwise allowed for LAN)', async () => {
+    vi.stubGlobal('fetch', vi.fn());
+    mockIp('100.100.100.200');
+    await expect(safeFetchLlm('http://model.example/chat')).rejects.toThrow(SsrfBlockedError);
+    mockIp('100.100.100.100');
+    await expect(safeFetchLlm('http://model.example/chat')).rejects.toThrow(SsrfBlockedError);
+  });
+
+  it('stops following after the redirect cap', async () => {
+    mockIp('203.0.113.10');
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValue(llmResponse({ status: 302, location: 'https://api.provider.example/next' }));
+    vi.stubGlobal('fetch', mockFetch);
+    await expect(
+      safeFetchLlm('https://api.provider.example/v1/chat/completions', undefined, 2),
+    ).rejects.toThrow(/Too many redirects/i);
+    // initial + 2 allowed hops = 3 fetches, then the 4th is refused before fetch.
+    expect(mockFetch).toHaveBeenCalledTimes(3);
   });
 });

@@ -52,7 +52,7 @@ describe('budgetSlice', () => {
         HttpResponse.json({ error: 'Validation failed' }, { status: 422 })
       )
     );
-    await expect(useTripStore.getState().addBudgetItem(1, {})).rejects.toThrow();
+    await expect(useTripStore.getState().addBudgetItem(1, { name: 'x' })).rejects.toThrow();
   });
 
   it('FE-STORE-BUDGET-005: updateBudgetItem replaces item in store', async () => {
@@ -125,7 +125,7 @@ describe('budgetSlice', () => {
     const item = buildBudgetItem({
       id: 8,
       trip_id: 1,
-      members: [{ user_id: 3, paid: false }],
+      members: [{ user_id: 3, paid: 0, username: 'carol' }],
     });
     seedStore(useTripStore, { budgetItems: [item] });
 

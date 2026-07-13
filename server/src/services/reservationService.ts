@@ -1,5 +1,7 @@
-import { db, canAccessTrip } from '../db/database';
+import { db } from '../db/database';
 import { Reservation } from '../types';
+
+export { verifyTripAccess } from './tripAccess';
 
 export interface ReservationEndpoint {
   id?: number;
@@ -15,13 +17,9 @@ export interface ReservationEndpoint {
   local_date: string | null;
 }
 
-type EndpointInput = Omit<ReservationEndpoint, 'id' | 'reservation_id' | 'sequence'> & { sequence?: number };
+export type EndpointInput = Omit<ReservationEndpoint, 'id' | 'reservation_id' | 'sequence'> & { sequence?: number };
 
-export function verifyTripAccess(tripId: string | number, userId: number) {
-  return canAccessTrip(tripId, userId);
-}
-
-function loadEndpointsByTrip(tripId: string | number): Map<number, ReservationEndpoint[]> {
+export function loadEndpointsByTrip(tripId: string | number): Map<number, ReservationEndpoint[]> {
   const rows = db.prepare(`
     SELECT e.* FROM reservation_endpoints e
     JOIN reservations r ON e.reservation_id = r.id
@@ -51,14 +49,52 @@ function loadEndpoints(reservationId: number): ReservationEndpoint[] {
 function resolveDayIdFromTime(
   tripId: string | number,
   time: string | null | undefined,
+  clampToNearest = true,
 ): number | null {
   if (!time) return null;
   const datePart = time.slice(0, 10);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(datePart)) return null;
-  const row = db
+  const exact = db
     .prepare('SELECT id FROM days WHERE trip_id = ? AND date = ? LIMIT 1')
     .get(tripId, datePart) as { id: number } | undefined;
-  return row?.id ?? null;
+  if (exact) return exact.id;
+  // Fallback: clamp to the nearest day in the trip so an imported booking whose
+  // exact date has no day row (or sits just outside the span) still lands on a day.
+  // Skipped by callers (e.g. resyncReservationDays) that must leave a booking whose
+  // date now falls outside the range untouched instead of snapping it to an edge day.
+  if (!clampToNearest) return null;
+  const nearest = db
+    .prepare('SELECT id FROM days WHERE trip_id = ? ORDER BY ABS(JULIANDAY(date) - JULIANDAY(?)) ASC, date ASC LIMIT 1')
+    .get(tripId, datePart) as { id: number } | undefined;
+  return nearest?.id ?? null;
+}
+
+// After a trip's date range changes, generateDays positionally re-dates the day rows
+// (keeping their ids), so a dated booking's day_id stays glued to a now-re-dated day and
+// the booking visually shifts by the offset (#1288). Re-anchor non-hotel bookings to the
+// day matching their absolute reservation_time — the same derivation create/updateReservation
+// use. Only updates when a matching day exists, so a booking whose date now falls outside
+// the new range is left untouched. Hotels keep their range on the linked day_accommodation.
+export function resyncReservationDays(tripId: string | number): void {
+  const rows = db.prepare(
+    `SELECT id, reservation_time, reservation_end_time, day_id, end_day_id
+       FROM reservations
+      WHERE trip_id = ? AND type != 'hotel' AND reservation_time IS NOT NULL`,
+  ).all(tripId) as {
+    id: number; reservation_time: string | null; reservation_end_time: string | null;
+    day_id: number | null; end_day_id: number | null;
+  }[];
+  const update = db.prepare('UPDATE reservations SET day_id = ?, end_day_id = ? WHERE id = ?');
+  for (const r of rows) {
+    const newDayId = resolveDayIdFromTime(tripId, r.reservation_time, false);
+    if (newDayId == null) continue;
+    const newEndDayId = r.reservation_end_time
+      ? (resolveDayIdFromTime(tripId, r.reservation_end_time, false) ?? r.end_day_id)
+      : r.end_day_id;
+    if (newDayId !== r.day_id || newEndDayId !== r.end_day_id) {
+      update.run(newDayId, newEndDayId, r.id);
+    }
+  }
 }
 
 function saveEndpoints(reservationId: number, endpoints: EndpointInput[]): void {
@@ -73,9 +109,15 @@ function saveEndpoints(reservationId: number, endpoints: EndpointInput[]): void 
       INSERT INTO reservation_endpoints (reservation_id, role, sequence, name, code, lat, lng, timezone, local_time, local_date)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
-    eps.forEach((e, i) => {
-      insert.run(rid, e.role, e.sequence ?? i, e.name, e.code ?? null, e.lat, e.lng, e.timezone ?? null, e.local_time ?? null, e.local_date ?? null);
-    });
+    // lat/lng are NOT NULL: an imported transport whose pick-up/return (or station/
+    // stop) couldn't be geocoded reaches here with null coords. Skip those rows rather
+    // than let the INSERT throw and fail the entire booking save — the dates still live
+    // on reservation_time/reservation_end_time, so the booking lands on its day either way.
+    eps
+      .filter((e) => e.lat != null && e.lng != null)
+      .forEach((e, i) => {
+        insert.run(rid, e.role, e.sequence ?? i, e.name, e.code ?? null, e.lat, e.lng, e.timezone ?? null, e.local_time ?? null, e.local_date ?? null);
+      });
   });
   tx(reservationId, endpoints);
 }
@@ -112,7 +154,44 @@ export function listReservations(tripId: string | number) {
   for (const r of reservations) {
     r.day_positions = posMap.get(r.id) || null;
     r.endpoints = endpointsMap.get(r.id) || [];
+    // accommodation_id is a TEXT column; the integer FK reads back as a numeric
+    // string (e.g. "14.0"). Normalize to an int so clients can parse it.
+    r.accommodation_id = r.accommodation_id == null ? null : Math.trunc(Number(r.accommodation_id));
   }
+
+  return reservations;
+}
+
+/**
+ * Upcoming reservations across all of a user's active trips, soonest first.
+ * Used by the dashboard's "Upcoming reservations" widget. A reservation counts
+ * as upcoming when its own time is in the future, or — for timeless entries —
+ * when its day falls on or after today. Cancelled bookings are skipped.
+ */
+export function getUpcomingReservations(userId: number, limit = 6) {
+  const today = new Date().toISOString().slice(0, 10);
+  const now = new Date().toISOString();
+
+  const reservations = db.prepare(`
+    SELECT r.id, r.trip_id, r.title, r.type, r.status, r.location,
+           r.reservation_time, r.confirmation_number,
+           t.title as trip_title, t.cover_image as trip_cover,
+           d.date as day_date, p.name as place_name, p.image_url as place_image
+    FROM reservations r
+    JOIN trips t ON t.id = r.trip_id
+    LEFT JOIN trip_members tm ON tm.trip_id = t.id AND tm.user_id = ?
+    LEFT JOIN days d ON r.day_id = d.id
+    LEFT JOIN places p ON r.place_id = p.id
+    WHERE (t.user_id = ? OR tm.user_id IS NOT NULL)
+      AND t.is_archived = 0
+      AND r.status != 'cancelled'
+      AND (
+        (r.reservation_time IS NOT NULL AND r.reservation_time >= ?)
+        OR (r.reservation_time IS NULL AND d.date IS NOT NULL AND d.date >= ?)
+      )
+    ORDER BY COALESCE(r.reservation_time, d.date) ASC
+    LIMIT ?
+  `).all(userId, userId, now, today, limit) as any[];
 
   return reservations;
 }
@@ -131,6 +210,9 @@ export function getReservationWithJoins(id: string | number) {
   `).get(id) as any;
   if (!row) return undefined;
   row.endpoints = loadEndpoints(row.id);
+  // accommodation_id is a TEXT column; the integer FK reads back as a numeric
+  // string (e.g. "14.0"). Normalize to an int so clients can parse it.
+  row.accommodation_id = row.accommodation_id == null ? null : Math.trunc(Number(row.accommodation_id));
   return row;
 }
 
@@ -150,6 +232,7 @@ interface CreateReservationData {
   location?: string;
   confirmation_number?: string;
   notes?: string;
+  url?: string;
   day_id?: number;
   end_day_id?: number;
   place_id?: number;
@@ -166,7 +249,7 @@ interface CreateReservationData {
 export function createReservation(tripId: string | number, data: CreateReservationData): { reservation: any; accommodationCreated: boolean } {
   const {
     title, reservation_time, reservation_end_time, location,
-    confirmation_number, notes, day_id, end_day_id, place_id, assignment_id,
+    confirmation_number, notes, url, day_id, end_day_id, place_id, assignment_id,
     status, type, accommodation_id, metadata, create_accommodation,
     endpoints, needs_review
   } = data;
@@ -200,8 +283,8 @@ export function createReservation(tripId: string | number, data: CreateReservati
   }
 
   const result = db.prepare(`
-    INSERT INTO reservations (trip_id, day_id, end_day_id, place_id, assignment_id, title, reservation_time, reservation_end_time, location, confirmation_number, notes, status, type, accommodation_id, metadata, needs_review)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO reservations (trip_id, day_id, end_day_id, place_id, assignment_id, title, reservation_time, reservation_end_time, location, confirmation_number, notes, url, status, type, accommodation_id, metadata, needs_review)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     tripId,
     resolvedDayId,
@@ -214,6 +297,7 @@ export function createReservation(tripId: string | number, data: CreateReservati
     location || null,
     confirmation_number || null,
     notes || null,
+    url || null,
     status || 'pending',
     resolvedType,
     resolvedAccommodationId,
@@ -264,15 +348,6 @@ export function updatePositions(tripId: string | number, positions: { id: number
   }
 }
 
-export function getDayPositions(tripId: string | number, dayId: number | string) {
-  return db.prepare(`
-    SELECT rdp.reservation_id, rdp.position
-    FROM reservation_day_positions rdp
-    JOIN reservations r ON rdp.reservation_id = r.id
-    WHERE r.trip_id = ? AND rdp.day_id = ?
-  `).all(tripId, dayId) as { reservation_id: number; position: number }[];
-}
-
 export function getReservation(id: string | number, tripId: string | number) {
   return db.prepare('SELECT * FROM reservations WHERE id = ? AND trip_id = ?').get(id, tripId) as Reservation | undefined;
 }
@@ -284,6 +359,7 @@ interface UpdateReservationData {
   location?: string;
   confirmation_number?: string;
   notes?: string;
+  url?: string;
   day_id?: number;
   end_day_id?: number | null;
   place_id?: number;
@@ -300,7 +376,7 @@ interface UpdateReservationData {
 export function updateReservation(id: string | number, tripId: string | number, data: UpdateReservationData, current: Reservation): { reservation: any; accommodationChanged: boolean } {
   const {
     title, reservation_time, reservation_end_time, location,
-    confirmation_number, notes, day_id, end_day_id, place_id, assignment_id,
+    confirmation_number, notes, url, day_id, end_day_id, place_id, assignment_id,
     status, type, accommodation_id, metadata, create_accommodation,
     endpoints, needs_review
   } = data;
@@ -341,12 +417,19 @@ export function updateReservation(id: string | number, tripId: string | number, 
   // otherwise derive from the (possibly updated) reservation_time so the
   // planner renders the booking on the correct day.
   let nextDayId: number | null;
-  if (day_id !== undefined) {
-    nextDayId = day_id || null;
-  } else if (reservation_time !== undefined && resolvedType !== 'hotel') {
+  if (day_id != null) {
+    // Explicit day from the client (e.g. moved on the planner).
+    nextDayId = day_id;
+  } else if (resolvedType !== 'hotel' && nextReservationTime) {
+    // No day set but we have a date — pin it to the matching day so the booking
+    // still shows in the Plan (covers bookings saved without a selected day, and
+    // the case where an earlier edit cleared day_id).
     nextDayId = resolveDayIdFromTime(tripId, nextReservationTime);
-  } else {
+  } else if (day_id === undefined) {
+    // Field absent and nothing to derive from — keep whatever it had.
     nextDayId = current.day_id ?? null;
+  } else {
+    nextDayId = null;
   }
 
   let nextEndDayId: number | null;
@@ -366,6 +449,7 @@ export function updateReservation(id: string | number, tripId: string | number, 
       location = ?,
       confirmation_number = ?,
       notes = ?,
+      url = ?,
       day_id = ?,
       end_day_id = ?,
       place_id = ?,
@@ -383,6 +467,7 @@ export function updateReservation(id: string | number, tripId: string | number, 
     location !== undefined ? (location || null) : current.location,
     confirmation_number !== undefined ? (confirmation_number || null) : current.confirmation_number,
     notes !== undefined ? (notes || null) : current.notes,
+    url !== undefined ? (url || null) : (current as any).url,
     nextDayId,
     nextEndDayId,
     place_id !== undefined ? (place_id || null) : current.place_id,

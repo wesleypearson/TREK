@@ -63,8 +63,13 @@ export function deleteJourneyShareLink(journeyId: number, userId: number): boole
 }
 
 export function validateShareTokenForPhoto(token: string, photoId: number): { journeyId: number; ownerId: number } | null {
-  const row = db.prepare('SELECT journey_id FROM journey_share_tokens WHERE token = ?').get(token) as any;
+  const row = db.prepare('SELECT journey_id, share_gallery FROM journey_share_tokens WHERE token = ?').get(token) as any;
   if (!row) return null;
+  // Photos only ever surface (inline or in the gallery) when share_gallery is on,
+  // so the byte proxy must honour the flag server-side too — the JSON payload
+  // already strips photos when it is off. Enumerable photo ids otherwise stay
+  // fetchable after the owner disables the gallery.
+  if (!row.share_gallery) return null;
   const photo = db.prepare(`
     SELECT gp.photo_id, tkp.owner_id, gp.journey_id
     FROM journey_photos gp
@@ -77,17 +82,18 @@ export function validateShareTokenForPhoto(token: string, photoId: number): { jo
 }
 
 export function validateShareTokenForAsset(token: string, assetId: string): { ownerId: number } | null {
-  const row = db.prepare('SELECT journey_id FROM journey_share_tokens WHERE token = ?').get(token) as any;
+  const row = db.prepare('SELECT journey_id, share_gallery FROM journey_share_tokens WHERE token = ?').get(token) as any;
   if (!row) return null;
+  // Same as the unified photo proxy: no asset bytes leave the host unless the
+  // owner shared the gallery.
+  if (!row.share_gallery) return null;
   const photo = db.prepare(`
     SELECT tkp.owner_id FROM journey_photos gp
     JOIN trek_photos tkp ON tkp.id = gp.photo_id
     WHERE tkp.asset_id = ? AND gp.journey_id = ?
   `).get(assetId, row.journey_id) as any;
-  if (!photo) {
-    const journey = db.prepare('SELECT user_id FROM journeys WHERE id = ?').get(row.journey_id) as any;
-    return journey ? { ownerId: journey.user_id } : null;
-  }
+  // Only resolve assets that actually belong to this shared journey.
+  if (!photo) return null;
   return { ownerId: photo.owner_id };
 }
 
@@ -107,7 +113,8 @@ export function getPublicJourney(token: string) {
 
   const photos = db.prepare(`
     SELECT gp.id, jep.entry_id, gp.photo_id, gp.caption, jep.sort_order, gp.shared, gp.created_at,
-           tkp.provider, tkp.asset_id, tkp.owner_id, tkp.file_path, tkp.thumbnail_path, tkp.width, tkp.height
+           tkp.provider, tkp.asset_id, tkp.owner_id, tkp.file_path, tkp.thumbnail_path, tkp.width, tkp.height,
+           tkp.media_type, tkp.duration_ms
     FROM journey_entry_photos jep
     JOIN journey_photos gp ON gp.id = jep.journey_photo_id
     JOIN trek_photos tkp ON tkp.id = gp.photo_id
@@ -122,7 +129,8 @@ export function getPublicJourney(token: string) {
 
   const gallery = db.prepare(`
     SELECT gp.id, gp.journey_id, gp.photo_id, gp.caption, gp.shared, gp.sort_order, gp.created_at,
-           tkp.provider, tkp.asset_id, tkp.owner_id, tkp.file_path, tkp.thumbnail_path, tkp.width, tkp.height
+           tkp.provider, tkp.asset_id, tkp.owner_id, tkp.file_path, tkp.thumbnail_path, tkp.width, tkp.height,
+           tkp.media_type, tkp.duration_ms
     FROM journey_photos gp
     JOIN trek_photos tkp ON tkp.id = gp.photo_id
     WHERE gp.journey_id = ?
@@ -137,12 +145,44 @@ export function getPublicJourney(token: string) {
       photos: photosByEntry[e.id] || [],
     }));
 
-  // Stats
+  // Stats are derived from the full data so the overview pills stay accurate
+  // even when a section is hidden.
   const stats = {
     entries: entries.length,
     photos: gallery.length,
     places: new Set(entries.filter(e => e.location_name).map(e => e.location_name)).size,
   };
+
+  const shareTimeline = !!row.share_timeline;
+  const shareGallery = !!row.share_gallery;
+  const shareMap = !!row.share_map;
+
+  // Honour the share flags server-side so the API only returns the sections the
+  // owner enabled (the client gates these too, but it must not rely on that).
+  let publicEntries: Record<string, unknown>[] = [];
+  if (shareTimeline) {
+    // Include the full entry, but drop GPS unless the map is shared and inline
+    // photos unless the gallery is shared.
+    publicEntries = enrichedEntries.map(e => {
+      const projected: Record<string, unknown> = { ...e };
+      if (!shareMap) { projected.location_lat = null; projected.location_lng = null; }
+      if (!shareGallery) projected.photos = [];
+      return projected;
+    });
+  } else if (shareMap) {
+    // Map-only share: just enough to plot markers, no story/photos/mood.
+    publicEntries = enrichedEntries.map(e => ({
+      id: e.id,
+      journey_id: e.journey_id,
+      type: e.type,
+      entry_date: e.entry_date,
+      title: e.title,
+      location_name: e.location_name,
+      location_lat: e.location_lat,
+      location_lng: e.location_lng,
+      sort_order: e.sort_order,
+    }));
+  }
 
   return {
     journey: {
@@ -151,13 +191,13 @@ export function getPublicJourney(token: string) {
       cover_image: journey.cover_image,
       status: journey.status,
     },
-    entries: enrichedEntries,
-    gallery,
+    entries: publicEntries,
+    gallery: shareGallery ? gallery : [],
     stats,
     permissions: {
-      share_timeline: !!row.share_timeline,
-      share_gallery: !!row.share_gallery,
-      share_map: !!row.share_map,
+      share_timeline: shareTimeline,
+      share_gallery: shareGallery,
+      share_map: shareMap,
     },
   };
 }

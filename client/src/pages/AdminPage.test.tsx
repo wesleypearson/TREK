@@ -1,11 +1,10 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, waitFor, fireEvent, within } from '../../tests/helpers/render';
 import { http, HttpResponse } from 'msw';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { buildAdmin } from '../../tests/helpers/factories';
 import { server } from '../../tests/helpers/msw/server';
+import { fireEvent, render, screen, waitFor, within } from '../../tests/helpers/render';
 import { resetAllStores, seedStore } from '../../tests/helpers/store';
-import { buildUser, buildAdmin } from '../../tests/helpers/factories';
 import { useAuthStore } from '../store/authStore';
-import { useAddonStore } from '../store/addonStore';
 import AdminPage from './AdminPage';
 
 // Mock heavy sub-panels to focus on page-level concerns
@@ -145,7 +144,7 @@ describe('AdminPage', () => {
         }),
         http.get('/api/admin/stats', () => {
           return HttpResponse.json({ error: 'Forbidden' }, { status: 403 });
-        }),
+        })
       );
 
       seedStore(useAuthStore, {
@@ -237,7 +236,7 @@ describe('AdminPage', () => {
 
       await waitFor(() => {
         expect(screen.getByText('42')).toBeInTheDocument(); // totalPlaces — unique on page
-        expect(screen.getByText('8')).toBeInTheDocument();  // totalFiles — unique on page
+        expect(screen.getByText('8')).toBeInTheDocument(); // totalFiles — unique on page
       });
     });
   });
@@ -302,7 +301,7 @@ describe('AdminPage', () => {
       server.use(
         http.get('/api/admin/version-check', () => {
           return HttpResponse.json({ update_available: true, latest: '9.9.9', current: '1.0.0' });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -330,7 +329,7 @@ describe('AdminPage', () => {
           return HttpResponse.json({
             addons: [{ id: 'mcp', name: 'MCP Tokens', type: 'mcp', icon: '', enabled: true }],
           });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -347,9 +346,9 @@ describe('AdminPage', () => {
       let capturedBody: Record<string, unknown> | null = null;
       server.use(
         http.put('/api/auth/app-settings', async ({ request }) => {
-          capturedBody = await request.json() as Record<string, unknown>;
+          capturedBody = (await request.json()) as Record<string, unknown>;
           return HttpResponse.json({});
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -360,7 +359,7 @@ describe('AdminPage', () => {
       fireEvent.click(screen.getByRole('button', { name: /settings/i }));
 
       const heading = await screen.findByRole('heading', { name: /authentication methods/i });
-      const card = heading.closest('.bg-white');
+      const card = heading.closest<HTMLElement>('.bg-white');
       const toggles = within(card!).getAllByRole('button');
       fireEvent.click(toggles[0]); // First toggle = password_login
 
@@ -462,9 +461,9 @@ describe('AdminPage', () => {
       let capturedBody: Record<string, unknown> | null = null;
       server.use(
         http.put('/api/auth/app-settings', async ({ request }) => {
-          capturedBody = await request.json() as Record<string, unknown>;
+          capturedBody = (await request.json()) as Record<string, unknown>;
           return HttpResponse.json({});
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -474,7 +473,7 @@ describe('AdminPage', () => {
       fireEvent.click(screen.getByRole('button', { name: /settings/i }));
 
       const mfaHeading = await screen.findByRole('heading', { name: /require two-factor/i });
-      const mfaCard = mfaHeading.closest('.bg-white');
+      const mfaCard = mfaHeading.closest<HTMLElement>('.bg-white');
       const mfaToggle = within(mfaCard!).getByRole('button');
       fireEvent.click(mfaToggle);
 
@@ -543,9 +542,18 @@ describe('AdminPage', () => {
       server.use(
         http.get('/api/admin/invites', () => {
           return HttpResponse.json({
-            invites: [{ id: 1, token: 'abcdef123456789', max_uses: 5, used_count: 0, expires_at: null, created_by_name: 'admin' }],
+            invites: [
+              {
+                id: 1,
+                token: 'abcdef123456789',
+                max_uses: 5,
+                used_count: 0,
+                expires_at: null,
+                created_by_name: 'admin',
+              },
+            ],
           });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -573,9 +581,18 @@ describe('AdminPage', () => {
       server.use(
         http.get('/api/admin/invites', () => {
           return HttpResponse.json({
-            invites: [{ id: 1, token: 'abcdef123456789', max_uses: 5, used_count: 0, expires_at: null, created_by_name: 'admin' }],
+            invites: [
+              {
+                id: 1,
+                token: 'abcdef123456789',
+                max_uses: 5,
+                used_count: 0,
+                expires_at: null,
+                created_by_name: 'admin',
+              },
+            ],
           });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -612,11 +629,26 @@ describe('AdminPage', () => {
         http.get('/api/admin/notification-preferences', () => {
           return HttpResponse.json({
             event_types: ['version_available'],
-            available_channels: { inapp: true, email: true },
+            channels: [
+              {
+                id: 'inapp',
+                source: 'builtin',
+                labelKey: 'settings.notificationPreferences.inapp',
+                active: true,
+                configured: true,
+              },
+              {
+                id: 'email',
+                source: 'builtin',
+                labelKey: 'settings.notificationPreferences.email',
+                active: true,
+                configured: true,
+              },
+            ],
             implemented_combos: { version_available: ['inapp', 'email'] },
             preferences: { version_available: { inapp: true, email: true } },
           });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -640,7 +672,7 @@ describe('AdminPage', () => {
           return HttpResponse.json({
             addons: [{ id: 'mcp', name: 'MCP Tokens', type: 'mcp', icon: '', enabled: true }],
           });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -659,7 +691,7 @@ describe('AdminPage', () => {
       server.use(
         http.get('/api/admin/version-check', () => {
           return HttpResponse.json({ update_available: true, latest: '9.9.9', current: '1.0.0' });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -703,7 +735,8 @@ describe('AdminPage', () => {
       await waitFor(() => expect(screen.getByRole('button', { name: /^users$/i })).toBeInTheDocument());
       fireEvent.click(screen.getByRole('button', { name: /settings/i }));
 
-      const keyInput = await screen.findByPlaceholderText('Enter key...');
+      // Maps is the first 'Enter key...' input (Unsplash is the second).
+      const keyInput = (await screen.findAllByPlaceholderText('Enter key...'))[0];
 
       // Type a value — covers the onChange handler
       fireEvent.change(keyInput, { target: { value: 'test-api-key-abc123' } });
@@ -722,9 +755,9 @@ describe('AdminPage', () => {
       let capturedBody: Record<string, unknown> | null = null;
       server.use(
         http.put('/api/auth/app-settings', async ({ request }) => {
-          capturedBody = await request.json() as Record<string, unknown>;
+          capturedBody = (await request.json()) as Record<string, unknown>;
           return HttpResponse.json({});
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -739,7 +772,7 @@ describe('AdminPage', () => {
 
       // Find and click the Save button in the file types section
       const fileTypesHeading = screen.getByRole('heading', { name: /allowed file types/i });
-      const fileTypesCard = fileTypesHeading.closest('.bg-white');
+      const fileTypesCard = fileTypesHeading.closest<HTMLElement>('.bg-white');
       const saveBtn = within(fileTypesCard!).getByRole('button', { name: /save/i });
       fireEvent.click(saveBtn);
 
@@ -754,7 +787,7 @@ describe('AdminPage', () => {
       server.use(
         http.put('/api/admin/oidc', async ({ request }) => {
           return HttpResponse.json(await request.json());
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -765,7 +798,7 @@ describe('AdminPage', () => {
 
       // Wait for OIDC section to appear
       const oidcHeading = await screen.findByRole('heading', { name: /single sign-on/i });
-      const oidcCard = oidcHeading.closest('.bg-white');
+      const oidcCard = oidcHeading.closest<HTMLElement>('.bg-white');
 
       // Type in the display name field (placeholder is 'z.B. Google, Authentik, Keycloak')
       const displayNameInput = within(oidcCard!).getByPlaceholderText('z.B. Google, Authentik, Keycloak');
@@ -787,9 +820,9 @@ describe('AdminPage', () => {
       let capturedBody: Record<string, unknown> | null = null;
       server.use(
         http.put('/api/auth/app-settings', async ({ request }) => {
-          capturedBody = await request.json() as Record<string, unknown>;
+          capturedBody = (await request.json()) as Record<string, unknown>;
           return HttpResponse.json({});
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -800,7 +833,7 @@ describe('AdminPage', () => {
 
       // The Email (SMTP) panel header has the enable toggle
       const emailHeading = await screen.findByRole('heading', { name: /email \(smtp\)/i });
-      const emailPanel = emailHeading.closest('.bg-white');
+      const emailPanel = emailHeading.closest<HTMLElement>('.bg-white');
       const emailToggle = within(emailPanel!).getAllByRole('button')[0];
       fireEvent.click(emailToggle);
 
@@ -815,16 +848,16 @@ describe('AdminPage', () => {
       let capturedBody: Record<string, unknown> | null = null;
       server.use(
         http.put('/api/auth/app-settings', async ({ request }) => {
-          capturedBody = await request.json() as Record<string, unknown>;
+          capturedBody = (await request.json()) as Record<string, unknown>;
           return HttpResponse.json({});
-        }),
+        })
       );
 
       // Start with email enabled by seeding smtpValues
       server.use(
         http.get('/api/auth/app-settings', () => {
           return HttpResponse.json({ notification_channels: 'email', smtp_host: 'mail.example.com' });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -842,7 +875,7 @@ describe('AdminPage', () => {
 
       // Click Save in the email panel
       const emailHeading = screen.getByRole('heading', { name: /email \(smtp\)/i });
-      const emailPanel = emailHeading.closest('.bg-white');
+      const emailPanel = emailHeading.closest<HTMLElement>('.bg-white');
       const saveBtn = within(emailPanel!).getByRole('button', { name: /^save$/i });
       fireEvent.click(saveBtn);
 
@@ -881,7 +914,7 @@ describe('AdminPage', () => {
       server.use(
         http.get('/api/admin/version-check', () => {
           return HttpResponse.json({ update_available: true, latest: '9.9.9', current: '1.0.0' });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -941,8 +974,9 @@ describe('AdminPage', () => {
         target: { value: 'alice-new@example.com' },
       });
 
-      expect((screen.getByDisplayValue('alice-new@example.com') as HTMLInputElement).value)
-        .toBe('alice-new@example.com');
+      expect((screen.getByDisplayValue('alice-new@example.com') as HTMLInputElement).value).toBe(
+        'alice-new@example.com'
+      );
     });
   });
 
@@ -953,7 +987,7 @@ describe('AdminPage', () => {
         http.put('/api/auth/me/api-keys', async ({ request }) => {
           capturedBody = await request.json();
           return HttpResponse.json({ success: true });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -964,7 +998,7 @@ describe('AdminPage', () => {
 
       // Wait for the API Keys section to appear
       const apiKeysHeading = await screen.findByRole('heading', { name: /^api keys$/i });
-      const apiKeysCard = apiKeysHeading.closest('.bg-white');
+      const apiKeysCard = apiKeysHeading.closest<HTMLElement>('.bg-white');
 
       // Type in the maps key field (type="password" by default)
       const keyInputs = within(apiKeysCard!).getAllByPlaceholderText('Enter key...');
@@ -978,6 +1012,35 @@ describe('AdminPage', () => {
         expect(capturedBody).toMatchObject({ maps_api_key: 'test-maps-key-123' });
       });
     });
+
+    it('typing in the Unsplash API key and clicking Save sends unsplash_api_key', async () => {
+      let capturedBody: Record<string, unknown> | undefined;
+      server.use(
+        http.put('/api/auth/me/api-keys', async ({ request }) => {
+          capturedBody = (await request.json()) as Record<string, unknown>;
+          return HttpResponse.json({ success: true });
+        })
+      );
+
+      seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
+      render(<AdminPage />);
+
+      await waitFor(() => expect(screen.getByRole('button', { name: /^users$/i })).toBeInTheDocument());
+      fireEvent.click(screen.getByRole('button', { name: /settings/i }));
+
+      const apiKeysHeading = await screen.findByRole('heading', { name: /^api keys$/i });
+      const apiKeysCard = apiKeysHeading.closest<HTMLElement>('.bg-white');
+
+      // The Unsplash key is the second 'Enter key...' input (after Maps).
+      const keyInputs = within(apiKeysCard!).getAllByPlaceholderText('Enter key...');
+      fireEvent.change(keyInputs[1], { target: { value: 'test-unsplash-key' } });
+
+      fireEvent.click(within(apiKeysCard!).getByRole('button', { name: /^save$/i }));
+
+      await waitFor(() => {
+        expect(capturedBody?.unsplash_api_key).toBe('test-unsplash-key');
+      });
+    });
   });
 
   describe('FE-PAGE-ADMIN-044: Validate API key in Settings tab', () => {
@@ -988,7 +1051,7 @@ describe('AdminPage', () => {
         }),
         http.get('/api/auth/validate-keys', () => {
           return HttpResponse.json({ maps: true, weather: false });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -999,7 +1062,7 @@ describe('AdminPage', () => {
 
       // Wait for the API Keys section
       const apiKeysHeading = await screen.findByRole('heading', { name: /^api keys$/i });
-      const apiKeysCard = apiKeysHeading.closest('.bg-white');
+      const apiKeysCard = apiKeysHeading.closest<HTMLElement>('.bg-white');
 
       // Type a key value to enable the Test button
       const keyInputs = within(apiKeysCard!).getAllByPlaceholderText('Enter key...');
@@ -1049,7 +1112,7 @@ describe('AdminPage', () => {
         http.delete('/api/admin/users/:id', ({ params }) => {
           deletedId = params.id as string;
           return HttpResponse.json({ success: true });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -1079,7 +1142,7 @@ describe('AdminPage', () => {
         http.post('/api/admin/rotate-jwt-secret', () => {
           rotateCalled = true;
           return HttpResponse.json({ success: true });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -1112,7 +1175,7 @@ describe('AdminPage', () => {
             smtp_host: 'mail.example.com',
             smtp_skip_tls_verify: 'false',
           });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -1126,7 +1189,7 @@ describe('AdminPage', () => {
 
       // Click the TLS toggle (skip TLS certificate check)
       const tlsToggleText = screen.getByText('Skip TLS certificate check');
-      const tlsCard = tlsToggleText.closest('div');
+      const tlsCard = tlsToggleText.closest<HTMLElement>('div');
       // The toggle button is a sibling container
       const allToggles = screen.getAllByRole('button');
       // Find toggle near the TLS text
@@ -1156,7 +1219,7 @@ describe('AdminPage', () => {
         http.post('/api/notifications/test-smtp', () => {
           testSmtpCalled = true;
           return HttpResponse.json({ success: true });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -1170,7 +1233,7 @@ describe('AdminPage', () => {
 
       // Find the email panel and click its "Send test email" button (scoped to avoid admin webhook panel)
       const emailHeading = screen.getByRole('heading', { name: /email \(smtp\)/i });
-      const emailPanel = emailHeading.closest('.bg-white');
+      const emailPanel = emailHeading.closest<HTMLElement>('.bg-white');
       const testBtn = within(emailPanel!).getByRole('button', { name: /send test email/i });
       fireEvent.click(testBtn);
 
@@ -1193,7 +1256,7 @@ describe('AdminPage', () => {
         http.put('/api/auth/app-settings', async () => {
           appSettingsCalled = true;
           return HttpResponse.json({});
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -1207,7 +1270,7 @@ describe('AdminPage', () => {
 
       // Find the webhook panel heading ('Webhook') — exact match to avoid 'Admin Webhook'
       const webhookHeading = screen.getByRole('heading', { name: /^webhook$/i });
-      const webhookCard = webhookHeading.closest('.bg-white');
+      const webhookCard = webhookHeading.closest<HTMLElement>('.bg-white');
       // Find the toggle button in webhook card
       const webhookToggle = within(webhookCard!).getByRole('button');
       fireEvent.click(webhookToggle);
@@ -1230,7 +1293,7 @@ describe('AdminPage', () => {
         http.put('/api/auth/app-settings', async ({ request }) => {
           savedPayload = await request.json();
           return HttpResponse.json({});
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -1245,7 +1308,7 @@ describe('AdminPage', () => {
 
       // Find the Save button in the admin webhook panel
       const adminWebhookHeading = screen.getByRole('heading', { name: /admin webhook/i });
-      const adminWebhookCard = adminWebhookHeading.closest('.bg-white');
+      const adminWebhookCard = adminWebhookHeading.closest<HTMLElement>('.bg-white');
       const saveBtn = within(adminWebhookCard!).getByRole('button', { name: /save/i });
       fireEvent.click(saveBtn);
 
@@ -1262,7 +1325,15 @@ describe('AdminPage', () => {
         http.get('/api/admin/notification-preferences', () => {
           return HttpResponse.json({
             event_types: ['trip.created'],
-            available_channels: { email: true },
+            channels: [
+              {
+                id: 'email',
+                source: 'builtin',
+                labelKey: 'settings.notificationPreferences.email',
+                active: true,
+                configured: true,
+              },
+            ],
             implemented_combos: { 'trip.created': ['email'] },
             preferences: { 'trip.created': { email: true } },
           });
@@ -1270,7 +1341,7 @@ describe('AdminPage', () => {
         http.put('/api/admin/notification-preferences', async () => {
           prefUpdateCalled = true;
           return HttpResponse.json({ success: true });
-        }),
+        })
       );
 
       seedStore(useAuthStore, { isAuthenticated: true, user: buildAdmin() });
@@ -1284,7 +1355,7 @@ describe('AdminPage', () => {
       // The channel column header is t('settings.notificationPreferences.email') = 'Email' (CSS uppercases it)
       // Find the AdminNotificationsPanel by its h2 heading role='heading'
       const matrixHeading = await screen.findByRole('heading', { name: /^notifications$/i });
-      const matrixCard = matrixHeading.closest('.bg-white');
+      const matrixCard = matrixHeading.closest<HTMLElement>('.bg-white');
 
       // The matrix toggle button is inside the card (not a checkbox — it's a button toggle)
       const matrixToggle = matrixCard?.querySelector('button');
@@ -1308,7 +1379,7 @@ describe('AdminPage', () => {
 
       // Wait for the OIDC section — heading is 'Single Sign-On (OIDC)'
       const oidcHeading = await screen.findByRole('heading', { name: /single sign-on/i });
-      const oidcCard = oidcHeading.closest('.bg-white');
+      const oidcCard = oidcHeading.closest<HTMLElement>('.bg-white');
 
       // Issuer field (placeholder: https://accounts.google.com)
       const issuerInput = within(oidcCard!).getByPlaceholderText('https://accounts.google.com');
@@ -1316,16 +1387,18 @@ describe('AdminPage', () => {
 
       // Discovery URL field
       const discoveryInput = within(oidcCard!).getByPlaceholderText(/openid-configuration/i);
-      fireEvent.change(discoveryInput, { target: { value: 'https://auth.example.com/.well-known/openid-configuration' } });
+      fireEvent.change(discoveryInput, {
+        target: { value: 'https://auth.example.com/.well-known/openid-configuration' },
+      });
 
       // Client ID field
       const clientIdLabel = within(oidcCard!).getByText('Client ID');
-      const clientIdInput = clientIdLabel.closest('div')!.querySelector('input')!;
+      const clientIdInput = clientIdLabel.closest<HTMLElement>('div')!.querySelector('input')!;
       fireEvent.change(clientIdInput, { target: { value: 'my-client-id' } });
 
       // Client Secret field
       const clientSecretLabel = within(oidcCard!).getByText('Client Secret');
-      const clientSecretInput = clientSecretLabel.closest('div')!.querySelector('input')!;
+      const clientSecretInput = clientSecretLabel.closest<HTMLElement>('div')!.querySelector('input')!;
       fireEvent.change(clientSecretInput, { target: { value: 'my-client-secret' } });
 
       // Verify the inputs updated

@@ -17,7 +17,15 @@ const { testDb, dbMock } = vi.hoisted(() => {
     closeDb: () => {},
     reinitialize: () => {},
     getPlaceWithTags: () => null,
-    canAccessTrip: () => null,
+    // Mirror the real canAccessTrip semantics against the test DB (owner or member
+    // → truthy access row, else undefined) so addTripToJourney's trip-access guard
+    // behaves as in production. (Was an unused `() => null` stub before the guard existed.)
+    canAccessTrip: (tripId: number | string, userId: number) =>
+      db
+        .prepare(
+          'SELECT t.id, t.user_id FROM trips t LEFT JOIN trip_members m ON m.trip_id = t.id AND m.user_id = ? WHERE t.id = ? AND (t.user_id = ? OR m.user_id IS NOT NULL)',
+        )
+        .get(userId, tripId, userId),
     isOwner: () => false,
   };
   return { testDb: db, dbMock: mock };
@@ -68,6 +76,7 @@ import {
   removeContributor,
   getSuggestions,
   syncTripPlaces,
+  reconcileTripSkeletons,
   reorderEntries,
   onPlaceCreated,
   onPlaceUpdated,
@@ -417,6 +426,22 @@ describe('addTripToJourney / removeTripFromJourney', () => {
     expect(link).toBeDefined();
   });
 
+  it('JOURNEY-SVC-024b: refuses to link a trip the caller cannot access (IDOR guard)', () => {
+    const { user } = createUser(testDb);
+    const { user: stranger } = createUser(testDb);
+    const journey = createJourney(testDb, user.id);
+    // A trip owned by someone else, that `user` is not a member of.
+    const foreignTrip = createTrip(testDb, stranger.id, { title: "Stranger's Trip" });
+
+    const result = addTripToJourney(journey.id, foreignTrip.id, user.id);
+
+    expect(result).toBe(false);
+    const link = testDb.prepare(
+      'SELECT * FROM journey_trips WHERE journey_id = ? AND trip_id = ?'
+    ).get(journey.id, foreignTrip.id);
+    expect(link).toBeUndefined();
+  });
+
   it('JOURNEY-SVC-025: syncs places as skeleton entries when linking a trip', () => {
     const { user } = createUser(testDb);
     const journey = createJourney(testDb, user.id);
@@ -571,6 +596,32 @@ describe('updateEntry', () => {
     const result = updateEntry(99999, user.id, { title: 'No Such Entry' });
 
     expect(result).toBeNull();
+  });
+
+  it('JOURNEY-SVC-034b: ignores injection column keys and mass-assignment attempts', () => {
+    const { user } = createUser(testDb);
+    const journey = createJourney(testDb, user.id);
+    const entry = createJourneyEntry(testDb, journey.id, user.id, {
+      title: 'Safe',
+      story: 'original',
+      entry_date: '2026-03-01',
+    });
+
+    // The keys come straight from the request body. A crafted key was previously
+    // interpolated as a raw SQL column name (`${key} = ?`), enabling subquery
+    // injection (full DB read) and mass-assignment of protected columns.
+    const malicious: Record<string, unknown> = {
+      title: 'Updated',
+      [`story = (SELECT password_hash FROM users WHERE id = ${user.id}), updated_at`]: 'x',
+      author_id: 999999,
+    };
+
+    const updated = updateEntry(entry.id, user.id, malicious as Parameters<typeof updateEntry>[2]);
+
+    expect(updated).not.toBeNull();
+    expect(updated!.title).toBe('Updated'); // legit field still applied
+    expect(updated!.story).toBe('original'); // injection key dropped — no hash leaked into story
+    expect(updated!.author_id).toBe(user.id); // mass-assignment blocked
   });
 });
 
@@ -1569,5 +1620,132 @@ describe('onPlaceCreated sort_order', () => {
     ).get(journey.id, place.id) as { sort_order: number } | undefined;
     expect(newEntry).toBeDefined();
     expect(newEntry!.sort_order).toBe(6);
+  });
+});
+
+// -- reconcileTripSkeletons ---------------------------------------------------
+
+describe('reconcileTripSkeletons', () => {
+  /** Link a fresh journey to a trip and return both. */
+  function linkedJourneyTrip() {
+    const { user } = createUser(testDb);
+    const journey = createJourney(testDb, user.id);
+    const trip = createTrip(testDb, user.id, {
+      title: 'Reconcile Trip',
+      start_date: '2026-05-01',
+      end_date: '2026-05-03',
+    });
+    addTripToJourney(journey.id, trip.id, user.id);
+    return { user, journey, trip };
+  }
+
+  function daysOf(tripId: number) {
+    return testDb.prepare('SELECT id, date FROM days WHERE trip_id = ? ORDER BY date ASC').all(tripId) as {
+      id: number;
+      date: string;
+    }[];
+  }
+
+  function skeletonFor(journeyId: number, placeId: number) {
+    return testDb
+      .prepare('SELECT * FROM journey_entries WHERE journey_id = ? AND source_place_id = ?')
+      .get(journeyId, placeId) as any;
+  }
+
+  it('JOURNEY-SVC-094: adds a skeleton for a newly assigned place', () => {
+    const { journey, trip } = linkedJourneyTrip();
+    const days = daysOf(trip.id);
+    const place = createPlace(testDb, trip.id, { name: 'New Museum' });
+    createDayAssignment(testDb, days[0].id, place.id);
+
+    reconcileTripSkeletons(trip.id);
+
+    const skeleton = skeletonFor(journey.id, place.id);
+    expect(skeleton).toBeDefined();
+    expect(skeleton.type).toBe('skeleton');
+    expect(skeleton.title).toBe('New Museum');
+    expect(skeleton.entry_date).toBe(days[0].date);
+  });
+
+  it('JOURNEY-SVC-095: removes a pure skeleton when its place is unassigned', () => {
+    const { journey, trip } = linkedJourneyTrip();
+    const days = daysOf(trip.id);
+    const place = createPlace(testDb, trip.id, { name: 'To Remove' });
+    const assignment = createDayAssignment(testDb, days[0].id, place.id);
+    reconcileTripSkeletons(trip.id);
+    expect(skeletonFor(journey.id, place.id)).toBeDefined();
+
+    testDb.prepare('DELETE FROM day_assignments WHERE id = ?').run(assignment.id);
+    reconcileTripSkeletons(trip.id);
+
+    expect(skeletonFor(journey.id, place.id)).toBeUndefined();
+  });
+
+  it('JOURNEY-SVC-096: preserves a filled entry on unassign (detaches + notes it)', () => {
+    const { journey, trip } = linkedJourneyTrip();
+    const days = daysOf(trip.id);
+    const place = createPlace(testDb, trip.id, { name: 'Filled Place' });
+    const assignment = createDayAssignment(testDb, days[0].id, place.id);
+    reconcileTripSkeletons(trip.id);
+    const skeleton = skeletonFor(journey.id, place.id);
+    // Promote to a filled entry with content.
+    testDb
+      .prepare("UPDATE journey_entries SET type = 'entry', story = 'A wonderful visit' WHERE id = ?")
+      .run(skeleton.id);
+
+    testDb.prepare('DELETE FROM day_assignments WHERE id = ?').run(assignment.id);
+    reconcileTripSkeletons(trip.id);
+
+    const kept = testDb.prepare('SELECT * FROM journey_entries WHERE id = ?').get(skeleton.id) as any;
+    expect(kept).toBeDefined();
+    expect(kept.type).toBe('entry');
+    expect(kept.source_place_id).toBeNull();
+    expect(kept.source_trip_id).toBeNull();
+    expect(kept.story).toContain('A wonderful visit');
+    expect(kept.story).toContain('was removed from the trip plan');
+  });
+
+  it('JOURNEY-SVC-097: refreshes skeleton entry_date when a place is moved to another day', () => {
+    const { journey, trip } = linkedJourneyTrip();
+    const days = daysOf(trip.id);
+    const place = createPlace(testDb, trip.id, { name: 'Moving Place' });
+    const assignment = createDayAssignment(testDb, days[0].id, place.id);
+    reconcileTripSkeletons(trip.id);
+    expect(skeletonFor(journey.id, place.id).entry_date).toBe(days[0].date);
+
+    testDb.prepare('UPDATE day_assignments SET day_id = ? WHERE id = ?').run(days[1].id, assignment.id);
+    reconcileTripSkeletons(trip.id);
+
+    expect(skeletonFor(journey.id, place.id).entry_date).toBe(days[1].date);
+  });
+
+  it('JOURNEY-SVC-098: is idempotent — a second call makes no changes', () => {
+    const { journey, trip } = linkedJourneyTrip();
+    const days = daysOf(trip.id);
+    const place = createPlace(testDb, trip.id, { name: 'Stable Place' });
+    createDayAssignment(testDb, days[0].id, place.id);
+    reconcileTripSkeletons(trip.id);
+
+    const before = testDb
+      .prepare('SELECT id, updated_at FROM journey_entries WHERE journey_id = ? ORDER BY id')
+      .all(journey.id) as { id: number; updated_at: number }[];
+    reconcileTripSkeletons(trip.id);
+    const after = testDb
+      .prepare('SELECT id, updated_at FROM journey_entries WHERE journey_id = ? ORDER BY id')
+      .all(journey.id) as { id: number; updated_at: number }[];
+
+    expect(after).toEqual(before);
+  });
+
+  it('JOURNEY-SVC-099: no-ops when the trip is linked to no journey', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id, { title: 'Unlinked', start_date: '2026-05-01', end_date: '2026-05-02' });
+    const days = daysOf(trip.id);
+    const place = createPlace(testDb, trip.id, { name: 'Orphan' });
+    createDayAssignment(testDb, days[0].id, place.id);
+
+    expect(() => reconcileTripSkeletons(trip.id)).not.toThrow();
+    const anyEntry = testDb.prepare('SELECT COUNT(*) AS n FROM journey_entries').get() as { n: number };
+    expect(anyEntry.n).toBe(0);
   });
 });

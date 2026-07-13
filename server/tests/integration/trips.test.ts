@@ -5,6 +5,7 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterAll } from 'vitest';
 import request from 'supertest';
 import type { Application } from 'express';
+import type { INestApplication } from '@nestjs/common';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Step 1: Bare in-memory DB — schema applied in beforeAll after mocks register
@@ -43,27 +44,39 @@ vi.mock('../../src/config', () => ({
   JWT_SECRET: 'test-jwt-secret-for-trek-testing-only',
   ENCRYPTION_KEY: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2',
   updateJwtSecret: () => {},
+  SESSION_DURATION: '24h',
+  SESSION_DURATION_MS: 86400000,
+  SESSION_DURATION_SECONDS: 86400,
+  DEFAULT_LANGUAGE: 'en',
 }));
+vi.mock('../../src/websocket', () => ({ broadcast: vi.fn(), broadcastToUser: vi.fn() }));
 
-import { createApp } from '../../src/app';
+import { buildApp } from '../../src/bootstrap';
 import { createTables } from '../../src/db/schema';
 import { runMigrations } from '../../src/db/migrations';
-import { resetTestDb } from '../helpers/test-db';
+import { resetTestDb, resetRateLimits } from '../helpers/test-db';
 import { createUser, createAdmin, createTrip, addTripMember, createPlace, createReservation, createTag, createDayAccommodation, createBudgetItem, createPackingItem, createDayNote, createDayAssignment } from '../helpers/factories';
 import { authCookie } from '../helpers/auth';
-import { loginAttempts, mfaAttempts } from '../../src/routes/auth';
 import { invalidatePermissionsCache } from '../../src/services/permissions';
 
-const app: Application = createApp();
+let nestApp: INestApplication;
+let app: Application;
 
-beforeAll(() => { createTables(testDb); runMigrations(testDb); });
+beforeAll(async () => {
+  createTables(testDb);
+  runMigrations(testDb);
+  nestApp = await buildApp();
+  app = nestApp.getHttpAdapter().getInstance();
+});
 beforeEach(() => {
   resetTestDb(testDb);
-  loginAttempts.clear();
-  mfaAttempts.clear();
+  resetRateLimits(nestApp);
   invalidatePermissionsCache();
 });
-afterAll(() => { testDb.close(); });
+afterAll(async () => {
+  await nestApp.close();
+  testDb.close();
+});
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Create trip (TRIP-001, TRIP-002, TRIP-003)
@@ -721,6 +734,157 @@ describe('Trip members', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.success).toBe(true);
+  });
+
+  it('TRIP-TRANSFER-001 — owner hands the trip to a member; roles swap (#973)', async () => {
+    const { user: owner } = createUser(testDb);
+    const { user: member } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Team Trip' });
+    addTripMember(testDb, trip.id, member.id);
+
+    const res = await request(app)
+      .post(`/api/trips/${trip.id}/transfer`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ newOwnerId: member.id });
+
+    expect(res.status).toBe(201);
+    expect(res.body.success).toBe(true);
+
+    const row = testDb.prepare('SELECT user_id FROM trips WHERE id = ?').get(trip.id) as { user_id: number };
+    expect(row.user_id).toBe(member.id);
+    const memberRows = (testDb.prepare('SELECT user_id FROM trip_members WHERE trip_id = ?').all(trip.id) as { user_id: number }[]).map(r => r.user_id);
+    expect(memberRows).toContain(owner.id);
+    expect(memberRows).not.toContain(member.id);
+  });
+
+  it('TRIP-TRANSFER-002 — a non-owner cannot transfer ownership → 403', async () => {
+    const { user: owner } = createUser(testDb);
+    const { user: member } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Team Trip' });
+    addTripMember(testDb, trip.id, member.id);
+
+    const res = await request(app)
+      .post(`/api/trips/${trip.id}/transfer`)
+      .set('Cookie', authCookie(member.id))
+      .send({ newOwnerId: member.id });
+
+    expect(res.status).toBe(403);
+  });
+
+  it('TRIP-TRANSFER-003 — cannot transfer to a non-member → 400', async () => {
+    const { user: owner } = createUser(testDb);
+    const { user: stranger } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Team Trip' });
+
+    const res = await request(app)
+      .post(`/api/trips/${trip.id}/transfer`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ newOwnerId: stranger.id });
+
+    expect(res.status).toBe(400);
+  });
+
+  it('TRIP-GUEST-001 — owner creates a guest; it appears as a member and is shielded from auth (#1362)', async () => {
+    const { user: owner } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Camping' });
+
+    const created = await request(app)
+      .post(`/api/trips/${trip.id}/guests`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Grandma' });
+    expect(created.status).toBe(201);
+    expect(created.body.member.is_guest).toBe(true);
+    expect(created.body.member.username).toBe('Grandma');
+    const guestId = created.body.member.id;
+
+    // Surfaces in the members list every assignment picker consumes.
+    const members = await request(app).get(`/api/trips/${trip.id}/members`).set('Cookie', authCookie(owner.id));
+    const guest = members.body.members.find((m: any) => m.id === guestId);
+    expect(guest).toBeTruthy();
+    expect(guest.is_guest).toBe(true);
+
+    // NOT in the global user directory (the member-add picker source).
+    const dir = await request(app).get('/api/auth/users').set('Cookie', authCookie(owner.id));
+    expect(dir.body.users.some((u: any) => u.id === guestId)).toBe(false);
+
+    // The synthetic email can never authenticate (resolves as an unknown email).
+    const email = (testDb.prepare('SELECT email FROM users WHERE id = ?').get(guestId) as any).email;
+    const login = await request(app).post('/api/auth/login').send({ email, password: 'anything' });
+    expect(login.status).toBe(401);
+  });
+
+  it('TRIP-GUEST-004 — the same guest name is allowed on two trips (no "Name 2", #1446)', async () => {
+    const { user: owner } = createUser(testDb);
+    const tripA = createTrip(testDb, owner.id, { title: 'Trip A' });
+    const tripB = createTrip(testDb, owner.id, { title: 'Trip B' });
+
+    const addJake = (tripId: number) => request(app)
+      .post(`/api/trips/${tripId}/guests`).set('Cookie', authCookie(owner.id)).send({ name: 'Jake' });
+
+    const a = await addJake(tripA.id);
+    const b = await addJake(tripB.id);
+    expect(a.status).toBe(201);
+    expect(b.status).toBe(201);
+    // both keep the plain name — the second is NOT auto-renamed to "Jake 2"
+    expect(a.body.member.username).toBe('Jake');
+    expect(b.body.member.username).toBe('Jake');
+    expect(b.body.member.id).not.toBe(a.body.member.id);
+
+    // and each trip's member list shows "Jake" (not the internal uuid handle)
+    const membersB = await request(app).get(`/api/trips/${tripB.id}/members`).set('Cookie', authCookie(owner.id));
+    expect(membersB.body.members.find((m: any) => m.id === b.body.member.id).username).toBe('Jake');
+  });
+
+  it('TRIP-GUEST-002 — guest CRUD is owner-only', async () => {
+    const { user: owner } = createUser(testDb);
+    const { user: member } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Camping' });
+    addTripMember(testDb, trip.id, member.id);
+
+    // A non-owner member cannot create a guest.
+    const denied = await request(app)
+      .post(`/api/trips/${trip.id}/guests`)
+      .set('Cookie', authCookie(member.id))
+      .send({ name: 'Nope' });
+    expect(denied.status).toBe(403);
+
+    const created = await request(app)
+      .post(`/api/trips/${trip.id}/guests`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Kid' });
+    const guestId = created.body.member.id;
+
+    // Rename + delete by the owner.
+    const renamed = await request(app)
+      .put(`/api/trips/${trip.id}/guests/${guestId}`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Junior' });
+    expect(renamed.status).toBe(200);
+    // #1446: the human name lives in display_name now (username is a non-shown uuid handle)
+    expect((testDb.prepare('SELECT display_name FROM users WHERE id = ?').get(guestId) as any).display_name).toBe('Junior');
+
+    const removed = await request(app)
+      .delete(`/api/trips/${trip.id}/guests/${guestId}`)
+      .set('Cookie', authCookie(owner.id));
+    expect(removed.status).toBe(200);
+    expect(testDb.prepare('SELECT id FROM users WHERE id = ?').get(guestId)).toBeUndefined();
+  });
+
+  it('TRIP-GUEST-003 — a guest cannot be invited as a member to any trip (#1362)', async () => {
+    const { user: owner } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Camping' });
+    const otherTrip = createTrip(testDb, owner.id, { title: 'Other' });
+    const created = await request(app)
+      .post(`/api/trips/${trip.id}/guests`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Eve' });
+    const email = (testDb.prepare('SELECT email FROM users WHERE id = ?').get(created.body.member.id) as any).email;
+
+    const invite = await request(app)
+      .post(`/api/trips/${otherTrip.id}/members`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ identifier: email });
+    expect(invite.status).toBe(404);
   });
 
   it('TRIP-013 — Non-owner member cannot add other members when member_manage is trip_owner', async () => {

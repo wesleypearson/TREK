@@ -36,6 +36,7 @@
 
 ## Travel Management
 - [[Reservations and Bookings|Reservations-and-Bookings]]
+- [[AI Booking Import|AI-Booking-Import]]
 - [[Transport: Flights, Trains, Cars|Transport-Flights-Trains-Cars]]
 - [[Accommodations]]
 - [[Budget Tracking|Budget-Tracking]]
@@ -63,7 +64,15 @@
 - [[Vacay]]
 - [[Atlas]]
 - [[Journey Journal|Journey-Journal]]
+- [[Collections]]
 - [[Dashboard Widgets|Dashboard-Widgets]]
+
+## Plugins
+- [[Plugins Overview|Plugins]]
+- [[Plugin Development|Plugin-Development]]
+- [[Plugin Cookbook|Plugin-Cookbook]]
+- [[Plugin Permissions|Plugin-Permissions]]
+- [[Publishing a Plugin|Plugin-Publishing]]
 
 ## AI / MCP
 - [[MCP Overview|MCP-Overview]]

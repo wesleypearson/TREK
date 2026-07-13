@@ -1,7 +1,7 @@
 /**
  * Unit tests for placeService — PLACE-SVC-001 through PLACE-SVC-025.
  * Uses a real in-memory SQLite DB so SQL logic is exercised faithfully.
- * Skips importGpx / importGoogleList / searchPlaceImage (require external I/O).
+ * External fetches are mocked where needed.
  */
 import { describe, it, expect, vi, beforeAll, beforeEach, afterAll } from 'vitest';
 
@@ -41,13 +41,21 @@ vi.mock('../../../src/config', () => ({
   updateJwtSecret: () => {},
 }));
 
+// Spy on the photo-cache reclaim hook so delete tests assert the wiring without
+// touching disk. The removal logic itself is covered in placePhotoCache.test.ts.
+const { removeIfUnreferencedSpy } = vi.hoisted(() => ({ removeIfUnreferencedSpy: vi.fn() }));
+vi.mock('../../../src/services/placePhotoCache', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../../src/services/placePhotoCache')>()),
+  removeIfUnreferenced: removeIfUnreferencedSpy,
+}));
+
 import { createTables } from '../../../src/db/schema';
 import { runMigrations } from '../../../src/db/migrations';
 import { resetTestDb } from '../../helpers/test-db';
 import { createUser, createTrip, createPlace, createCategory, createTag } from '../../helpers/factories';
 import path from 'path';
 import fs from 'fs';
-import { listPlaces, createPlace as svcCreatePlace, getPlace, updatePlace, deletePlace, importGpx, importKmlPlaces, importGoogleList, searchPlaceImage } from '../../../src/services/placeService';
+import { listPlaces, createPlace as svcCreatePlace, getPlace, updatePlace, updatePlacesMany, deletePlace, importGpx, importKmlPlaces, importGoogleList, searchPlaceImage } from '../../../src/services/placeService';
 
 const GPX_FIXTURE = path.join(__dirname, '../../fixtures/test.gpx');
 const KML_FIXTURE = path.join(__dirname, '../../fixtures/test.kml');
@@ -225,6 +233,49 @@ describe('updatePlace', () => {
   });
 });
 
+// ── updatePlacesMany ────────────────────────────────────────────────────────────
+
+describe('updatePlacesMany', () => {
+  it('PLACE-SVC-039 — applies the same fields to many places, preserving the rest', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const a = createPlace(testDb, trip.id, { name: 'A' }) as any;
+    const b = createPlace(testDb, trip.id, { name: 'B' }) as any;
+    const c = createPlace(testDb, trip.id, { name: 'C' }) as any;
+
+    const updated = updatePlacesMany(String(trip.id), [a.id, b.id, c.id], { notes: 'visited', transport_mode: 'walking' });
+
+    expect(updated).toHaveLength(3);
+    for (const p of updated) {
+      expect((p as any).notes).toBe('visited');
+      expect((p as any).transport_mode).toBe('walking');
+    }
+    // Only the provided fields change — names are untouched.
+    expect(updated.map(p => (p as any).name).sort()).toEqual(['A', 'B', 'C']);
+  });
+
+  it('PLACE-SVC-040 — skips ids that are not in the trip and reports the rest', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const other = createTrip(testDb, user.id);
+    const mine = createPlace(testDb, trip.id, { name: 'Mine' }) as any;
+    const foreign = createPlace(testDb, other.id, { name: 'Foreign' }) as any;
+
+    const updated = updatePlacesMany(String(trip.id), [mine.id, foreign.id, 99999], { notes: 'tagged' });
+
+    expect(updated).toHaveLength(1);
+    expect((updated[0] as any).id).toBe(mine.id);
+    // The place from the other trip stays untouched.
+    expect((getPlace(String(other.id), String(foreign.id)) as any).notes).toBeNull();
+  });
+
+  it('PLACE-SVC-041 — returns [] for an empty id list', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    expect(updatePlacesMany(String(trip.id), [], { notes: 'x' })).toEqual([]);
+  });
+});
+
 // ── deletePlace ───────────────────────────────────────────────────────────────
 
 describe('deletePlace', () => {
@@ -251,6 +302,18 @@ describe('deletePlace', () => {
     const remaining = listPlaces(String(trip.id), {}) as any[];
     expect(remaining).toHaveLength(1);
     expect(remaining[0].id).toBe(p1.id);
+  });
+
+  it('PLACE-SVC-019b — reclaims the photo cache for the deleted place', () => {
+    removeIfUnreferencedSpy.mockClear();
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const place = createPlace(testDb, trip.id, { name: 'With Photo' }) as any;
+    testDb.prepare('UPDATE places SET google_place_id = ? WHERE id = ?').run('ChIJgid', place.id);
+
+    deletePlace(String(trip.id), String(place.id));
+
+    expect(removeIfUnreferencedSpy).toHaveBeenCalledWith('ChIJgid');
   });
 });
 
@@ -346,6 +409,39 @@ describe('importGpx', () => {
     const result = importGpx(String(trip.id), gpx);
     expect(result).toBeNull();
   });
+
+  it('PLACE-SVC-037 — multiple unnamed tracks in one file get distinct names instead of collapsing to one', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const gpx = Buffer.from(`<?xml version="1.0"?><gpx version="1.1">
+      <trk><trkseg>
+        <trkpt lat="48.8566" lon="2.3522"></trkpt>
+        <trkpt lat="48.8570" lon="2.3530"></trkpt>
+      </trkseg></trk>
+      <trk><trkseg>
+        <trkpt lat="40.0000" lon="-3.0000"></trkpt>
+        <trkpt lat="40.1000" lon="-3.1000"></trkpt>
+      </trkseg></trk>
+    </gpx>`);
+    const result = importGpx(String(trip.id), gpx) as any;
+    expect(result.places).toHaveLength(2);
+    const names = result.places.map((p: any) => p.name);
+    expect(new Set(names).size).toBe(2);
+  });
+
+  it('PLACE-SVC-038 — unnamed tracks fall back to the source filename', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const gpx = Buffer.from(`<?xml version="1.0"?><gpx version="1.1">
+      <trk><trkseg>
+        <trkpt lat="48.8566" lon="2.3522"></trkpt>
+        <trkpt lat="48.8570" lon="2.3530"></trkpt>
+      </trkseg></trk>
+    </gpx>`);
+    const result = importGpx(String(trip.id), gpx, { defaultName: 'morning-hike.gpx' }) as any;
+    expect(result.places).toHaveLength(1);
+    expect(result.places[0].name).toBe('morning-hike');
+  });
 });
 
 // ── importGoogleList ──────────────────────────────────────────────────────────
@@ -361,6 +457,15 @@ describe('importGoogleList', () => {
     const result = await importGoogleList(String(trip.id), 'https://example.com/no-id-here') as any;
     expect(result.error).toMatch(/Could not extract list ID/);
     expect(result.status).toBe(400);
+  });
+
+  it('PLACE-SVC-026b — a single-place link gives a guiding error instead of the generic one (#1304)', async () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const url = 'https://www.google.com/maps/place/Eiffel+Tower/@48.8584,2.2945,17z/data=!3m1';
+    const result = await importGoogleList(String(trip.id), url) as any;
+    expect(result.status).toBe(400);
+    expect(result.error).toMatch(/single place/i);
   });
 
   it('PLACE-SVC-027 — returns error when Google Maps API responds with non-ok status', async () => {
@@ -396,6 +501,57 @@ describe('importGoogleList', () => {
     expect(result.places[1].name).toBe('London');
   });
 
+  it('PLACE-SVC-028b — stores a Google Maps ftid separately from google_place_id', async () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+
+    const listPayload = [
+      [null, null, null, null, 'My Test List', null, null, null, [
+        [null, [null, null, null, null, '878 Weber St N', [null, null, 43.5118527, -80.5542617], ['-8634542354666695567', '-8822026229683971437']], "St. Jacobs Farmers' Market"],
+      ]],
+    ];
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => 'prefix\n' + JSON.stringify(listPayload),
+    }));
+
+    const url = 'https://www.google.com/maps/placelists/list/ABC123DEF456';
+    const result = await importGoogleList(String(trip.id), url) as any;
+
+    expect(result.places).toHaveLength(1);
+    expect(result.places[0].google_place_id).toBeNull();
+    expect(result.places[0].google_ftid).toBe('0x882bf179e806d471:0x8591dde29c821a93');
+  });
+
+  it('PLACE-SVC-028c — backfills google_ftid when re-import skips a duplicate', async () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id);
+    const existing = createPlace(testDb, trip.id, {
+      name: "St. Jacobs Farmers' Market",
+      lat: 43.5118527,
+      lng: -80.5542617,
+    }) as any;
+
+    const listPayload = [
+      [null, null, null, null, 'My Test List', null, null, null, [
+        [null, [null, null, null, null, '878 Weber St N', [null, null, 43.5118527, -80.5542617], ['-8634542354666695567', '-8822026229683971437']], "St. Jacobs Farmers' Market"],
+      ]],
+    ];
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      text: async () => 'prefix\n' + JSON.stringify(listPayload),
+    }));
+
+    const url = 'https://www.google.com/maps/placelists/list/ABC123DEF456';
+    const result = await importGoogleList(String(trip.id), url) as any;
+    const row = testDb.prepare('SELECT google_place_id, google_ftid FROM places WHERE id = ?').get(existing.id) as any;
+
+    expect(result.places).toHaveLength(0);
+    expect(result.skipped).toBe(1);
+    expect(row.google_place_id).toBeNull();
+    expect(row.google_ftid).toBe('0x882bf179e806d471:0x8591dde29c821a93');
+  });
+
   it('PLACE-SVC-029 — returns error when list items array is empty', async () => {
     const { user } = createUser(testDb);
     const trip = createTrip(testDb, user.id);
@@ -428,20 +584,31 @@ describe('searchPlaceImage', () => {
     expect(result.status).toBe(404);
   });
 
-  it('PLACE-SVC-031 — returns 400 when user has no Unsplash API key', async () => {
+  it('PLACE-SVC-031 — searches Unsplash without a stored API key', async () => {
     const { user } = createUser(testDb);
     const trip = createTrip(testDb, user.id);
     const place = createPlace(testDb, trip.id, { name: 'Eiffel Tower' }) as any;
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        results: [
+          { id: 'photo1', urls: { regular: 'https://img.example.com/1', thumb: 'https://img.example.com/t1' }, description: 'Tower', user: { name: 'Photographer' }, links: { html: 'https://unsplash.com/1' } },
+        ],
+      }),
+      status: 200,
+    }));
+
     const result = await searchPlaceImage(String(trip.id), String(place.id), user.id) as any;
-    expect(result.error).toMatch(/No Unsplash API key/);
-    expect(result.status).toBe(400);
+    expect(result.photos).toHaveLength(1);
+    const [url] = (fetch as any).mock.calls[0];
+    expect(url).toContain('https://unsplash.com/napi/search/photos?');
+    expect(url).not.toContain('client_id=');
   });
 
   it('PLACE-SVC-032 — returns photos when Unsplash API responds successfully', async () => {
     const { user } = createUser(testDb);
     const trip = createTrip(testDb, user.id);
     const place = createPlace(testDb, trip.id, { name: 'Eiffel Tower' }) as any;
-    testDb.prepare('UPDATE users SET unsplash_api_key = ? WHERE id = ?').run('test-unsplash-key', user.id);
 
     const mockPhotos = [
       { id: 'photo1', urls: { regular: 'https://img.example.com/1', thumb: 'https://img.example.com/t1' }, description: 'Tower', user: { name: 'Photographer' }, links: { html: 'https://unsplash.com/1' } },

@@ -1,10 +1,11 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { db } from '../db/database';
-import { JWT_SECRET } from '../config';
+import { JWT_SECRET, SESSION_DURATION_SECONDS } from '../config';
 import { User } from '../types';
 import { decrypt_api_key } from './apiKeyCrypto';
 import { resolveAuthToggles } from './authService';
+import { joinTripAsMember } from './tripMembership';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -28,8 +29,12 @@ export interface OidcTokenResponse {
 export interface OidcUserInfo {
   sub: string;
   email?: string;
+  // Standard OIDC claim. Some IdPs send it as the string "true"/"false".
+  email_verified?: boolean | string;
   name?: string;
   preferred_username?: string;
+  // Standard OIDC profile claim: URL of the user's profile picture.
+  picture?: string;
   groups?: string[];
   roles?: string[];
   [key: string]: unknown;
@@ -57,7 +62,7 @@ const DISCOVERY_TTL = 60 * 60 * 1000; // 1 hour
 // State management – pending OIDC states
 // ---------------------------------------------------------------------------
 
-const pendingStates = new Map<string, { createdAt: number; redirectUri: string; inviteToken?: string }>();
+const pendingStates = new Map<string, { createdAt: number; redirectUri: string; inviteToken?: string; codeVerifier: string }>();
 
 setInterval(() => {
   const now = Date.now();
@@ -66,10 +71,19 @@ setInterval(() => {
   }
 }, STATE_CLEANUP);
 
-export function createState(redirectUri: string, inviteToken?: string): string {
+function base64url(buf: Buffer): string {
+  return buf.toString('base64').replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+// Creates the login state and a matching PKCE pair. The verifier stays server
+// side (in pendingStates); the S256 challenge goes to the provider so PKCE-
+// required setups (e.g. Pocket ID with PKCE = required) work.
+export function createState(redirectUri: string, inviteToken?: string): { state: string; codeChallenge: string } {
   const state = crypto.randomBytes(32).toString('hex');
-  pendingStates.set(state, { createdAt: Date.now(), redirectUri, inviteToken });
-  return state;
+  const codeVerifier = base64url(crypto.randomBytes(32));
+  const codeChallenge = base64url(crypto.createHash('sha256').update(codeVerifier).digest());
+  pendingStates.set(state, { createdAt: Date.now(), redirectUri, inviteToken, codeVerifier });
+  return { state, codeChallenge };
 }
 
 export function consumeState(state: string) {
@@ -191,7 +205,11 @@ export function frontendUrl(path: string): string {
 }
 
 export function generateToken(user: { id: number }): string {
-  return jwt.sign({ id: user.id }, JWT_SECRET, { expiresIn: '24h', algorithm: 'HS256' });
+  // Embed the current password_version so an OIDC-issued session is invalidated
+  // by a password change/reset exactly like a password-login session (the auth
+  // middleware compares this `pv` against users.password_version).
+  const pv = (db.prepare('SELECT password_version FROM users WHERE id = ?').get(user.id) as { password_version?: number } | undefined)?.password_version ?? 0;
+  return jwt.sign({ id: user.id, pv }, JWT_SECRET, { expiresIn: SESSION_DURATION_SECONDS, algorithm: 'HS256' });
 }
 
 // ---------------------------------------------------------------------------
@@ -204,17 +222,20 @@ export async function exchangeCodeForToken(
   redirectUri: string,
   clientId: string,
   clientSecret: string,
+  codeVerifier?: string,
 ): Promise<OidcTokenResponse & { _ok: boolean; _status: number }> {
+  const body = new URLSearchParams({
+    grant_type: 'authorization_code',
+    code,
+    redirect_uri: redirectUri,
+    client_id: clientId,
+    client_secret: clientSecret,
+  });
+  if (codeVerifier) body.set('code_verifier', codeVerifier);
   const tokenRes = await fetch(doc.token_endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'authorization_code',
-      code,
-      redirect_uri: redirectUri,
-      client_id: clientId,
-      client_secret: clientSecret,
-    }),
+    body,
   });
   const tokenData = (await tokenRes.json()) as OidcTokenResponse;
   return { ...tokenData, _ok: tokenRes.ok, _status: tokenRes.status };
@@ -337,6 +358,17 @@ export async function verifyIdToken(
 // Find or create user by OIDC sub / email
 // ---------------------------------------------------------------------------
 
+// Sanitize the OIDC `picture` claim before we store it as the avatar. Only https
+// URLs are usable: the app's CSP allows https image sources but not http, and we
+// render the value directly. Non-strings, non-https and oversized values (e.g. a
+// large data: URI) are ignored so a user payload never carries junk. #1399
+function safeOidcPicture(picture: unknown): string | null {
+  if (typeof picture !== 'string') return null;
+  const url = picture.trim();
+  if (!url || url.length > 1024) return null;
+  return /^https:\/\//i.test(url) ? url : null;
+}
+
 export function findOrCreateUser(
   userInfo: OidcUserInfo,
   config: OidcConfig,
@@ -345,31 +377,59 @@ export function findOrCreateUser(
   const email = userInfo.email!.trim().toLowerCase();
   const name = userInfo.name || userInfo.preferred_username || email.split('@')[0];
   const sub = userInfo.sub;
+  const picture = safeOidcPicture(userInfo.picture);
 
   // Try to find existing user by sub, then by email
   let user = db.prepare('SELECT * FROM users WHERE oidc_sub = ? AND oidc_issuer = ?').get(sub, config.issuer) as User | undefined;
   if (!user) {
-    user = db.prepare('SELECT * FROM users WHERE LOWER(email) = ?').get(email) as User | undefined;
+    // Never link/log-in to a guest (#1362) via its synthetic email.
+    user = db.prepare('SELECT * FROM users WHERE LOWER(email) = ? AND COALESCE(is_guest, 0) = 0').get(email) as User | undefined;
   }
 
   if (user) {
-    // Link OIDC identity if not yet linked
+    // Reaching here without an oidc_sub means we matched an existing local
+    // account by email. Only auto-link the OIDC identity when the IdP asserts
+    // the email is verified; an unverified email must not auto-link.
     if (!user.oidc_sub) {
+      const emailVerified = userInfo.email_verified === true || userInfo.email_verified === 'true';
+      if (!emailVerified) {
+        return { error: 'email_not_verified' };
+      }
       db.prepare('UPDATE users SET oidc_sub = ?, oidc_issuer = ? WHERE id = ?').run(sub, config.issuer, user.id);
     }
     // Update role based on OIDC claims on every login (if claim mapping is configured)
     if (process.env.OIDC_ADMIN_VALUE) {
       const newRole = resolveOidcRole(userInfo, false);
       if (user.role !== newRole) {
-        db.prepare('UPDATE users SET role = ? WHERE id = ?').run(newRole, user.id);
-        user = { ...user, role: newRole } as User;
+        // Never let the claim-based downgrade strip the last admin. The bootstrap
+        // admin (first SSO user) usually doesn't carry the admin claim, so a forced
+        // re-login — e.g. after a JWT-secret rotation — would otherwise demote it and
+        // lock an OIDC-only instance out for good. #1274
+        const demotingLastAdmin =
+          user.role === 'admin' &&
+          newRole !== 'admin' &&
+          (db.prepare("SELECT COUNT(*) as count FROM users WHERE role = 'admin'").get() as { count: number }).count <= 1;
+        if (demotingLastAdmin) {
+          console.warn(`[OIDC] Kept admin role for user ${user.id}: their OIDC claims map to '${newRole}', but they are the only admin — demoting would lock the instance out.`);
+        } else {
+          db.prepare('UPDATE users SET role = ? WHERE id = ?').run(newRole, user.id);
+          user = { ...user, role: newRole } as User;
+        }
       }
+    }
+    // Keep the avatar in sync with the OIDC picture, but never clobber a custom
+    // upload: only fill it when empty or when the current value is itself an OIDC
+    // picture URL, so the picture refreshes on each login without overriding an
+    // uploaded one. #1399
+    if (picture && picture !== user.avatar && (!user.avatar || /^https:\/\//i.test(user.avatar))) {
+      db.prepare('UPDATE users SET avatar = ? WHERE id = ?').run(picture, user.id);
+      user = { ...user, avatar: picture } as User;
     }
     return { user };
   }
 
   // --- New user registration ---
-  const userCount = (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }).count;
+  const userCount = (db.prepare('SELECT COUNT(*) as count FROM users WHERE COALESCE(is_guest, 0) = 0').get() as { count: number }).count;
   const isFirstUser = userCount === 0;
 
   let validInvite: any = null;
@@ -393,8 +453,10 @@ export function findOrCreateUser(
   const bcrypt = require('bcryptjs');
   const hash = bcrypt.hashSync(randomPass, 10);
 
-  // Username: sanitize and avoid collisions
-  let username = name.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 30) || 'user';
+  // Username: sanitize and avoid collisions. Keep dots — they are valid in
+  // usernames (see the ^[a-zA-Z0-9_.-]+$ validation in authService) and common
+  // in OIDC name claims like "first.last".
+  let username = name.replace(/[^a-zA-Z0-9_.-]/g, '').substring(0, 30) || 'user';
   const existing = db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?)').get(username);
   if (existing) username = `${username}_${Date.now() % 10000}`;
 
@@ -412,12 +474,18 @@ export function findOrCreateUser(
         ).run(validInvite.id);
         if (updated.changes === 0) throw inviteRaceError;
       }
-      return db.prepare(
-        'INSERT INTO users (username, email, password_hash, role, oidc_sub, oidc_issuer, first_seen_version, login_count) VALUES (?, ?, ?, ?, ?, ?, ?, 0)',
-      ).run(username, email, hash, role, sub, config.issuer, process.env.APP_VERSION || '0.0.0');
+      const ins = db.prepare(
+        'INSERT INTO users (username, email, password_hash, role, oidc_sub, oidc_issuer, avatar, first_seen_version, login_count) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0)',
+      ).run(username, email, hash, role, sub, config.issuer, picture, process.env.APP_VERSION || '0.0.0');
+      // Trip-bound invite (#1402): auto-add the new SSO user to the trip inside the
+      // same atomic step as the invite consume. Idempotent + owner-safe.
+      if (validInvite?.trip_id) {
+        joinTripAsMember(Number(validInvite.trip_id), Number(ins.lastInsertRowid), validInvite.created_by ?? null);
+      }
+      return ins;
     });
     const result = createUser() as { lastInsertRowid: number | bigint };
-    user = { id: Number(result.lastInsertRowid), username, email, role } as User;
+    user = { id: Number(result.lastInsertRowid), username, email, role, avatar: picture } as User;
     return { user };
   } catch (err) {
     if (err === inviteRaceError) {

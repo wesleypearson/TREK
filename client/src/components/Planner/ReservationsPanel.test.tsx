@@ -27,7 +27,7 @@ beforeEach(() => {
   resetAllStores();
   seedStore(useAuthStore, { user: buildUser(), isAuthenticated: true });
   seedStore(useTripStore, { trip: buildTrip({ id: 1 }) });
-  seedStore(useSettingsStore, { settings: { time_format: '24h', blur_booking_codes: false, temperature_unit: 'celsius', language: 'en', dark_mode: false, default_currency: 'USD', default_lat: 48.8566, default_lng: 2.3522, default_zoom: 10, map_tile_url: '', show_place_description: false, route_calculation: false } });
+  seedStore(useSettingsStore, { settings: { time_format: '24h', blur_booking_codes: false, temperature_unit: 'celsius', language: 'en', dark_mode: false, default_currency: 'USD', default_lat: 48.8566, default_lng: 2.3522, default_zoom: 10, map_tile_url: '', show_place_description: false } });
 });
 
 describe('ReservationsPanel', () => {
@@ -211,7 +211,7 @@ describe('ReservationsPanel', () => {
   });
 
   it('FE-PLANNER-RESP-022: confirmation number is blurred when blur_booking_codes=true', () => {
-    seedStore(useSettingsStore, { settings: { time_format: '24h', blur_booking_codes: true, temperature_unit: 'celsius', language: 'en', dark_mode: false, default_currency: 'USD', default_lat: 48.8566, default_lng: 2.3522, default_zoom: 10, map_tile_url: '', show_place_description: false, route_calculation: false } });
+    seedStore(useSettingsStore, { settings: { time_format: '24h', blur_booking_codes: true, temperature_unit: 'celsius', language: 'en', dark_mode: false, default_currency: 'USD', default_lat: 48.8566, default_lng: 2.3522, default_zoom: 10, map_tile_url: '', show_place_description: false } });
     const res = buildReservation({ confirmation_number: 'ABC123', status: 'confirmed' });
     render(<ReservationsPanel {...defaultProps} reservations={[res]} />);
     const codeEl = screen.getByText('ABC123');
@@ -220,7 +220,7 @@ describe('ReservationsPanel', () => {
 
   it('FE-PLANNER-RESP-023: confirmation code revealed on hover when blurred', async () => {
     const user = userEvent.setup();
-    seedStore(useSettingsStore, { settings: { time_format: '24h', blur_booking_codes: true, temperature_unit: 'celsius', language: 'en', dark_mode: false, default_currency: 'USD', default_lat: 48.8566, default_lng: 2.3522, default_zoom: 10, map_tile_url: '', show_place_description: false, route_calculation: false } });
+    seedStore(useSettingsStore, { settings: { time_format: '24h', blur_booking_codes: true, temperature_unit: 'celsius', language: 'en', dark_mode: false, default_currency: 'USD', default_lat: 48.8566, default_lng: 2.3522, default_zoom: 10, map_tile_url: '', show_place_description: false } });
     const res = buildReservation({ confirmation_number: 'ABC123', status: 'confirmed' });
     render(<ReservationsPanel {...defaultProps} reservations={[res]} />);
     const codeEl = screen.getByText('ABC123');
@@ -388,5 +388,78 @@ describe('ReservationsPanel', () => {
     expect(screen.getByText('Pending 1')).toBeInTheDocument();
     expect(screen.getByText('Pending 2')).toBeInTheDocument();
     expect(screen.getByText('Pending 3')).toBeInTheDocument();
+  });
+
+  it('FE-PLANNER-RESP-041: dateless transport with legacy T-prefix shows time without "Invalid Date"', () => {
+    const day = buildDay({ date: null, day_number: 25 } as any);
+    const r = buildReservation({
+      title: 'Cruise test',
+      type: 'cruise',
+      status: 'pending',
+      reservation_time: 'T10:00',
+      reservation_end_time: 'T18:00',
+      day_id: day.id,
+      end_day_id: day.id,
+    } as any);
+    render(<ReservationsPanel {...defaultProps} reservations={[r]} days={[day]} />);
+    expect(screen.queryByText(/Invalid Date/)).not.toBeInTheDocument();
+    expect(screen.getByText(/10:00/)).toBeInTheDocument();
+  });
+
+  it('FE-PLANNER-RESP-042: dateless transport with bare time format shows time without "Invalid Date"', () => {
+    const day = buildDay({ date: null, day_number: 3 } as any);
+    const r = buildReservation({
+      title: 'Car rental',
+      type: 'car',
+      status: 'pending',
+      reservation_time: '09:00',
+      reservation_end_time: '17:00',
+      day_id: day.id,
+      end_day_id: day.id,
+    } as any);
+    render(<ReservationsPanel {...defaultProps} reservations={[r]} days={[day]} />);
+    expect(screen.queryByText(/Invalid Date/)).not.toBeInTheDocument();
+    expect(screen.getByText(/09:00/)).toBeInTheDocument();
+  });
+
+  it('FE-PLANNER-RESP-043: dated transport still shows date and time correctly', () => {
+    const day = buildDay({ date: '2026-07-15', day_number: 1 });
+    const r = buildReservation({
+      title: 'Flight out',
+      type: 'flight',
+      status: 'confirmed',
+      reservation_time: '2026-07-15T08:30',
+      reservation_end_time: '2026-07-15T10:45',
+      day_id: day.id,
+    } as any);
+    render(<ReservationsPanel {...defaultProps} reservations={[r]} days={[day]} />);
+    expect(screen.queryByText(/Invalid Date/)).not.toBeInTheDocument();
+    expect(screen.getByText(/08:30/)).toBeInTheDocument();
+  });
+
+  // ── Chronological sorting (#1507) ───────────────────────────────────────────
+
+  it('FE-PLANNER-RESP-044: cards are ordered chronologically, day-linked entries by their day date', () => {
+    const day1 = buildDay({ id: 201, date: '2025-06-02', day_number: 2 } as any);
+    const day2 = buildDay({ id: 202, date: '2025-06-04', day_number: 4 } as any);
+    const dated = buildReservation({ title: 'Dated flight', type: 'flight', status: 'pending', reservation_time: '2025-06-03T09:00', created_at: '2025-05-01T00:00:00.000Z' });
+    const dayOnly = buildReservation({ title: 'Day-only train', type: 'train', status: 'pending', reservation_time: 'T10:00', day_id: 201, created_at: '2025-05-02T00:00:00.000Z' } as any);
+    const late = buildReservation({ title: 'Late bus', type: 'bus', status: 'pending', reservation_time: null, day_id: 202, created_at: '2025-05-03T00:00:00.000Z' } as any);
+    const undated = buildReservation({ title: 'Undated taxi', type: 'taxi', status: 'pending', created_at: '2025-04-01T00:00:00.000Z' });
+    render(<ReservationsPanel {...defaultProps} reservations={[undated, late, dayOnly, dated]} days={[day1, day2]} />);
+    const text = document.body.textContent || '';
+    const order = ['Day-only train', 'Dated flight', 'Late bus', 'Undated taxi'].map(t => text.indexOf(t));
+    expect(order.every(i => i >= 0)).toBe(true);
+    expect([...order].sort((a, b) => a - b)).toEqual(order);
+  });
+
+  it('FE-PLANNER-RESP-045: hotel sorts by its accommodation start day, not a stale day_id', () => {
+    const day1 = buildDay({ id: 301, date: '2025-06-01', day_number: 1 } as any);
+    const day2 = buildDay({ id: 302, date: '2025-06-05', day_number: 5 } as any);
+    const hotel = buildReservation({ title: 'Hotel stay', type: 'hotel', status: 'pending', day_id: 301, accommodation_start_day_id: 302 } as any);
+    const flight = buildReservation({ title: 'Mid flight', type: 'flight', status: 'pending', reservation_time: '2025-06-03T12:00' });
+    render(<ReservationsPanel {...defaultProps} reservations={[hotel, flight]} days={[day1, day2]} />);
+    const text = document.body.textContent || '';
+    expect(text.indexOf('Mid flight')).toBeLessThan(text.indexOf('Hotel stay'));
   });
 });

@@ -9,7 +9,7 @@ export function getAssignmentWithPlace(assignmentId: number | bigint) {
       COALESCE(da.assignment_time, p.place_time) as place_time,
       COALESCE(da.assignment_end_time, p.end_time) as end_time,
       p.duration_minutes, p.notes as place_notes,
-      p.image_url, p.transport_mode, p.google_place_id, p.website, p.phone,
+      p.image_url, p.transport_mode, p.google_place_id, p.google_ftid, p.website, p.phone,
       c.name as category_name, c.color as category_color, c.icon as category_icon
     FROM day_assignments da
     JOIN places p ON da.place_id = p.id
@@ -26,7 +26,7 @@ export function getAssignmentWithPlace(assignmentId: number | bigint) {
   `).all(a.place_id);
 
   const participants = db.prepare(`
-    SELECT ap.user_id, u.username, u.avatar
+    SELECT ap.user_id, COALESCE(u.display_name, u.username) AS username, u.avatar
     FROM assignment_participants ap
     JOIN users u ON ap.user_id = u.id
     WHERE ap.assignment_id = ?
@@ -59,6 +59,7 @@ export function getAssignmentWithPlace(assignmentId: number | bigint) {
       image_url: a.image_url,
       transport_mode: a.transport_mode,
       google_place_id: a.google_place_id,
+      google_ftid: a.google_ftid,
       website: a.website,
       phone: a.phone,
       category: a.category_id ? {
@@ -72,21 +73,37 @@ export function getAssignmentWithPlace(assignmentId: number | bigint) {
   };
 }
 
-export function listDayAssignments(dayId: string | number) {
+/**
+ * Custom per-user place visibility: the privacy columns of an assignment's
+ * place, used to (a) block assigning another member's private place and (b)
+ * scope assignment broadcasts to the place's creator.
+ */
+export function getPlacePrivacy(placeId: string | number): { is_private?: number; created_by?: number | null } | undefined {
+  return db.prepare('SELECT is_private, created_by FROM places WHERE id = ?').get(placeId) as
+    | { is_private?: number; created_by?: number | null }
+    | undefined;
+}
+
+export function listDayAssignments(dayId: string | number, viewerId?: number) {
+  // Custom per-user place visibility: hide assignments whose place is another
+  // member's private place (the row embeds the full place).
+  const visibility = viewerId != null ? 'AND (p.is_private = 0 OR p.created_by IS NULL OR p.created_by = ?)' : '';
+  const params: (number | string)[] = [dayId];
+  if (viewerId != null) params.push(viewerId);
   const assignments = db.prepare(`
     SELECT da.*, p.id as place_id, p.name as place_name, p.description as place_description,
       p.lat, p.lng, p.address, p.category_id, p.price, p.currency as place_currency,
       COALESCE(da.assignment_time, p.place_time) as place_time,
       COALESCE(da.assignment_end_time, p.end_time) as end_time,
       p.duration_minutes, p.notes as place_notes,
-      p.image_url, p.transport_mode, p.google_place_id, p.website, p.phone,
+      p.image_url, p.transport_mode, p.google_place_id, p.google_ftid, p.website, p.phone,
       c.name as category_name, c.color as category_color, c.icon as category_icon
     FROM day_assignments da
     JOIN places p ON da.place_id = p.id
     LEFT JOIN categories c ON p.category_id = c.id
-    WHERE da.day_id = ?
+    WHERE da.day_id = ? ${visibility}
     ORDER BY da.order_index ASC, da.created_at ASC
-  `).all(dayId) as AssignmentRow[];
+  `).all(...params) as AssignmentRow[];
 
   const placeIds = [...new Set(assignments.map(a => a.place_id))];
   const tagsByPlaceId = loadTagsByPlaceIds(placeIds, { compact: true });
@@ -158,7 +175,7 @@ export function moveAssignment(id: string | number, newDayId: string | number, o
 
 export function getParticipants(assignmentId: string | number) {
   return db.prepare(`
-    SELECT ap.user_id, u.username, u.avatar
+    SELECT ap.user_id, COALESCE(u.display_name, u.username) AS username, u.avatar
     FROM assignment_participants ap
     JOIN users u ON ap.user_id = u.id
     WHERE ap.assignment_id = ?
@@ -207,7 +224,7 @@ export function setParticipants(assignmentId: string | number, userIds: number[]
   }
 
   return db.prepare(`
-    SELECT ap.user_id, u.username, u.avatar
+    SELECT ap.user_id, COALESCE(u.display_name, u.username) AS username, u.avatar
     FROM assignment_participants ap
     JOIN users u ON ap.user_id = u.id
     WHERE ap.assignment_id = ?

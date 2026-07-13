@@ -1,60 +1,19 @@
-import { useEffect, useState, useMemo, useRef, useCallback } from 'react'
-import { useParams } from 'react-router-dom'
-import { journeyApi } from '../api/client'
 import { useTranslation, SUPPORTED_LANGUAGES } from '../i18n'
 import { useSettingsStore } from '../store/settingsStore'
 import {
-  List, Grid, MapPin, Camera, BookOpen, Image, Clock,
+  List, Grid, MapPin, Camera, BookOpen, Image, Clock, Play,
   Laugh, Smile, Meh, Frown,
   Sun, CloudSun, Cloud, CloudRain, CloudLightning, Snowflake,
   ThumbsUp, ThumbsDown,
 } from 'lucide-react'
 import JourneyMap from '../components/Journey/JourneyMap'
-import type { JourneyMapHandle } from '../components/Journey/JourneyMap'
 import JournalBody from '../components/Journey/JournalBody'
 import PhotoLightbox from '../components/Journey/PhotoLightbox'
 import MobileMapTimeline from '../components/Journey/MobileMapTimeline'
 import MobileEntryView from '../components/Journey/MobileEntryView'
-import { useIsMobile } from '../hooks/useIsMobile'
 import { formatLocationName } from '../utils/formatters'
 import { DAY_COLORS } from '../components/Journey/dayColors'
-
-interface PublicEntry {
-  id: number
-  title?: string | null
-  story?: string | null
-  entry_date: string
-  entry_time?: string | null
-  location_name?: string | null
-  location_lat?: number | null
-  location_lng?: number | null
-  mood?: string | null
-  weather?: string | null
-  pros_cons?: { pros: string[]; cons: string[] } | null
-  photos: PublicPhoto[]
-}
-
-interface PublicPhoto {
-  id: number
-  entry_id: number
-  photo_id: number
-  provider?: string
-  asset_id?: string | null
-  owner_id?: number | null
-  file_path?: string | null
-  caption?: string | null
-}
-
-interface PublicGalleryPhoto {
-  id: number
-  journey_id: number
-  photo_id: number
-  provider?: string
-  asset_id?: string | null
-  owner_id?: number | null
-  file_path?: string | null
-  caption?: string | null
-}
+import { useJourneyPublic } from './journeyPublic/useJourneyPublic'
 
 const MOOD_CONFIG: Record<string, { icon: typeof Smile; label: string; bg: string; text: string }> = {
   amazing: { icon: Laugh,  label: 'Amazing', bg: 'bg-pink-50 dark:bg-pink-900/20',   text: 'text-pink-600 dark:text-pink-400' },
@@ -85,97 +44,18 @@ function formatDate(d: string, locale?: string): { weekday: string; month: strin
   }
 }
 
-function groupByDate(entries: PublicEntry[]): Map<string, PublicEntry[]> {
-  const groups = new Map<string, PublicEntry[]>()
-  for (const e of entries) {
-    const d = e.entry_date
-    if (!groups.has(d)) groups.set(d, [])
-    groups.get(d)!.push(e)
-  }
-  return groups
-}
-
 export default function JourneyPublicPage() {
-  const { token } = useParams()
-  const [data, setData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-  const isMobile = useIsMobile()
-  const [view, setView] = useState<'timeline' | 'gallery' | 'map'>('timeline')
-  const [lightbox, setLightbox] = useState<{ photos: { id: string; src: string; caption?: string | null }[]; index: number } | null>(null)
   const { t } = useTranslation()
-  const [showLangPicker, setShowLangPicker] = useState(false)
-  const locale = useSettingsStore(s => s.settings.language) || 'en'
-  const mapRef = useRef<JourneyMapHandle>(null)
-  const [activeEntryId, setActiveEntryId] = useState<string | null>(null)
-  const [viewingEntry, setViewingEntry] = useState<PublicEntry | null>(null)
-
-  const handleMarkerClick = useCallback((entryId: string) => {
-    setActiveEntryId(entryId)
-    mapRef.current?.highlightMarker(entryId)
-    document.querySelector(`[data-entry-id="${entryId}"]`)
-      ?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-  }, [])
-
-  useEffect(() => {
-    if (!token) return
-    journeyApi.getPublicJourney(token)
-      .then(d => setData(d))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
-  }, [token])
-
-  const entries = (data?.entries || []) as PublicEntry[]
-  const gallery = (data?.gallery || []) as PublicGalleryPhoto[]
-  const perms = data?.permissions || {}
-  const journey = data?.journey || {}
-  const stats = data?.stats || {}
-
-  const timelineEntries = useMemo(() => entries, [entries])
-  const groupedEntries = useMemo(() => groupByDate(timelineEntries), [timelineEntries])
-  const sortedDates = useMemo(() => [...groupedEntries.keys()].sort(), [groupedEntries])
-  const mapEntries = useMemo(
-    () => timelineEntries.filter(e => e.location_lat && e.location_lng),
-    [timelineEntries],
-  )
-  const allPhotos = gallery
-
-  // Map entries with day color/label for colored markers.
-  // dayIdx is derived from sortedDates (ALL timeline dates) so marker colors
-  // stay in sync with the timeline day headers even when some days have no locations.
-  const sidebarMapItems = useMemo(() => {
-    const counters = new Map<string, number>()
-    return mapEntries.map(e => {
-      const dayIdx = sortedDates.indexOf(e.entry_date)
-      const dayLabel = (counters.get(e.entry_date) ?? 0) + 1
-      counters.set(e.entry_date, dayLabel)
-      return {
-        id: String(e.id),
-        lat: e.location_lat!,
-        lng: e.location_lng!,
-        title: e.title || '',
-        mood: e.mood,
-        created_at: e.entry_date,
-        entry_date: e.entry_date,
-        dayColor: DAY_COLORS[dayIdx % DAY_COLORS.length],
-        dayLabel,
-      }
-    })
-  }, [mapEntries, sortedDates])
-
-  // Two-column desktop layout: timeline feed left + sticky map right
-  const desktopTwoColumn = !isMobile && perms.share_timeline && perms.share_map
-
-  // Set default view based on permissions
-  useEffect(() => {
-    if (!perms.share_timeline && perms.share_gallery) setView('gallery')
-    else if (!perms.share_timeline && !perms.share_gallery && perms.share_map) setView('map')
-  }, [perms])
-
-  // When switching to desktop two-column, 'map' standalone tab no longer exists
-  useEffect(() => {
-    if (desktopTwoColumn && view === 'map') setView('timeline')
-  }, [desktopTwoColumn, view])
+  // Page = wiring container: the share fetch, view state and all timeline/map
+  // derivations live in the hook; the render helpers below stay next to the JSX.
+  const {
+    token, data, loading, error, isMobile, locale,
+    view, setView, lightbox, setLightbox, showLangPicker, setShowLangPicker,
+    mapRef, activeEntryId, setActiveEntryId, viewingEntry, setViewingEntry, handleMarkerClick,
+    perms, journey, stats,
+    timelineEntries, groupedEntries, sortedDates, sidebarMapItems, allPhotos,
+    desktopTwoColumn,
+  } = useJourneyPublic()
 
   if (loading) {
     return (
@@ -243,7 +123,7 @@ export default function JourneyPublicPage() {
                 const prosArr = entry.pros_cons?.pros ?? []
                 const consArr = entry.pros_cons?.cons ?? []
                 const hasProscons = prosArr.length > 0 || consArr.length > 0
-                const lightboxPhotos = photos.map(p => ({ id: String(p.id), src: photoUrl(p, token!, 'original'), caption: p.caption }))
+                const lightboxPhotos = photos.map(p => ({ id: String(p.id), src: photoUrl(p, token!, 'original'), caption: p.caption, mediaType: (p as any).media_type }))
 
                 const isActive = activeEntryId === String(entry.id)
                 return (
@@ -416,10 +296,17 @@ export default function JourneyPublicPage() {
       {allPhotos.map((photo, idx) => (
         <div
           key={photo.id}
-          className="aspect-square rounded-lg overflow-hidden cursor-pointer"
-          onClick={() => setLightbox({ photos: allPhotos.map(p => ({ id: String(p.id), src: photoUrl(p, token!, 'original'), caption: p.caption })), index: idx })}
+          className="relative aspect-square rounded-lg overflow-hidden cursor-pointer"
+          onClick={() => setLightbox({ photos: allPhotos.map(p => ({ id: String(p.id), src: photoUrl(p, token!, 'original'), caption: p.caption, mediaType: (p as any).media_type })), index: idx })}
         >
           <img src={photoUrl(photo, token!, 'thumbnail')} className="w-full h-full object-cover hover:scale-105 transition-transform" alt="" loading="lazy" />
+          {(photo as any).media_type === 'video' && (
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <span className="w-9 h-9 rounded-full bg-black/55 backdrop-blur flex items-center justify-center text-white">
+                <Play size={16} className="ml-0.5" fill="currentColor" />
+              </span>
+            </div>
+          )}
         </div>
       ))}
     </div>
@@ -460,7 +347,7 @@ export default function JourneyPublicPage() {
           <button onClick={() => setShowLangPicker(v => !v)} style={{
             padding: '5px 12px', borderRadius: 20, border: '1px solid rgba(255,255,255,0.15)',
             background: 'rgba(255,255,255,0.1)', backdropFilter: 'blur(8px)',
-            color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
+            color: 'rgba(255,255,255,0.7)', fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit',
           }}>
             {SUPPORTED_LANGUAGES.find(l => l.value === (locale?.split('-')[0] || 'en'))?.label || 'Language'}
           </button>
@@ -471,7 +358,7 @@ export default function JourneyPublicPage() {
                   useSettingsStore.setState(s => ({ settings: { ...s.settings, language: lang.value } }))
                   setShowLangPicker(false)
                 }}
-                  style={{ display: 'block', width: '100%', padding: '6px 12px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 12, color: '#374151', borderRadius: 6, fontFamily: 'inherit' }}
+                  style={{ display: 'block', width: '100%', padding: '6px 12px', border: 'none', background: 'none', textAlign: 'left', cursor: 'pointer', fontSize: 'calc(12px * var(--fs-scale-body, 1))', color: '#374151', borderRadius: 6, fontFamily: 'inherit' }}
                   onMouseEnter={e => e.currentTarget.style.background = '#f3f4f6'}
                   onMouseLeave={e => e.currentTarget.style.background = 'none'}
                 >{lang.label}</button>
@@ -485,24 +372,24 @@ export default function JourneyPublicPage() {
           <img src="/icons/icon-white.svg" alt="TREK" width={26} height={26} />
         </div>
 
-        <div style={{ fontSize: 10, fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.35, marginBottom: 12, position: 'relative' }}>{t('journey.public.tagline')}</div>
+        <div style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.35, marginBottom: 12, position: 'relative' }}>{t('journey.public.tagline')}</div>
 
-        <h1 className="relative" style={{ margin: '0 0 4px', fontSize: 26, fontWeight: 700, letterSpacing: -0.5 }}>{journey.title}</h1>
+        <h1 className="relative" style={{ margin: '0 0 4px', fontSize: 'calc(26px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: -0.5 }}>{journey.title}</h1>
 
         {journey.subtitle && (
-          <div className="relative" style={{ fontSize: 13, opacity: 0.5, maxWidth: 400, margin: '0 auto', lineHeight: 1.5 }}>{journey.subtitle}</div>
+          <div className="relative" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', opacity: 0.5, maxWidth: 400, margin: '0 auto', lineHeight: 1.5 }}>{journey.subtitle}</div>
         )}
 
         {/* Stats pill */}
         <div className="relative" style={{ marginTop: 12, display: 'inline-flex', alignItems: 'center', gap: 12, padding: '8px 18px', borderRadius: 20, background: 'rgba(255,255,255,0.08)', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.08)' }}>
-          <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.8, display: 'flex', alignItems: 'center', gap: 5 }}><BookOpen size={12} /> {stats.entries} {t('journey.stats.entries')}</span>
-          <span style={{ fontSize: 11, opacity: 0.4 }}>·</span>
-          <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.8, display: 'flex', alignItems: 'center', gap: 5 }}><Camera size={12} /> {stats.photos} {t('journey.stats.photos')}</span>
-          <span style={{ fontSize: 11, opacity: 0.4 }}>·</span>
-          <span style={{ fontSize: 12, fontWeight: 500, opacity: 0.8, display: 'flex', alignItems: 'center', gap: 5 }}><MapPin size={12} /> {stats.places} {t('journey.stats.places')}</span>
+          <span style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500, opacity: 0.8, display: 'flex', alignItems: 'center', gap: 5 }}><BookOpen size={12} /> {stats.entries} {t('journey.stats.entries')}</span>
+          <span style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', opacity: 0.4 }}>·</span>
+          <span style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500, opacity: 0.8, display: 'flex', alignItems: 'center', gap: 5 }}><Camera size={12} /> {stats.photos} {t('journey.stats.photos')}</span>
+          <span style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', opacity: 0.4 }}>·</span>
+          <span style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500, opacity: 0.8, display: 'flex', alignItems: 'center', gap: 5 }}><MapPin size={12} /> {stats.places} {t('journey.stats.places')}</span>
         </div>
 
-        <div className="relative" style={{ marginTop: 12, fontSize: 9, fontWeight: 500, letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.25 }}>{t('journey.public.readOnly')}</div>
+        <div className="relative" style={{ marginTop: 12, fontSize: 'calc(9px * var(--fs-scale-caption, 1))', fontWeight: 500, letterSpacing: 1.5, textTransform: 'uppercase', opacity: 0.25 }}>{t('journey.public.readOnly')}</div>
       </div>
 
       {/* Content */}
@@ -603,9 +490,9 @@ export default function JourneyPublicPage() {
       <div className="flex flex-col items-center py-8 gap-2">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, background: 'white', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           <img src="/icons/icon.svg" alt="TREK" width={18} height={18} style={{ borderRadius: 4 }} />
-          <span style={{ fontSize: 11, color: '#9ca3af' }}>{t('journey.public.sharedVia')} <strong style={{ color: '#6b7280' }}>TREK</strong></span>
+          <span style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', color: '#9ca3af' }}>{t('journey.public.sharedVia')} <strong style={{ color: '#6b7280' }}>TREK</strong></span>
         </div>
-        <div style={{ fontSize: 10, color: '#d1d5db' }}>
+        <div style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', color: '#d1d5db' }}>
           Made with <span style={{ color: '#ef4444' }}>♥</span> by Maurice · <a href="https://github.com/mauriceboe/TREK" style={{ color: '#9ca3af', textDecoration: 'none' }}>GitHub</a>
         </div>
       </div>
@@ -633,6 +520,7 @@ export default function JourneyPublicPage() {
               id: String(p.id),
               src: photoUrl(p as any, token!, 'original'),
               caption: (p as any).caption ?? null,
+              mediaType: (p as any).media_type,
             })),
             index: idx,
           })}

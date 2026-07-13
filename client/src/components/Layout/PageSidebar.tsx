@@ -5,6 +5,9 @@ export interface PageSidebarTab {
   id: string
   label: string
   icon: LucideIcon
+  /** Optional group heading shown above the first tab of each group. Tabs that
+   *  share a group must be contiguous in the array. */
+  group?: string
 }
 
 interface PageSidebarProps {
@@ -47,27 +50,23 @@ export default function PageSidebar({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden flex flex-col lg:flex-row relative"
+      className="rounded-2xl overflow-hidden flex flex-col lg:flex-row relative bg-surface-card border border-edge"
       style={{
-        background: 'var(--bg-card)',
-        border: '1px solid var(--border-primary)',
         minHeight: 'min(820px, calc(100vh - var(--nav-h) - 120px))',
       }}
     >
       {/* Mobile top bar with hamburger */}
       <div
-        className="lg:hidden flex items-center justify-between px-4 py-3 border-b"
-        style={{ borderColor: 'var(--border-primary)' }}
+        className="lg:hidden flex items-center justify-between px-4 py-3 border-b border-edge"
       >
         <button
           onClick={() => setMobileOpen(true)}
-          className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--bg-hover)]"
+          className="w-9 h-9 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--bg-hover)] text-content"
           aria-label="Open navigation"
-          style={{ color: 'var(--text-primary)' }}
         >
           <Menu size={18} />
         </button>
-        <div className="flex items-center gap-2 text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+        <div className="flex items-center gap-2 text-sm font-semibold text-content">
           {activeLabel}
         </div>
         <div className="w-9" />
@@ -75,11 +74,9 @@ export default function PageSidebar({
 
       {/* Desktop sidebar (always visible on lg) */}
       <aside
-        className="hidden lg:flex flex-col shrink-0 relative"
+        className="hidden lg:flex flex-col shrink-0 relative bg-surface-secondary border-r border-edge"
         style={{
           width: 260,
-          background: 'var(--bg-secondary)',
-          borderRight: '1px solid var(--border-primary)',
           padding: '24px 14px',
         }}
       >
@@ -96,31 +93,27 @@ export default function PageSidebar({
       {mobileOpen && (
         <>
           <div
-            className="lg:hidden fixed inset-0 z-40"
-            style={{ background: 'rgba(0,0,0,0.35)' }}
+            className="lg:hidden fixed inset-0 z-40 bg-[rgba(0,0,0,0.35)]"
             onClick={() => setMobileOpen(false)}
           />
           <aside
             ref={drawerRef}
-            className="lg:hidden fixed top-0 left-0 bottom-0 z-50 flex flex-col shadow-2xl"
+            className="lg:hidden fixed top-0 left-0 bottom-0 z-50 flex flex-col shadow-2xl bg-surface-secondary"
             style={{
               width: 280,
-              background: 'var(--bg-secondary)',
               padding: '18px 14px',
             }}
           >
             <div className="flex items-center justify-between mb-3 px-2">
               <span
-                className="text-[11px] font-bold tracking-widest uppercase"
-                style={{ color: 'var(--text-muted)' }}
+                className="text-[11px] font-bold tracking-widest uppercase text-content-muted"
               >
                 {sidebarLabel}
               </span>
               <button
                 onClick={() => setMobileOpen(false)}
-                className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--bg-hover)]"
+                className="w-8 h-8 rounded-lg flex items-center justify-center transition-colors hover:bg-[var(--bg-hover)] text-content"
                 aria-label="Close navigation"
-                style={{ color: 'var(--text-primary)' }}
               >
                 <X size={16} />
               </button>
@@ -164,43 +157,50 @@ function SidebarInner({
     <>
       {sidebarLabel && (
         <div
-          className="text-[11px] font-bold tracking-widest uppercase mb-3 px-3"
-          style={{ color: 'var(--text-muted)' }}
+          className="text-[11px] font-bold tracking-widest uppercase mb-3 px-3 text-content-muted"
         >
           {sidebarLabel}
         </div>
       )}
       <nav className="flex flex-col gap-1 flex-1">
-        {tabs.map((tab) => {
-          const Icon = tab.icon
-          const active = tab.id === activeTab
-          return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left transition-colors"
-              style={{
-                background: active ? 'var(--bg-hover)' : 'transparent',
-                color: active ? 'var(--text-primary)' : 'var(--text-secondary)',
-                fontWeight: active ? 600 : 500,
-              }}
-              onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.background = 'var(--bg-hover)'
-              }}
-              onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.background = 'transparent'
-              }}
-            >
-              <Icon size={16} className="shrink-0" />
-              <span className="truncate">{tab.label}</span>
-            </button>
-          )
-        })}
+        {(() => {
+          let lastGroup: string | undefined
+          return tabs.map((tab) => {
+            const Icon = tab.icon
+            const active = tab.id === activeTab
+            const showHeader = !!tab.group && tab.group !== lastGroup
+            lastGroup = tab.group
+            return (
+              <React.Fragment key={tab.id}>
+                {showHeader && (
+                  <div className="text-[10px] font-bold tracking-widest uppercase text-content-faint px-3 mt-3 mb-0.5 first:mt-0">
+                    {tab.group}
+                  </div>
+                )}
+                <button
+                  onClick={() => onTabChange(tab.id)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-left transition-colors ${active ? 'text-content font-semibold' : 'text-content-secondary font-medium'}`}
+                  style={{
+                    background: active ? 'var(--bg-hover)' : 'transparent',
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!active) e.currentTarget.style.background = 'var(--bg-hover)'
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!active) e.currentTarget.style.background = 'transparent'
+                  }}
+                >
+                  <Icon size={16} className="shrink-0" />
+                  <span className="truncate">{tab.label}</span>
+                </button>
+              </React.Fragment>
+            )
+          })
+        })()}
       </nav>
       {footer && (
         <div
-          className="mt-4 pt-3 px-3 text-[10px] tracking-wide"
-          style={{ color: 'var(--text-faint)', borderTop: '1px solid var(--border-primary)' }}
+          className="mt-4 pt-3 px-3 text-[10px] tracking-wide text-content-faint border-t border-edge"
         >
           {footer}
         </div>

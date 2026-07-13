@@ -36,6 +36,7 @@ vi.mock('../../../src/db/database', () => dbMock);
 vi.mock('../../../src/config', () => ({
   JWT_SECRET: 'test-secret',
   ENCRYPTION_KEY: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2a3b4c5d6a7b8c9d0e1f2',
+  SESSION_DURATION_SECONDS: 86400,
   updateJwtSecret: () => {},
 }));
 vi.mock('../../../src/services/mfaCrypto', () => ({
@@ -69,9 +70,10 @@ import { describe, it, expect, beforeAll, beforeEach, afterAll, vi } from 'vites
 import { createTables } from '../../../src/db/schema';
 import { runMigrations } from '../../../src/db/migrations';
 import { resetTestDb } from '../../helpers/test-db';
-import { createUser, createAdmin, createInviteToken } from '../../helpers/factories';
+import { createUser, createAdmin, createInviteToken, createTrip, createReservation } from '../../helpers/factories';
 import {
   updateSettings,
+  updateApiKeys,
   getSettings,
   listUsers,
   getAppSettings,
@@ -84,11 +86,16 @@ import {
   validateInviteToken,
   registerUser,
   loginUser,
+  requestPasswordReset,
   changePassword,
   verifyMfaLogin,
   createMcpToken,
   deleteMcpToken,
+  generateToken,
+  getTravelStats,
 } from '../../../src/services/authService';
+import { unmarkCountryVisited } from '../../../src/services/atlasService';
+import { verifyJwtAndLoadUser } from '../../../src/middleware/auth';
 
 // ---------------------------------------------------------------------------
 // Lifecycle
@@ -102,6 +109,35 @@ beforeAll(() => {
 beforeEach(() => resetTestDb(testDb));
 
 afterAll(() => testDb.close());
+
+// ---------------------------------------------------------------------------
+// requestPasswordReset — OIDC/SSO accounts (#1129)
+// ---------------------------------------------------------------------------
+
+describe('requestPasswordReset — OIDC/SSO accounts', () => {
+  it('AUTH-DB-PR1: refuses a reset for an OIDC-linked account that has a (random) password hash', () => {
+    const { user } = createUser(testDb);
+    // OIDC users are created with a random bcrypt hash, so password_hash is set —
+    // the old guard keyed off a missing hash and therefore let the reset through.
+    testDb.prepare('UPDATE users SET oidc_sub = ?, oidc_issuer = ? WHERE id = ?')
+      .run('sub-1129', 'https://idp.example', user.id);
+
+    const result = requestPasswordReset(user.email, null);
+
+    expect(result.reason).toBe('oidc_only');
+    expect(result.tokenForDelivery).toBeNull();
+    const { n } = testDb.prepare('SELECT COUNT(*) AS n FROM password_reset_tokens WHERE user_id = ?')
+      .get(user.id) as { n: number };
+    expect(n).toBe(0);
+  });
+
+  it('AUTH-DB-PR2: still issues a reset for a normal local (non-SSO) account', () => {
+    const { user } = createUser(testDb);
+    const result = requestPasswordReset(user.email, null);
+    expect(result.reason).toBe('issued');
+    expect(result.tokenForDelivery).toBeTruthy();
+  });
+});
 
 // ---------------------------------------------------------------------------
 // updateSettings
@@ -188,6 +224,15 @@ describe('getSettings', () => {
     expect(result.settings).toBeDefined();
     expect(result.settings).toHaveProperty('maps_api_key');
     expect(result.settings).toHaveProperty('openweather_api_key');
+  });
+
+  it('AUTH-DB-010b: round-trips unsplash_api_key through updateApiKeys — masked to the client, readable via getSettings', () => {
+    const { user } = createAdmin(testDb);
+    const result = updateApiKeys(user.id, { unsplash_api_key: 'unsplash-secret-key' });
+    // Returned to the client masked, never in plaintext.
+    expect(result.user.unsplash_api_key).toBe('-----key');
+    // getSettings returns the stored key to the admin.
+    expect(getSettings(user.id).settings?.unsplash_api_key).toBe('unsplash-secret-key');
   });
 });
 
@@ -573,6 +618,39 @@ describe('changePassword — OIDC-only mode', () => {
   });
 });
 
+describe('changePassword — session invalidation', () => {
+  const pvOf = (id: number) =>
+    (testDb.prepare('SELECT password_version FROM users WHERE id = ?').get(id) as { password_version: number }).password_version;
+  const mcpCount = (id: number) =>
+    (testDb.prepare('SELECT COUNT(*) c FROM mcp_tokens WHERE user_id = ?').get(id) as { c: number }).c;
+
+  it('AUTH-DB-036b: bumps password_version, prunes MCP tokens, and re-issues a session', () => {
+    const { user, password } = createUser(testDb);
+    createMcpToken(user.id, 'cli');
+
+    expect(pvOf(user.id)).toBe(0);
+    expect(mcpCount(user.id)).toBe(1);
+
+    const result = changePassword(user.id, user.email, { current_password: password, new_password: 'New1234!' });
+
+    expect(result.success).toBe(true);
+    expect(typeof result.token).toBe('string'); // fresh session for the current device
+    expect(pvOf(user.id)).toBe(1); // old JWT/cookie sessions now rejected by the pv gate
+    expect(mcpCount(user.id)).toBe(0); // static MCP tokens revoked
+  });
+
+  it('AUTH-DB-036c: a token minted before the change no longer validates afterwards', () => {
+    const { user, password } = createUser(testDb);
+    const stolen = generateToken({ id: user.id }); // pv=0 at mint time
+
+    expect(verifyJwtAndLoadUser(stolen)).not.toBeNull();
+
+    changePassword(user.id, user.email, { current_password: password, new_password: 'New1234!' });
+
+    expect(verifyJwtAndLoadUser(stolen)).toBeNull(); // invalidated by the pv bump
+  });
+});
+
 // ---------------------------------------------------------------------------
 // disableMfa — require_mfa policy
 // ---------------------------------------------------------------------------
@@ -667,5 +745,59 @@ describe('MCP token service', () => {
 
     const row = testDb.prepare('SELECT id FROM mcp_tokens WHERE id = ?').get(tokenId);
     expect(row).toBeUndefined();
+  });
+});
+
+// ── getTravelStats — dashboard passport card ────────────────────────────────
+
+describe('getTravelStats', () => {
+  function endpoint(reservationId: number, role: 'from' | 'to' | 'stop', sequence: number, lat: number, lng: number) {
+    testDb.prepare(
+      'INSERT INTO reservation_endpoints (reservation_id, role, sequence, name, lat, lng) VALUES (?, ?, ?, ?, ?, ?)'
+    ).run(reservationId, role, sequence, `Endpoint ${sequence}`, lat, lng);
+  }
+
+  it('AUTH-DB-047: #1486 counts the from/to countries of a flight', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id, { title: 'Tokyo Trip' });
+    const res = createReservation(testDb, trip.id, { type: 'flight' });
+    endpoint(res.id, 'from', 0, 50.9014, 4.4844);   // Brussels
+    endpoint(res.id, 'to', 1, 35.6762, 139.6503);   // Tokyo
+
+    const stats = getTravelStats(user.id);
+    expect(stats.countries).toContain('BE');
+    expect(stats.countries).toContain('JP');
+  });
+
+  it('AUTH-DB-048: #1486 a connecting-flight layover does NOT count as visited', () => {
+    // The Atlas query grew a role filter for #1486 but this copy of it did not, so the
+    // dashboard passport card still counted a plane change as a visited country.
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id, { title: 'Connection Trip' });
+    const res = createReservation(testDb, trip.id, { type: 'flight' });
+    endpoint(res.id, 'from', 0, 50.9014, 4.4844);     // Brussels
+    endpoint(res.id, 'stop', 1, 35.6762, 139.6503);   // Tokyo — never leaves the airport
+    endpoint(res.id, 'to', 2, -33.8688, 151.2093);    // Sydney
+
+    const stats = getTravelStats(user.id);
+    expect(stats.countries).toContain('BE');
+    expect(stats.countries).toContain('AU');
+    expect(stats.countries).not.toContain('JP');
+  });
+
+  it('AUTH-DB-049: #1490 a country removed in Atlas is not counted on the dashboard either', () => {
+    const { user } = createUser(testDb);
+    const trip = createTrip(testDb, user.id, { title: 'Tokyo Trip' });
+    const res = createReservation(testDb, trip.id, { type: 'flight' });
+    endpoint(res.id, 'from', 0, 50.9014, 4.4844);
+    endpoint(res.id, 'to', 1, 35.6762, 139.6503);
+
+    expect(getTravelStats(user.id).countries).toContain('JP');
+
+    unmarkCountryVisited(user.id, 'JP');
+
+    const after = getTravelStats(user.id);
+    expect(after.countries).not.toContain('JP');
+    expect(after.countries).toContain('BE');
   });
 });

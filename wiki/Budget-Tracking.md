@@ -2,6 +2,8 @@
 
 Track trip expenses by category, split costs between members, and visualize spending.
 
+> **Renamed to Costs (v3.3.0, #1464):** This feature is now called **Costs** everywhere in the UI — the planner tab reads **Costs** and it is listed as **Costs** in Admin → Addons (its internal addon id stays `budget`). Screenshots and some labels on this page may still say "Budget".
+
 <!-- TODO: screenshot: budget summary and expense list -->
 
 ![Budget panel](assets/Budget.png)
@@ -16,7 +18,9 @@ Open the **Budget** tab inside the trip planner. The tab is only visible when th
 
 ## Currency
 
-Use the currency picker in the Budget toolbar to select one currency for the entire trip. 46 currencies are supported (EUR, USD, GBP, JPY, CHF, CZK, PLN, SEK, NOK, DKK, TRY, THB, AUD, CAD, NZD, BRL, MXN, INR, IDR, MYR, PHP, SGD, KRW, CNY, HKD, TWD, ZAR, AED, SAR, ILS, EGP, MAD, HUF, RON, BGN, HRK, ISK, RUB, UAH, BDT, LKR, VND, CLP, COP, PEN, ARS). All amounts are displayed in this currency.
+Costs is **multi-currency** (#551). Each expense (line item) is entered in **its own currency** — pick it from the currency picker in the expense modal — and everything is converted to a single **display currency** for totals, charts and settlement. The display currency is your own preferred currency (**Settings → default currency**), falling back to the trip's currency when you haven't set one. 47 currencies are supported.
+
+When an item's currency differs from the display currency, the modal shows the converted amount alongside the rate (`1 {from} in {to}`). The exchange rate is **frozen at entry time**, so a settled position keeps the rate it was booked at and doesn't drift as live rates move.
 
 ## Categories
 
@@ -54,7 +58,12 @@ Add a new item using the inline **add row** at the bottom of each category table
 The **Persons** column behaves differently depending on the trip:
 
 - **Single-user trip** — enter a number of persons directly.
-- **Multi-member trip** — a member chip picker appears. Click the edit button to assign or remove members from an expense. Click an assigned member chip again to mark them as **paid** (the chip shows a green ring).
+- **Multi-member trip** — a member chip picker appears. Click the edit button to open the expense modal, where you can select:
+  - **Equally** — Splits the cost equally among selected members. Remainder cents (from rounding errors) are distributed deterministically and rotated using the item ID to ensure everyone is charged equally over the course of the trip.
+  - **Custom** — Enter specific custom amounts for each traveler. The sum of the custom splits must balance exactly to the total price.
+  - **Ticket** — Build an itemized list of expenses (e.g. Apples: $10, cake: $50, Milk: $40) and assign specific trip participants to split each individual item. Individual shares are calculated cent-perfectly, the total expense price is automatically summed, and the list of itemized splits is saved/restored across edits.
+
+Click an assigned member chip again to mark them as **paid** (the chip shows a green ring).
 
 ![Add Expense](assets/BudgetAddExpensive.gif)
 
@@ -76,7 +85,7 @@ The right-hand column contains two widgets:
 
 ## Exporting
 
-Click the **CSV** button in the toolbar to download a semicolon-delimited file containing all categories and items. The columns exported are: Category, Name, Date, Total, Persons, Days, Per Person, Per Day, Per Person/Day, Note.
+Click **Export CSV** in the toolbar to download all expenses as a spreadsheet (restored in v3.3.0, #1500). The file is semicolon-delimited with a UTF-8 byte-order mark (so Excel opens it cleanly), rows sorted by date, and is named `costs-<trip>.csv`. The columns are: **Date, Name, Category, Amount, Currency, Amount (<display currency>), Note** — each expense shows both its original amount in its own currency and the converted amount in your display currency.
 
 ## Permissions
 

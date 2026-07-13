@@ -7,7 +7,7 @@ import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
 import { randomBytes, createHash } from 'crypto';
 import { db } from '../db/database';
-import { JWT_SECRET } from '../config';
+import { JWT_SECRET, SESSION_DURATION_SECONDS, SESSION_DURATION_REMEMBER_SECONDS } from '../config';
 import { validatePassword } from './passwordPolicy';
 import { encryptMfaSecret, decryptMfaSecret } from './mfaCrypto';
 import { getAllPermissions } from './permissions';
@@ -16,9 +16,17 @@ import { createEphemeralToken } from './ephemeralTokens';
 import { revokeUserSessions } from '../mcp';
 import { startTripReminders } from '../scheduler';
 import { deleteUserCompletely } from './userCleanupService';
+import { emitUserDeleted } from '../plugin-user-lifecycle';
+import { getFlightDistanceKm } from './distanceService';
+import { getCountryFromCoords, getHiddenCountries } from './atlasService';
 import { verifyJwtAndLoadUser } from '../middleware/auth';
 import { User } from '../types';
 import { DEMO_EMAIL_PRIMARY, isDemoEmail } from './demo';
+import { avatarUrl } from './avatarUrl';
+import { joinTripAsMember } from './tripMembership';
+import { isPasskeyConfigured } from './webauthnConfig';
+
+export { avatarUrl };
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -26,10 +34,16 @@ import { DEMO_EMAIL_PRIMARY, isDemoEmail } from './demo';
 
 authenticator.options = { window: 1 };
 
+// bcrypt cost factor for user passwords. Shared by register/changePassword/
+// resetPassword and the dummy-hash timing equaliser below — must stay in sync.
+const BCRYPT_COST = 12;
+
+// Shape check for email input on register and profile update.
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 // Pre-computed bcrypt hash to equalise timing of "unknown email" and
 // "OIDC-only account" branches with the real verification path (CWE-208).
-// Cost factor 12 matches register/changePassword/resetPassword — must stay in sync.
-const DUMMY_PASSWORD_HASH = bcrypt.hashSync('__trek_no_such_user__', 12);
+const DUMMY_PASSWORD_HASH = bcrypt.hashSync('__trek_no_such_user__', BCRYPT_COST);
 
 const MFA_SETUP_TTL_MS = 15 * 60 * 1000;
 const mfaSetupPending = new Map<number, { secret: string; exp: number }>();
@@ -41,6 +55,7 @@ const ADMIN_SETTINGS_KEYS = [
   'notification_channels', 'admin_webhook_url', 'admin_ntfy_server', 'admin_ntfy_topic', 'admin_ntfy_token',
   'notify_trip_reminder',
   'password_login', 'password_registration', 'oidc_login', 'oidc_registration',
+  'passkey_login', 'webauthn_rp_id', 'webauthn_origins',
 ];
 
 const avatarDir = path.join(__dirname, '../../uploads/avatars');
@@ -113,18 +128,21 @@ export function mask_stored_api_key(key: string | null | undefined): string | nu
   return maskKey(plain);
 }
 
-export function avatarUrl(user: { avatar?: string | null }): string | null {
-  return user.avatar ? `/uploads/avatars/${user.avatar}` : null;
-}
-
 export function resolveAuthToggles(): {
   password_login: boolean;
   password_registration: boolean;
   oidc_login: boolean;
   oidc_registration: boolean;
+  passkey_login: boolean;
 } {
   const get = (key: string) =>
     (db.prepare("SELECT value FROM app_settings WHERE key = ?").get(key) as { value: string } | undefined)?.value ?? null;
+
+  // Passkey login is independent of the password/OIDC "new keys" probe, so it
+  // must be resolved OUTSIDE the branch below — otherwise on a fresh install
+  // that never touched the password/OIDC toggles it would silently read false
+  // even after an admin enabled it. Default OFF (opt-in).
+  const passkey_login = get('passkey_login') === 'true';
 
   const hasNewKeys = ['password_login', 'password_registration', 'oidc_login', 'oidc_registration']
     .some(k => get(k) !== null);
@@ -135,6 +153,7 @@ export function resolveAuthToggles(): {
       password_registration: get('password_registration') !== 'false',
       oidc_login: get('oidc_login') !== 'false',
       oidc_registration: get('oidc_registration') !== 'false',
+      passkey_login,
     };
     if (process.env.OIDC_ONLY?.toLowerCase() === 'true') {
       result.password_login = false;
@@ -157,6 +176,7 @@ export function resolveAuthToggles(): {
     password_registration: !oidcOnly && allowReg,
     oidc_login: true,
     oidc_registration: allowReg,
+    passkey_login,
   };
 }
 
@@ -164,14 +184,17 @@ export function isOidcOnlyMode(): boolean {
   return !resolveAuthToggles().password_login;
 }
 
-export function generateToken(user: { id: number | bigint; password_version?: number }) {
+export function generateToken(user: { id: number | bigint; password_version?: number }, rememberMe = false) {
   const pv = typeof user.password_version === 'number'
     ? user.password_version
     : ((db.prepare('SELECT password_version FROM users WHERE id = ?').get(user.id) as { password_version?: number } | undefined)?.password_version ?? 0);
+  // "Remember me" extends the JWT lifetime to match the persistent cookie maxAge;
+  // the cookie service decides session-vs-persistent off the same flag.
+  const expiresIn = rememberMe ? SESSION_DURATION_REMEMBER_SECONDS : SESSION_DURATION_SECONDS;
   return jwt.sign(
     { id: user.id, pv },
     JWT_SECRET,
-    { expiresIn: '24h', algorithm: 'HS256' }
+    { expiresIn, algorithm: 'HS256' }
   );
 }
 
@@ -257,7 +280,7 @@ export function getPendingMfaSecret(userId: number): string | null {
 // ---------------------------------------------------------------------------
 
 export function getAppConfig(authenticatedUser: { id: number } | null) {
-  const userCount = (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }).count;
+  const userCount = (db.prepare('SELECT COUNT(*) as count FROM users WHERE COALESCE(is_guest, 0) = 0').get() as { count: number }).count;
   const isDemo = process.env.DEMO_MODE?.toLowerCase() === 'true';
   const toggles = resolveAuthToggles();
   const version: string = process.env.APP_VERSION ?? require('../../package.json').version;
@@ -293,6 +316,12 @@ export function getAppConfig(authenticatedUser: { id: number } | null) {
     password_registration: isDemo ? false : toggles.password_registration,
     oidc_login: toggles.oidc_login,
     oidc_registration: isDemo ? false : toggles.oidc_registration,
+    // Passkey login: the instance toggle + whether a usable RP ID resolves for
+    // this deployment. The login page shows the passkey button only when both
+    // are true. `passkey_configured` stays a pure boolean — it never leaks the
+    // resolved RP ID / origin / APP_URL on this unauthenticated endpoint.
+    passkey_login: toggles.passkey_login,
+    passkey_configured: isPasskeyConfigured(),
     env_override_oidc_only: process.env.OIDC_ONLY === 'true',
     has_users: userCount > 0,
     setup_complete: setupComplete,
@@ -352,7 +381,7 @@ export function registerUser(body: {
   const email = typeof body.email === 'string' ? body.email.trim() : '';
   const { password, invite_token } = body;
 
-  const userCount = (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }).count;
+  const userCount = (db.prepare('SELECT COUNT(*) as count FROM users WHERE COALESCE(is_guest, 0) = 0').get() as { count: number }).count;
 
   let validInvite: any = null;
   if (invite_token) {
@@ -376,17 +405,17 @@ export function registerUser(body: {
   const pwCheck = validatePassword(password);
   if (!pwCheck.ok) return { error: pwCheck.reason, status: 400 };
 
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(email)) {
+  if (!EMAIL_REGEX.test(email)) {
     return { error: 'Invalid email format', status: 400 };
   }
 
-  const existingUser = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)').get(email, username);
+  // Ignore guests (#1362): their synthetic username/email must never block a real signup.
+  const existingUser = db.prepare('SELECT id FROM users WHERE (LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?)) AND COALESCE(is_guest, 0) = 0').get(email, username);
   if (existingUser) {
     return { error: 'Registration failed. Please try different credentials.', status: 409 };
   }
 
-  const password_hash = bcrypt.hashSync(password, 12);
+  const password_hash = bcrypt.hashSync(password, BCRYPT_COST);
   const isFirstUser = userCount === 0;
   const role = isFirstUser ? 'admin' : 'user';
 
@@ -405,6 +434,11 @@ export function registerUser(body: {
       if (!updated) {
         console.warn(`[Auth] Invite token ${validInvite.token.slice(0, 8)}... exceeded max_uses due to race condition`);
       }
+      // Trip-bound invite (#1402): auto-add the freshly registered user to the
+      // trip. Idempotent + owner-safe; no-ops if the bound trip was since deleted.
+      if (validInvite.trip_id) {
+        joinTripAsMember(Number(validInvite.trip_id), Number(result.lastInsertRowid), validInvite.created_by ?? null);
+      }
     }
 
     return {
@@ -421,6 +455,7 @@ export function registerUser(body: {
 export function loginUser(body: {
   email?: string;
   password?: string;
+  remember_me?: boolean;
 }): {
   error?: string;
   status?: number;
@@ -428,6 +463,7 @@ export function loginUser(body: {
   user?: Record<string, unknown>;
   mfa_required?: boolean;
   mfa_token?: string;
+  remember?: boolean;
   auditUserId?: number | null;
   auditAction?: string;
   auditDetails?: Record<string, unknown>;
@@ -436,12 +472,15 @@ export function loginUser(body: {
     return { error: 'Password authentication is disabled. Please sign in with SSO.', status: 403 };
   }
 
-  const { email, password } = body;
+  const { email, password, remember_me } = body;
+  const remember = remember_me === true;
   if (!email || !password) {
     return { error: 'Email and password are required', status: 400 };
   }
 
-  const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?)').get(email) as User | undefined;
+  // Guests (#1362) carry a synthetic email but must never authenticate — treat a
+  // matched guest row exactly like an unknown email (dummy-hash timing preserved).
+  const user = db.prepare('SELECT * FROM users WHERE LOWER(email) = LOWER(?) AND COALESCE(is_guest, 0) = 0').get(email) as User | undefined;
 
   // Always run bcrypt — even for unknown/OIDC-only users — so response time
   // does not reveal whether the email exists in the database (CWE-203/208).
@@ -468,8 +507,9 @@ export function loginUser(body: {
   }
 
   if (user.mfa_enabled === 1 || user.mfa_enabled === true) {
+    const pv = (user as User & { password_version?: number }).password_version ?? 0;
     const mfa_token = jwt.sign(
-      { id: Number(user.id), purpose: 'mfa_login' },
+      { id: Number(user.id), purpose: 'mfa_login', pv },
       JWT_SECRET,
       { expiresIn: '5m', algorithm: 'HS256' }
     );
@@ -477,12 +517,13 @@ export function loginUser(body: {
   }
 
   db.prepare('UPDATE users SET last_login = CURRENT_TIMESTAMP, login_count = login_count + 1 WHERE id = ?').run(user.id);
-  const token = generateToken(user);
+  const token = generateToken(user, remember);
   const userSafe = stripUserForClient(user) as Record<string, unknown>;
 
   return {
     token,
     user: { ...userSafe, avatar_url: avatarUrl(user) },
+    remember,
     auditUserId: Number(user.id),
     auditAction: 'user.login',
     auditDetails: { email },
@@ -493,13 +534,15 @@ export function loginUser(body: {
 // Session
 // ---------------------------------------------------------------------------
 
-export function getCurrentUser(userId: number) {
+export function getCurrentUser(
+  userId: number
+): (Record<string, unknown> & Pick<User, 'id' | 'username' | 'email' | 'role'> & { avatar_url: string }) | null {
   const user = db.prepare(
     'SELECT id, username, email, role, avatar, oidc_issuer, created_at, mfa_enabled, must_change_password FROM users WHERE id = ?'
   ).get(userId) as User | undefined;
   if (!user) return null;
   const base = stripUserForClient(user as User) as Record<string, unknown>;
-  return { ...base, avatar_url: avatarUrl(user) };
+  return { ...base, id: user.id, username: user.username, email: user.email, role: user.role, avatar_url: avatarUrl(user) };
 }
 
 // ---------------------------------------------------------------------------
@@ -510,7 +553,7 @@ export function changePassword(
   userId: number,
   userEmail: string,
   body: { current_password?: string; new_password?: string }
-): { error?: string; status?: number; success?: boolean } {
+): { error?: string; status?: number; success?: boolean; token?: string } {
   if (isOidcOnlyMode()) {
     return { error: 'Password authentication is disabled.', status: 403 };
   }
@@ -525,14 +568,32 @@ export function changePassword(
   const pwCheck = validatePassword(new_password);
   if (!pwCheck.ok) return { error: pwCheck.reason, status: 400 };
 
-  const user = db.prepare('SELECT password_hash FROM users WHERE id = ?').get(userId) as { password_hash: string } | undefined;
+  const user = db.prepare('SELECT password_hash, password_version FROM users WHERE id = ?').get(userId) as { password_hash: string; password_version?: number } | undefined;
   if (!user || !bcrypt.compareSync(current_password, user.password_hash)) {
     return { error: 'Current password is incorrect', status: 401 };
   }
 
-  const hash = bcrypt.hashSync(new_password, 12);
-  db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(hash, userId);
-  return { success: true };
+  const hash = bcrypt.hashSync(new_password, BCRYPT_COST);
+  const newPv = (user.password_version ?? 0) + 1;
+
+  db.transaction(() => {
+    db.prepare('UPDATE users SET password_hash = ?, must_change_password = 0, password_version = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(hash, newPv, userId);
+    // A password change rotates the user's sessions: bumping password_version
+    // invalidates existing JWT cookie sessions, and the separate MCP static
+    // token and OAuth bearer-token stores are pruned to match (same set the
+    // password-reset path already revokes).
+    db.prepare('DELETE FROM mcp_tokens WHERE user_id = ?').run(userId);
+    try {
+      db.prepare("UPDATE oauth_tokens SET revoked_at = CURRENT_TIMESTAMP WHERE user_id = ? AND revoked_at IS NULL").run(userId);
+    } catch { /* oauth_tokens table may not exist in very old installs */ }
+  })();
+
+  try { revokeUserSessions?.(userId); } catch { /* best-effort */ }
+
+  // Re-issue a session bound to the new password_version so the current device
+  // stays logged in while other existing sessions are rotated out by the pv gate.
+  const token = generateToken({ id: userId, password_version: newPv });
+  return { success: true, token };
 }
 
 export function deleteAccount(userId: number, userEmail: string, userRole: string): { error?: string; status?: number; success?: boolean } {
@@ -546,6 +607,7 @@ export function deleteAccount(userId: number, userEmail: string, userRole: strin
     }
   }
   deleteUserCompletely(userId);
+  emitUserDeleted(userId); // let plugins erase their own per-user data
   return { success: true };
 }
 
@@ -562,34 +624,35 @@ export function updateMapsKey(userId: number, maps_api_key: string | null | unde
 
 export function updateApiKeys(
   userId: number,
-  body: { maps_api_key?: string; openweather_api_key?: string }
+  body: { maps_api_key?: string; openweather_api_key?: string; unsplash_api_key?: string }
 ) {
-  const current = db.prepare('SELECT maps_api_key, openweather_api_key FROM users WHERE id = ?').get(userId) as Pick<User, 'maps_api_key' | 'openweather_api_key'> | undefined;
+  const current = db.prepare('SELECT maps_api_key, openweather_api_key, unsplash_api_key FROM users WHERE id = ?').get(userId) as Pick<User, 'maps_api_key' | 'openweather_api_key' | 'unsplash_api_key'> | undefined;
 
   db.prepare(
-    'UPDATE users SET maps_api_key = ?, openweather_api_key = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
+    'UPDATE users SET maps_api_key = ?, openweather_api_key = ?, unsplash_api_key = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?'
   ).run(
     body.maps_api_key !== undefined ? maybe_encrypt_api_key(body.maps_api_key) : current!.maps_api_key,
     body.openweather_api_key !== undefined ? maybe_encrypt_api_key(body.openweather_api_key) : current!.openweather_api_key,
+    body.unsplash_api_key !== undefined ? maybe_encrypt_api_key(body.unsplash_api_key) : current!.unsplash_api_key,
     userId
   );
 
   const updated = db.prepare(
-    'SELECT id, username, email, role, maps_api_key, openweather_api_key, avatar, mfa_enabled FROM users WHERE id = ?'
-  ).get(userId) as Pick<User, 'id' | 'username' | 'email' | 'role' | 'maps_api_key' | 'openweather_api_key' | 'avatar' | 'mfa_enabled'> | undefined;
+    'SELECT id, username, email, role, maps_api_key, openweather_api_key, unsplash_api_key, avatar, mfa_enabled FROM users WHERE id = ?'
+  ).get(userId) as Pick<User, 'id' | 'username' | 'email' | 'role' | 'maps_api_key' | 'openweather_api_key' | 'unsplash_api_key' | 'avatar' | 'mfa_enabled'> | undefined;
 
   const u = updated ? { ...updated, mfa_enabled: !!(updated.mfa_enabled === 1 || updated.mfa_enabled === true) } : undefined;
   return {
     success: true,
-    user: { ...u, maps_api_key: mask_stored_api_key(u?.maps_api_key), openweather_api_key: mask_stored_api_key(u?.openweather_api_key), avatar_url: avatarUrl(updated || {}) },
+    user: { ...u, maps_api_key: mask_stored_api_key(u?.maps_api_key), openweather_api_key: mask_stored_api_key(u?.openweather_api_key), unsplash_api_key: mask_stored_api_key(u?.unsplash_api_key), avatar_url: avatarUrl(updated || {}) },
   };
 }
 
 export function updateSettings(
   userId: number,
-  body: { maps_api_key?: string; openweather_api_key?: string; username?: string; email?: string }
+  body: { maps_api_key?: string; openweather_api_key?: string; unsplash_api_key?: string; username?: string; email?: string }
 ): { error?: string; status?: number; success?: boolean; user?: Record<string, unknown> } {
-  const { maps_api_key, openweather_api_key, username, email } = body;
+  const { maps_api_key, openweather_api_key, unsplash_api_key, username, email } = body;
 
   if (username !== undefined) {
     const trimmed = username.trim();
@@ -599,17 +662,16 @@ export function updateSettings(
     if (!/^[a-zA-Z0-9_.-]+$/.test(trimmed)) {
       return { error: 'Username can only contain letters, numbers, underscores, dots and hyphens', status: 400 };
     }
-    const conflict = db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ?').get(trimmed, userId);
+    const conflict = db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ? AND COALESCE(is_guest, 0) = 0').get(trimmed, userId);
     if (conflict) return { error: 'Username already taken', status: 409 };
   }
 
   if (email !== undefined) {
     const trimmed = email.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!trimmed || !emailRegex.test(trimmed)) {
+    if (!trimmed || !EMAIL_REGEX.test(trimmed)) {
       return { error: 'Invalid email format', status: 400 };
     }
-    const conflict = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ?').get(trimmed, userId);
+    const conflict = db.prepare('SELECT id FROM users WHERE LOWER(email) = LOWER(?) AND id != ? AND COALESCE(is_guest, 0) = 0').get(trimmed, userId);
     if (conflict) return { error: 'Email already taken', status: 409 };
   }
 
@@ -618,6 +680,7 @@ export function updateSettings(
 
   if (maps_api_key !== undefined) { updates.push('maps_api_key = ?'); params.push(maybe_encrypt_api_key(maps_api_key)); }
   if (openweather_api_key !== undefined) { updates.push('openweather_api_key = ?'); params.push(maybe_encrypt_api_key(openweather_api_key)); }
+  if (unsplash_api_key !== undefined) { updates.push('unsplash_api_key = ?'); params.push(maybe_encrypt_api_key(unsplash_api_key)); }
   if (username !== undefined) { updates.push('username = ?'); params.push(username.trim()); }
   if (email !== undefined) { updates.push('email = ?'); params.push(email.trim()); }
 
@@ -628,26 +691,27 @@ export function updateSettings(
   }
 
   const updated = db.prepare(
-    'SELECT id, username, email, role, maps_api_key, openweather_api_key, avatar, mfa_enabled FROM users WHERE id = ?'
-  ).get(userId) as Pick<User, 'id' | 'username' | 'email' | 'role' | 'maps_api_key' | 'openweather_api_key' | 'avatar' | 'mfa_enabled'> | undefined;
+    'SELECT id, username, email, role, maps_api_key, openweather_api_key, unsplash_api_key, avatar, mfa_enabled FROM users WHERE id = ?'
+  ).get(userId) as Pick<User, 'id' | 'username' | 'email' | 'role' | 'maps_api_key' | 'openweather_api_key' | 'unsplash_api_key' | 'avatar' | 'mfa_enabled'> | undefined;
 
   const u = updated ? { ...updated, mfa_enabled: !!(updated.mfa_enabled === 1 || updated.mfa_enabled === true) } : undefined;
   return {
     success: true,
-    user: { ...u, maps_api_key: mask_stored_api_key(u?.maps_api_key), openweather_api_key: mask_stored_api_key(u?.openweather_api_key), avatar_url: avatarUrl(updated || {}) },
+    user: { ...u, maps_api_key: mask_stored_api_key(u?.maps_api_key), openweather_api_key: mask_stored_api_key(u?.openweather_api_key), unsplash_api_key: mask_stored_api_key(u?.unsplash_api_key), avatar_url: avatarUrl(updated || {}) },
   };
 }
 
 export function getSettings(userId: number): { error?: string; status?: number; settings?: Record<string, unknown> } {
   const user = db.prepare(
-    'SELECT role, maps_api_key, openweather_api_key FROM users WHERE id = ?'
-  ).get(userId) as Pick<User, 'role' | 'maps_api_key' | 'openweather_api_key'> | undefined;
+    'SELECT role, maps_api_key, openweather_api_key, unsplash_api_key FROM users WHERE id = ?'
+  ).get(userId) as Pick<User, 'role' | 'maps_api_key' | 'openweather_api_key' | 'unsplash_api_key'> | undefined;
   if (user?.role !== 'admin') return { error: 'Admin access required', status: 403 };
 
   return {
     settings: {
       maps_api_key: decrypt_api_key(user.maps_api_key),
       openweather_api_key: decrypt_api_key(user.openweather_api_key),
+      unsplash_api_key: decrypt_api_key(user.unsplash_api_key),
     },
   };
 }
@@ -658,7 +722,9 @@ export function getSettings(userId: number): { error?: string; status?: number; 
 
 export async function saveAvatar(userId: number, filename: string) {
   const current = db.prepare('SELECT avatar FROM users WHERE id = ?').get(userId) as { avatar: string | null } | undefined;
-  if (current && current.avatar) {
+  // Only a locally uploaded file has something to clean up. An OIDC picture URL
+  // (#1399) has no file on disk, so skip the rm — path.join on a URL is meaningless.
+  if (current?.avatar && !/^https:\/\//i.test(current.avatar)) {
     // Fire-and-forget: leftover files are harmless; the DB update is
     // the source of truth for which avatar is current.
     const oldPath = path.join(avatarDir, current.avatar);
@@ -673,7 +739,8 @@ export async function saveAvatar(userId: number, filename: string) {
 
 export async function deleteAvatar(userId: number) {
   const current = db.prepare('SELECT avatar FROM users WHERE id = ?').get(userId) as { avatar: string | null } | undefined;
-  if (current && current.avatar) {
+  // An OIDC picture URL (#1399) has no local file — only rm an uploaded one.
+  if (current?.avatar && !/^https:\/\//i.test(current.avatar)) {
     const filePath = path.join(avatarDir, current.avatar);
     await fs.promises.rm(filePath, { force: true }).catch(() => {});
   }
@@ -686,8 +753,10 @@ export async function deleteAvatar(userId: number) {
 // ---------------------------------------------------------------------------
 
 export function listUsers(excludeUserId: number) {
+  // The global user directory feeds the trip member-add / contributor pickers —
+  // guests (#1362) are trip-scoped and must never be selectable here.
   const users = db.prepare(
-    'SELECT id, username, avatar FROM users WHERE id != ? ORDER BY username ASC'
+    'SELECT id, username, avatar FROM users WHERE id != ? AND COALESCE(is_guest, 0) = 0 ORDER BY username ASC'
   ).all(excludeUserId) as Pick<User, 'id' | 'username' | 'avatar'>[];
   return users.map(u => ({ ...u, avatar_url: avatarUrl(u) }));
 }
@@ -806,9 +875,12 @@ export function updateAppSettings(
   const { require_mfa } = body;
   if (require_mfa === true || require_mfa === 'true') {
     const adminMfa = db.prepare('SELECT mfa_enabled FROM users WHERE id = ?').get(userId) as { mfa_enabled: number } | undefined;
-    if (!(adminMfa?.mfa_enabled === 1)) {
+    // A user-verified passkey satisfies the MFA policy, so an admin who secured
+    // their own account with a passkey may enable it too (not only TOTP).
+    const adminHasPasskey = !!db.prepare('SELECT 1 FROM webauthn_credentials WHERE user_id = ? LIMIT 1').get(userId);
+    if (!(adminMfa?.mfa_enabled === 1) && !adminHasPasskey) {
       return {
-        error: 'Enable two-factor authentication on your own account before requiring it for all users.',
+        error: 'Secure your own account with two-factor authentication or a passkey before requiring it for all users.',
         status: 400,
       };
     }
@@ -883,16 +955,18 @@ export function getTravelStats(userId: number) {
     WHERE t.user_id = ? OR tm.user_id = ?
   `).all(userId, userId) as { address: string | null; lat: number | null; lng: number | null }[];
 
+  // Archived trips still count here, matching the places, countries and flight
+  // distance widgets (which never filtered on is_archived) so the dashboard stats
+  // stay consistent — archiving a trip no longer zeroes out trips/days.
   const tripStats = db.prepare(`
     SELECT COUNT(DISTINCT t.id) as trips,
            COUNT(DISTINCT d.id) as days
     FROM trips t
     LEFT JOIN days d ON d.trip_id = t.id
     LEFT JOIN trip_members tm ON t.id = tm.trip_id
-    WHERE (t.user_id = ? OR tm.user_id = ?) AND t.is_archived = 0
+    WHERE (t.user_id = ? OR tm.user_id = ?)
   `).get(userId, userId) as { trips: number; days: number } | undefined;
 
-  const countries = new Set<string>();
   const cities = new Set<string>();
   const coords: { lat: number; lng: number }[] = [];
 
@@ -900,21 +974,60 @@ export function getTravelStats(userId: number) {
     if (p.lat && p.lng) coords.push({ lat: p.lat, lng: p.lng });
     if (p.address) {
       const parts = p.address.split(',').map(s => s.trim().replace(/\d{3,}/g, '').trim());
-      for (const part of parts) {
-        if (KNOWN_COUNTRIES.has(part)) { countries.add(part); break; }
-      }
       const cityPart = parts.find(s => !KNOWN_COUNTRIES.has(s) && /^[A-Za-z\u00C0-\u00FF\s-]{2,}$/.test(s));
       if (cityPart) cities.add(cityPart);
     }
   });
 
+  // Visited countries \u2014 same source the Atlas page uses: ISO-2 codes from
+  // auto-resolved place regions plus countries the user marked manually.
+  const countryCodes = new Set<string>();
+  const manualCountries = db.prepare(
+    'SELECT country_code FROM visited_countries WHERE user_id = ?'
+  ).all(userId) as { country_code: string }[];
+  manualCountries.forEach(m => { if (m.country_code) countryCodes.add(m.country_code.toUpperCase()); });
+
+  const placeRegionCodes = db.prepare(`
+    SELECT DISTINCT pr.country_code
+    FROM place_regions pr
+    JOIN places p ON p.id = pr.place_id
+    JOIN trips t ON p.trip_id = t.id
+    LEFT JOIN trip_members tm ON t.id = tm.trip_id
+    WHERE (t.user_id = ? OR tm.user_id = ?) AND pr.country_code IS NOT NULL
+  `).all(userId, userId) as { country_code: string }[];
+  placeRegionCodes.forEach(r => { if (r.country_code) countryCodes.add(r.country_code.toUpperCase()); });
+
+  // Transport bookings don't create a place row, so their geocoded endpoints never
+  // reached place_regions — a country reached only by a flight/train (no lodging or
+  // planned place there) was never counted as visited (#1366). Resolve each endpoint
+  // coordinate to a country and fold it in too.
+  // Only 'from'/'to' legs count as actually reached — a 'stop' is an intermediate
+  // connection/layover (e.g. a plane change) the traveler never really visited (#1486).
+  const endpoints = db.prepare(`
+    SELECT DISTINCT e.lat, e.lng
+    FROM reservation_endpoints e
+    JOIN reservations r ON e.reservation_id = r.id
+    JOIN trips t ON r.trip_id = t.id
+    LEFT JOIN trip_members tm ON t.id = tm.trip_id
+    WHERE (t.user_id = ? OR tm.user_id = ?) AND e.role IN ('from', 'to')
+  `).all(userId, userId) as { lat: number; lng: number }[];
+  for (const e of endpoints) {
+    const code = getCountryFromCoords(e.lat, e.lng);
+    if (code) countryCodes.add(code.toUpperCase());
+  }
+
+  // Countries the user removed in Atlas stay removed on the dashboard too, so the
+  // passport card and the Atlas map agree (#1490).
+  for (const code of getHiddenCountries(userId)) countryCodes.delete(code.toUpperCase());
+
   return {
-    countries: [...countries],
+    countries: [...countryCodes],
     cities: [...cities],
     coords,
     totalTrips: tripStats?.trips || 0,
     totalDays: tripStats?.days || 0,
     totalPlaces: places.length,
+    totalDistanceKm: getFlightDistanceKm(userId),
   };
 }
 
@@ -1006,14 +1119,17 @@ export function disableMfa(
 export function verifyMfaLogin(body: {
   mfa_token?: string;
   code?: string;
+  remember_me?: boolean;
 }): {
   error?: string;
   status?: number;
   token?: string;
   user?: Record<string, unknown>;
+  remember?: boolean;
   auditUserId?: number;
 } {
-  const { mfa_token, code } = body;
+  const { mfa_token, code, remember_me } = body;
+  const remember = remember_me === true;
   if (!mfa_token || !code) {
     return { error: 'Verification token and code are required', status: 400 };
   }
@@ -1044,11 +1160,12 @@ export function verifyMfaLogin(body: {
       );
     }
     db.prepare('UPDATE users SET last_login = CURRENT_TIMESTAMP, login_count = login_count + 1 WHERE id = ?').run(user.id);
-    const sessionToken = generateToken(user);
+    const sessionToken = generateToken(user, remember);
     const userSafe = stripUserForClient(user) as Record<string, unknown>;
     return {
       token: sessionToken,
       user: { ...userSafe, avatar_url: avatarUrl(user) },
+      remember,
       auditUserId: Number(user.id),
     };
   } catch {
@@ -1127,16 +1244,21 @@ export function requestPasswordReset(rawEmail: string, createdIp: string | null)
     return { tokenForDelivery: null, userId: null, userEmail: null, reason: 'no_user' };
   }
 
-  const user = db.prepare('SELECT id, email, password_hash, oidc_sub FROM users WHERE email = ?').get(email) as
+  // A guest (#1362) must never receive a reset link — treat its synthetic email as unknown.
+  const user = db.prepare('SELECT id, email, password_hash, oidc_sub FROM users WHERE email = ? AND COALESCE(is_guest, 0) = 0').get(email) as
     | { id: number; email: string; password_hash: string | null; oidc_sub: string | null }
     | undefined;
 
   if (!user) {
     return { tokenForDelivery: null, userId: null, userEmail: null, reason: 'no_user' };
   }
-  // OIDC-only account (no local password) — we can't reset what isn't there.
+  // SSO-linked account — refuse a reset. OIDC users are created with a random
+  // bcrypt hash (so password_hash is never empty), which is why we must key off
+  // oidc_sub rather than a missing hash. Letting the reset proceed would set a
+  // local password and revoke session/credential state, which breaks the SSO
+  // login; admins (or the user, with their current password) can still set one.
   // The client still gets the generic "if that email exists…" response.
-  if (!user.password_hash && user.oidc_sub) {
+  if (user.oidc_sub) {
     return { tokenForDelivery: null, userId: user.id, userEmail: user.email, reason: 'oidc_only' };
   }
 
@@ -1231,7 +1353,7 @@ export function resetPassword(body: {
     }
   }
 
-  const newHash = bcrypt.hashSync(new_password, 12);
+  const newHash = bcrypt.hashSync(new_password, BCRYPT_COST);
   const newPv = (user.password_version ?? 0) + 1;
 
   db.transaction(() => {
@@ -1314,7 +1436,10 @@ export function deleteMcpToken(userId: number, tokenId: string): { error?: strin
 // ---------------------------------------------------------------------------
 
 export function createWsToken(userId: number): { error?: string; status?: number; token?: string } {
-  const token = createEphemeralToken(userId, 'ws');
+  // Bind the ws-token to the user's current password_version so a token minted
+  // before a password reset is rejected on connect (defence-in-depth session gate).
+  const pv = (db.prepare('SELECT password_version FROM users WHERE id = ?').get(userId) as { password_version?: number } | undefined)?.password_version ?? 0;
+  const token = createEphemeralToken(userId, 'ws', { pv });
   if (!token) return { error: 'Service unavailable', status: 503 };
   return { token };
 }

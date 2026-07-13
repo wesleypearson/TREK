@@ -29,7 +29,9 @@ vi.mock('react-leaflet', () => ({
     >
       <button
         data-testid="marker-hover-trigger"
-        onClick={() => eventHandlers?.mouseover?.({ originalEvent: { clientX: 100, clientY: 100 } })}
+        // A real mouseover never bubbles as a click to the marker, so the
+        // hover-simulation must not trigger the marker's click handler.
+        onClick={(e: any) => { e.stopPropagation(); eventHandlers?.mouseover?.({ originalEvent: { clientX: 100, clientY: 100 } }) }}
       />
       {children}
     </div>
@@ -128,7 +130,8 @@ describe('MapView', () => {
 
   it('FE-COMP-MAPVIEW-006: renders polyline when route has 2+ points', () => {
     render(<MapView route={[[[48.0, 2.0], [49.0, 3.0]]]} />)
-    expect(screen.getByTestId('polyline')).toBeTruthy()
+    // Apple-Maps style draws a casing + a core line per segment.
+    expect(screen.getAllByTestId('polyline').length).toBeGreaterThan(0)
   })
 
   it('FE-COMP-MAPVIEW-007: does not render polyline when route is null', () => {
@@ -155,16 +158,11 @@ describe('MapView', () => {
     expect(screen.getByTestId('cluster-group')).toBeTruthy()
   })
 
-  it('FE-COMP-MAPVIEW-011: renders RouteLabel marker when routeSegments provided with route', () => {
-    const route = [[[48.0, 2.0], [49.0, 3.0]]] as [number, number][][][]
-    const routeSegments = [
-      { mid: [48.5, 2.5] as [number, number], from: 0, to: 1, walkingText: '10 min', drivingText: '3 min' },
-    ]
-    render(<MapView route={route} routeSegments={routeSegments} />)
-    // Route polyline is rendered
-    expect(screen.getByTestId('polyline')).toBeTruthy()
-    // RouteLabel renders a Marker (mocked), but it returns null when zoom < 12
-    // so we just assert the polyline is there, exercising the routeSegments.map path
+  it('FE-COMP-MAPVIEW-011: renders the route polyline; travel times are no longer drawn on the map', () => {
+    const route = [[[48.0, 2.0], [49.0, 3.0]]] as unknown as [number, number][][]
+    render(<MapView route={route} />)
+    // The route is drawn; per-segment times now live in the day sidebar, not on the map.
+    expect(screen.getAllByTestId('polyline').length).toBeGreaterThan(0)
   })
 
   it('FE-COMP-MAPVIEW-012: invalid route_geometry JSON triggers catch and skips polyline', () => {
@@ -247,5 +245,61 @@ describe('MapView', () => {
 
     rerender(<MapView places={places} fitKey={2} />)
     expect(mapMock.fitBounds.mock.calls.length).toBeGreaterThan(afterFirst)
+  })
+
+  it('FE-COMP-MAPVIEW-021: clicking a marker clears the hover tooltip (#1404)', async () => {
+    const user = userEvent.setup()
+    const places = [buildMapPlace({ id: 3, name: 'Eiffel Tower', lat: 48.8584, lng: 2.2945 })]
+    render(<MapView places={places} onMarkerClick={vi.fn()} />)
+    await user.click(screen.getByTestId('marker-hover-trigger'))
+    expect(screen.getByTestId('tooltip')).toBeTruthy()
+    // The recenter that follows the click moves the marker out from under the
+    // cursor — no mouseout will ever fire, so the click itself must clear.
+    fireEvent.click(screen.getByTestId('marker'))
+    expect(screen.queryByTestId('tooltip')).toBeNull()
+  })
+
+  it('FE-COMP-MAPVIEW-022: camera movement clears the tooltip and suppresses re-show until it ends (#1404)', async () => {
+    const user = userEvent.setup()
+    const places = [buildMapPlace({ id: 4, name: 'Louvre', lat: 48.86, lng: 2.337 })]
+    render(<MapView places={places} />)
+    await user.click(screen.getByTestId('marker-hover-trigger'))
+    expect(screen.getByTestId('tooltip')).toBeTruthy()
+
+    const findHandler = (event: string) =>
+      mapMock.on.mock.calls.find(c => c[0] === event)?.[1] as (() => void) | undefined
+    const start = findHandler('movestart zoomstart')
+    const end = findHandler('moveend zoomend')
+    expect(start).toBeTypeOf('function')
+    expect(end).toBeTypeOf('function')
+
+    fireEvent.click(screen.getByTestId('marker-hover-trigger')) // ensure hover is showing
+    start!()
+    await waitFor(() => expect(screen.queryByTestId('tooltip')).toBeNull())
+    // during the pan animation a mouseover must not re-show the card
+    fireEvent.click(screen.getByTestId('marker-hover-trigger'))
+    expect(screen.queryByTestId('tooltip')).toBeNull()
+    // once the move ends, hover works again
+    end!()
+    await user.click(screen.getByTestId('marker-hover-trigger'))
+    expect(screen.getByTestId('tooltip')).toBeTruthy()
+  })
+
+  it('FE-COMP-MAPVIEW-020: a day fit expands to include the route once it arrives (#1128)', async () => {
+    const L = ((await import('leaflet')).default) as unknown as { latLngBounds: ReturnType<typeof vi.fn> }
+    const dayPlaces = [
+      buildMapPlace({ id: 1, lat: 48.0, lng: 2.0 }),
+      buildMapPlace({ id: 2, lat: 48.1, lng: 2.1 }),
+    ]
+    // Day selected, route not computed yet → first fit is the two destinations.
+    const { rerender } = render(<MapView places={dayPlaces} dayPlaces={dayPlaces} route={[]} fitKey={5} />)
+    const lastBounds = () => { const c = L.latLngBounds.mock.calls; return c[c.length - 1][0] }
+    expect(lastBounds()).toHaveLength(2)
+
+    // The day's route arrives → one-shot re-fit including the 3 route points.
+    L.latLngBounds.mockClear()
+    rerender(<MapView places={dayPlaces} dayPlaces={dayPlaces} route={[[[47.9, 1.9], [48.05, 2.05], [48.2, 2.2]]]} fitKey={5} />)
+    expect(L.latLngBounds).toHaveBeenCalled()
+    expect(lastBounds()).toHaveLength(5) // 2 destinations + 3 route points
   })
 })

@@ -7,12 +7,31 @@ import { useAuthStore } from '../../store/authStore';
 import { useTripStore } from '../../store/tripStore';
 import { resetAllStores, seedStore } from '../../../tests/helpers/store';
 import { buildUser, buildTrip } from '../../../tests/helpers/factories';
+import type { TripFile } from '../../types';
 import FileManager from './FileManager';
 
 // Mock getAuthUrl
 vi.mock('../../api/authUrl', () => ({
   getAuthUrl: vi.fn().mockResolvedValue('http://localhost/signed-url'),
 }));
+
+// Mock the blob download/open helpers so we can assert wallet passes are
+// downloaded (#1447) rather than opened in the in-app PDF preview.
+vi.mock('../../utils/fileDownload', () => ({
+  openFile: vi.fn().mockResolvedValue(undefined),
+  downloadFile: vi.fn().mockResolvedValue(undefined),
+}));
+
+import { openFile as openFileInTab } from '../../utils/fileDownload';
+
+// Markdown pipeline mocked to render its children verbatim (the unified/ESM
+// pipeline is heavy in jsdom) — we only assert the markdown text reaches the modal.
+vi.mock('react-markdown', () => ({
+  default: ({ children }: { children: string }) => <span data-testid="md">{children}</span>,
+}));
+vi.mock('remark-gfm', () => ({ default: () => ({}) }));
+vi.mock('remark-breaks', () => ({ default: () => ({}) }));
+vi.mock('rehype-sanitize', () => ({ default: () => ({}) }));
 
 // Mock filesApi
 vi.mock('../../api/client', async (importOriginal) => {
@@ -36,20 +55,21 @@ vi.mock('../../api/client', async (importOriginal) => {
 
 import { filesApi } from '../../api/client';
 
-const buildFile = (overrides = {}) => ({
+const buildFile = (overrides: Partial<TripFile> = {}): TripFile => ({
   id: 1,
+  trip_id: 1,
+  filename: 'report.pdf',
   original_name: 'report.pdf',
   mime_type: 'application/pdf',
   file_size: 51200,
   created_at: '2025-01-10T08:00:00Z',
   url: '/uploads/trips/1/report.pdf',
-  starred: false,
+  starred: 0,
   deleted_at: null,
   place_id: null,
   reservation_id: null,
-  day_id: null,
   uploaded_by: 1,
-  uploader_name: 'Alice',
+  uploaded_by_name: 'Alice',
   ...overrides,
 });
 
@@ -287,6 +307,36 @@ describe('FileManager', () => {
     });
   });
 
+  it('FE-COMP-FILEMANAGER-034: markdown file click opens an inline rendered preview (#1345)', async () => {
+    server.use(http.get('http://localhost/signed-url', () => HttpResponse.text('# Hello heading\n\nworld body')));
+    const files = [buildFile({ id: 1, mime_type: 'text/markdown', original_name: 'notes.md' })];
+    render(<FileManager {...defaultProps} files={files} />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('notes.md'));
+
+    await waitFor(() => {
+      const md = screen.getByTestId('md');
+      expect(md).toBeInTheDocument();
+      expect(md.textContent).toContain('Hello heading');
+    });
+  });
+
+  it('FE-COMP-FILEMANAGER-035: pkpass click downloads via blob helper, not the PDF preview (#1447)', async () => {
+    const files = [buildFile({ id: 1, mime_type: 'application/octet-stream', original_name: 'boarding.pkpass', url: '/uploads/trips/1/boarding.pkpass' })];
+    render(<FileManager {...defaultProps} files={files} />);
+    const user = userEvent.setup();
+
+    await user.click(screen.getByText('boarding.pkpass'));
+
+    // Blob helper is called with the file url + name — the OS hands it to Wallet
+    await waitFor(() => {
+      expect(openFileInTab).toHaveBeenCalledWith('/uploads/trips/1/boarding.pkpass', 'boarding.pkpass');
+    });
+    // No PDF preview modal — the filename appears only once (in the list row)
+    expect(screen.getAllByText('boarding.pkpass').length).toBe(1);
+  });
+
   it('FE-COMP-FILEMANAGER-015: file with uploader name shows avatar chip initials', () => {
     const files = [buildFile({ uploaded_by_name: 'Alice Smith' })];
     render(<FileManager {...defaultProps} files={files} />);
@@ -320,8 +370,8 @@ describe('FileManager', () => {
 
   it('FE-COMP-FILEMANAGER-018: starred filter shows only starred files', async () => {
     const files = [
-      buildFile({ id: 1, original_name: 'starred.pdf', starred: true }),
-      buildFile({ id: 2, original_name: 'normal.pdf', starred: false }),
+      buildFile({ id: 1, original_name: 'starred.pdf', starred: 1 }),
+      buildFile({ id: 2, original_name: 'normal.pdf', starred: 0 }),
     ];
     render(<FileManager {...defaultProps} files={files} />);
     const user = userEvent.setup();
@@ -388,7 +438,7 @@ describe('FileManager', () => {
 
   it('FE-COMP-FILEMANAGER-023: assign modal shows reservations list', async () => {
     const { buildReservation } = await import('../../../tests/helpers/factories');
-    const reservation = buildReservation({ id: 20, name: 'Hotel Paris' });
+    const reservation = buildReservation({ id: 20, title: 'Hotel Paris' });
     render(<FileManager {...defaultProps} files={[buildFile()]} reservations={[reservation]} />);
     const user = userEvent.setup();
 
@@ -418,7 +468,7 @@ describe('FileManager', () => {
 
   it('FE-COMP-FILEMANAGER-025: clicking a reservation in assign modal calls filesApi.update', async () => {
     const { buildReservation } = await import('../../../tests/helpers/factories');
-    const reservation = buildReservation({ id: 20, name: 'Train Ticket' });
+    const reservation = buildReservation({ id: 20, title: 'Train Ticket' });
     const file = buildFile({ id: 1 });
     render(<FileManager {...defaultProps} files={[file]} reservations={[reservation]} />);
     const user = userEvent.setup();
@@ -436,7 +486,7 @@ describe('FileManager', () => {
   it('FE-COMP-FILEMANAGER-026: assign modal with both places and reservations shows both sections', async () => {
     const { buildPlace, buildReservation } = await import('../../../tests/helpers/factories');
     const place = buildPlace({ id: 10, name: 'Notre Dame' });
-    const reservation = buildReservation({ id: 20, name: 'Airbnb' });
+    const reservation = buildReservation({ id: 20, title: 'Airbnb' });
     render(<FileManager {...defaultProps} files={[buildFile()]} places={[place]} reservations={[reservation]} />);
     const user = userEvent.setup();
 
@@ -527,7 +577,7 @@ describe('FileManager', () => {
 
   it('FE-COMP-FILEMANAGER-032: unlink reservation from assign modal calls filesApi.update', async () => {
     const { buildReservation } = await import('../../../tests/helpers/factories');
-    const reservation = buildReservation({ id: 20, name: 'Museum Pass' });
+    const reservation = buildReservation({ id: 20, title: 'Museum Pass' });
     // File already has reservation_id set to 20
     const file = buildFile({ id: 1, reservation_id: 20 });
 

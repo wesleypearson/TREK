@@ -4,16 +4,17 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useAddonStore } from '../../store/addonStore'
+import { usePluginStore } from '../../store/pluginStore'
 import { useTranslation } from '../../i18n'
-import { Plane, LogOut, Settings, ChevronDown, Shield, ArrowLeft, Users, Moon, Sun, Monitor, CalendarDays, Briefcase, Globe, Compass } from 'lucide-react'
+import { Plane, LogOut, Settings, ChevronDown, Shield, ArrowLeft, Users, Moon, Sun, Monitor, CalendarDays, Briefcase, Globe, Compass, BookOpen, Bookmark, Blocks } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import InAppNotificationBell from './InAppNotificationBell.tsx'
 
-const ADDON_ICONS: Record<string, LucideIcon> = { CalendarDays, Briefcase, Globe, Compass }
+const ADDON_ICONS: Record<string, LucideIcon> = { CalendarDays, Briefcase, Globe, Compass, Bookmark }
 
 interface NavbarProps {
   tripTitle?: string
-  tripId?: string
+  tripId?: number | string
   onBack?: () => void
   showBack?: boolean
   onShare?: () => void
@@ -24,6 +25,7 @@ interface Addon {
   name: string
   icon: string
   type: string
+  enabled: boolean
 }
 
 export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }: NavbarProps): React.ReactElement {
@@ -51,6 +53,7 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
 
   // Only show 'global' type addons in the navbar — 'integration' addons have no dedicated page
   const globalAddons = allAddons.filter((a: Addon) => a.type === 'global' && a.enabled)
+  const pagePlugins = usePluginStore(s => s.plugins).filter(p => p.type === 'page')
 
   useEffect(() => {
     if (user) loadAddons()
@@ -109,8 +112,7 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
       <div className="flex items-center gap-3 min-w-0">
         {showBack && (
           <button onClick={onBack}
-            className="trek-back-btn p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-sm flex-shrink-0"
-            style={{ color: 'var(--text-muted)' }}
+            className="trek-back-btn p-1.5 rounded-lg transition-colors flex items-center gap-1.5 text-sm flex-shrink-0 text-content-muted"
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
             <ArrowLeft className="trek-back-icon w-4 h-4" />
@@ -123,51 +125,67 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
           <img src={dark ? '/logo-light.svg' : '/logo-dark.svg'} alt="TREK" className="hidden sm:block" style={{ height: 28 }} />
         </Link>
 
-        {/* Global addon nav items */}
-        {globalAddons.length > 0 && !tripTitle && (
-          <>
-            <span style={{ color: 'var(--text-faint)' }}>|</span>
-            <Link to="/dashboard"
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors flex-shrink-0"
-              style={{
-                color: location.pathname === '/dashboard' ? 'var(--text-primary)' : 'var(--text-muted)',
-                background: location.pathname === '/dashboard' ? 'var(--bg-hover)' : 'transparent',
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-              onMouseLeave={e => { if (location.pathname !== '/dashboard') e.currentTarget.style.background = 'transparent' }}>
-              <Briefcase className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">{t('nav.myTrips')}</span>
-            </Link>
-            {globalAddons.map(addon => {
-              const Icon = ADDON_ICONS[addon.icon] || CalendarDays
-              const path = `/${addon.id}`
-              const isActive = location.pathname === path
-              return (
-                <Link key={addon.id} to={path}
-                  className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors flex-shrink-0"
-                  style={{
-                    color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
-                    background: isActive ? 'var(--bg-hover)' : 'transparent',
-                  }}
-                  onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent' }}>
-                  <Icon className="w-3.5 h-3.5" />
-                  <span className="hidden md:inline">{getAddonName(addon)}</span>
-                </Link>
-              )
-            })}
-          </>
-        )}
-
         {tripTitle && (
           <>
-            <span className="hidden sm:inline" style={{ color: 'var(--text-faint)' }}>/</span>
-            <span className="hidden sm:inline text-sm font-medium truncate max-w-48" style={{ color: 'var(--text-muted)' }}>
+            <span className="hidden sm:inline text-content-faint">/</span>
+            <span className="hidden sm:inline text-sm font-medium truncate max-w-48 text-content-muted">
               {tripTitle}
             </span>
           </>
         )}
       </div>
+
+      {/* Centred liquid-glass tab menu (design handoff). Absolutely positioned so
+          the left brand block and the right action cluster keep their layout. */}
+      {(globalAddons.length > 0 || pagePlugins.length > 0) && !tripTitle && (
+        <div
+          className="trek-nav-pill"
+          style={{
+            position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
+            display: 'flex', gap: 4, padding: 4, borderRadius: 14,
+            background: dark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
+            backdropFilter: 'blur(20px) saturate(180%)', WebkitBackdropFilter: 'blur(20px) saturate(180%)',
+            border: `1px solid ${dark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'}`,
+          }}
+        >
+          {[{ id: '__trips', path: '/dashboard', label: t('nav.myTrips'), Icon: Briefcase },
+            ...globalAddons.map(a => ({ id: a.id, path: `/${a.id}`, label: getAddonName(a), Icon: ADDON_ICONS[a.icon] || CalendarDays })),
+            ...pagePlugins.map(p => ({ id: `plugin:${p.id}`, path: `/plugins/${p.id}`, label: p.name, Icon: Blocks }))
+          ].map(tab => {
+            const isActive = location.pathname === tab.path
+            return (
+              <Link key={tab.id} to={tab.path}
+                className="flex items-center gap-1.5 transition-colors"
+                style={{
+                  padding: '5px 16px', borderRadius: 9, fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 500,
+                  color: isActive ? 'var(--text-primary)' : 'var(--text-muted)',
+                  background: isActive ? 'var(--bg-card)' : 'transparent',
+                  boxShadow: isActive ? '0 1px 2px rgba(0,0,0,0.06), 0 2px 6px rgba(0,0,0,0.05)' : 'none',
+                }}
+                onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = 'var(--text-primary)' }}
+                onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = 'var(--text-muted)' }}>
+                <tab.Icon className="w-4 h-4" />
+                <span>{tab.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      )}
+
+      {/* Centre slot for page-scoped notices (plugin trip warnings portal into it).
+          Only mounted on trip pages, where the tab pill above is absent, so the two
+          never fight over the centre. Zero-size while empty; pointer events stay off
+          on the wrapper so an empty slot can't swallow clicks. */}
+      {tripTitle && (
+        <div
+          id="trek-nav-center-slot"
+          style={{
+            position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)',
+            display: 'flex', alignItems: 'center', gap: 6, maxWidth: '42%',
+            overflow: 'hidden', pointerEvents: 'none',
+          }}
+        />
+      )}
 
       {/* Spacer */}
       <div className="flex-1" />
@@ -175,8 +193,7 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
       {/* Share button */}
       {onShare && (
         <button onClick={onShare}
-          className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border transition-colors text-sm font-medium flex-shrink-0"
-          style={{ borderColor: 'var(--border-primary)', color: 'var(--text-secondary)', background: 'var(--bg-card)' }}
+          className="flex items-center gap-1.5 py-1.5 px-3 rounded-lg border transition-colors text-sm font-medium flex-shrink-0 border-edge text-content-secondary bg-surface-card"
           onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
           onMouseLeave={e => e.currentTarget.style.background = 'var(--bg-card)'}>
           <Users className="w-4 h-4" />
@@ -187,18 +204,16 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
       {/* Prerelease badge */}
       {isPrerelease && appVersion && (
         <span
-          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold flex-shrink-0"
-          style={{ background: 'rgba(245,158,11,0.15)', color: '#d97706', border: '1px solid rgba(245,158,11,0.3)' }}
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold flex-shrink-0 bg-[rgba(245,158,11,0.15)] text-[#d97706] border border-[rgba(245,158,11,0.3)]"
         >
-          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ background: '#f59e0b' }} />
+          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0 bg-[#f59e0b]" />
           {appVersion}
         </span>
       )}
 
       {/* Dark mode toggle (light ↔ dark, overrides auto) — hidden on mobile */}
       <button onClick={toggleDarkMode} title={dark ? t('nav.lightMode') : t('nav.darkMode')}
-        className="p-2 rounded-lg transition-colors flex-shrink-0 hidden sm:flex relative w-8 h-8 items-center justify-center"
-        style={{ color: 'var(--text-muted)' }}
+        className="p-2 rounded-lg transition-colors flex-shrink-0 hidden sm:flex relative w-8 h-8 items-center justify-center text-content-muted"
         onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
         <Sun className="w-4 h-4 absolute transition-[transform,opacity] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]"
@@ -226,21 +241,21 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
                 {user.username?.charAt(0).toUpperCase()}
               </div>
             )}
-            <span className="text-sm hidden sm:inline max-w-24 truncate" style={{ color: 'var(--text-secondary)' }}>
+            <span className="text-sm hidden sm:inline max-w-24 truncate text-content-secondary">
               {user.username}
             </span>
-            <ChevronDown className="w-4 h-4" style={{ color: 'var(--text-faint)' }} />
+            <ChevronDown className="w-4 h-4 text-content-faint" />
           </button>
 
           {userMenuOpen && ReactDOM.createPortal(
             <>
               <div style={{ position: 'fixed', inset: 0, zIndex: 9998 }} onClick={() => setUserMenuOpen(false)} />
-              <div className="trek-menu-enter w-52 rounded-xl shadow-xl border overflow-hidden" style={{ position: 'fixed', top: 'var(--nav-h)', right: 8, zIndex: 9999, background: 'var(--bg-card)', borderColor: 'var(--border-primary)' }}>
-                <div className="px-4 py-3 border-b" style={{ borderColor: 'var(--border-secondary)' }}>
-                  <p className="text-sm font-medium" style={{ color: 'var(--text-primary)' }}>{user.username}</p>
-                  <p className="text-xs truncate" style={{ color: 'var(--text-muted)' }}>{user.email}</p>
+              <div className="trek-menu-enter w-52 rounded-xl shadow-xl border overflow-hidden bg-surface-card border-edge" style={{ position: 'fixed', top: 'var(--nav-h)', right: 8, zIndex: 9999 }}>
+                <div className="px-4 py-3 border-b border-edge-secondary">
+                  <p className="text-sm font-medium text-content">{user.username}</p>
+                  <p className="text-xs truncate text-content-muted">{user.email}</p>
                   {user.role === 'admin' && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium mt-1" style={{ color: 'var(--text-secondary)' }}>
+                    <span className="inline-flex items-center gap-1 text-xs font-medium mt-1 text-content-secondary">
                       <Shield className="w-3 h-3" /> {t('nav.administrator')}
                     </span>
                   )}
@@ -248,18 +263,24 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
 
                 <div className="py-1">
                   <Link to="/settings" onClick={() => setUserMenuOpen(false)}
-                    className="flex items-center gap-2 px-4 py-2 text-sm transition-colors"
-                    style={{ color: 'var(--text-secondary)' }}
+                    className="flex items-center gap-2 px-4 py-2 text-sm transition-colors text-content-secondary"
                     onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                     onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                     <Settings className="w-4 h-4" />
                     {t('nav.settings')}
                   </Link>
 
+                  <Link to="/help" onClick={() => setUserMenuOpen(false)}
+                    className="flex items-center gap-2 px-4 py-2 text-sm transition-colors text-content-secondary"
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                    <BookOpen className="w-4 h-4" />
+                    {t('nav.help')}
+                  </Link>
+
                   {user.role === 'admin' && (
                     <Link to="/admin" onClick={() => setUserMenuOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 text-sm transition-colors"
-                      style={{ color: 'var(--text-secondary)' }}
+                      className="flex items-center gap-2 px-4 py-2 text-sm transition-colors text-content-secondary"
                       onMouseEnter={e => e.currentTarget.style.background = 'var(--bg-hover)'}
                       onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                       <Shield className="w-4 h-4" />
@@ -268,18 +289,18 @@ export default function Navbar({ tripTitle, tripId, onBack, showBack, onShare }:
                   )}
                 </div>
 
-                <div className="py-1 border-t" style={{ borderColor: 'var(--border-secondary)' }}>
+                <div className="py-1 border-t border-edge-secondary">
                   <button onClick={handleLogout}
                     className="flex items-center gap-2 w-full px-4 py-2 text-sm text-red-500 hover:bg-red-500/10 transition-colors">
                     <LogOut className="w-4 h-4" />
                     {t('nav.logout')}
                   </button>
                   {appVersion && (
-                    <div className="px-4 pt-2 pb-2.5 text-center" style={{ marginTop: 4, borderTop: '1px solid var(--border-secondary)' }}>
+                    <div className="px-4 pt-2 pb-2.5 text-center border-t border-edge-secondary" style={{ marginTop: 4 }}>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: 'var(--bg-tertiary)', borderRadius: 99, padding: '4px 12px' }}>
                           <img src={dark ? '/text-light.svg' : '/text-dark.svg'} alt="TREK" style={{ height: 10, opacity: 0.5 }} />
-                          <span style={{ fontSize: 10, fontWeight: 600, color: 'var(--text-faint)' }}>v{appVersion}</span>
+                          <span style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, color: 'var(--text-faint)' }}>v{appVersion}</span>
                         </div>
                         <a href="https://discord.gg/NhZBDSd4qW" target="_blank" rel="noopener noreferrer"
                           style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, borderRadius: 99, background: 'var(--bg-tertiary)', transition: 'background 0.15s' }}

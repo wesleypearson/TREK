@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 import { journeyApi } from '../api/client'
+import { uploadFilesResilient, type ResilientResult, type UploadProgress } from '../utils/uploadQueue'
+import { captureVideoPoster, isVideoFile } from '../utils/videoPoster'
 
 export interface Journey {
   id: number
@@ -55,6 +57,9 @@ export interface JourneyPhoto {
   thumbnail_path?: string | null
   width?: number | null
   height?: number | null
+  // 'image' (default) or 'video' (#823)
+  media_type?: string | null
+  duration_ms?: number | null
 }
 
 export interface GalleryPhoto {
@@ -73,6 +78,9 @@ export interface GalleryPhoto {
   thumbnail_path?: string | null
   width?: number | null
   height?: number | null
+  // 'image' (default) or 'video' (#823)
+  media_type?: string | null
+  duration_ms?: number | null
 }
 
 export interface JourneyTrip {
@@ -121,8 +129,8 @@ interface JourneyState {
   deleteEntry: (entryId: number) => Promise<void>
   reorderEntries: (journeyId: number, orderedIds: number[]) => Promise<void>
 
-  uploadPhotos: (entryId: number, formData: FormData) => Promise<JourneyPhoto[]>
-  uploadGalleryPhotos: (journeyId: number, formData: FormData) => Promise<GalleryPhoto[]>
+  uploadPhotos: (entryId: number, files: File[], cbs?: { onProgress?: (p: UploadProgress) => void }) => Promise<ResilientResult<JourneyPhoto>>
+  uploadGalleryPhotos: (journeyId: number, files: File[], cbs?: { onProgress?: (p: UploadProgress) => void }) => Promise<ResilientResult<GalleryPhoto>>
   unlinkPhoto: (entryId: number, journeyPhotoId: number) => Promise<void>
   deleteGalleryPhoto: (journeyId: number, journeyPhotoId: number) => Promise<void>
   deletePhoto: (photoId: number) => Promise<void>
@@ -237,32 +245,60 @@ export const useJourneyStore = create<JourneyState>((set, get) => ({
     }
   },
 
-  uploadPhotos: async (entryId, formData) => {
-    const data = await journeyApi.uploadPhotos(entryId, formData)
-    const photos = data.photos || []
-    set(s => {
-      if (!s.current) return s
-      return {
-        current: {
-          ...s.current,
-          entries: s.current.entries.map(e =>
-            e.id === entryId ? { ...e, photos: [...(e.photos || []), ...photos] } : e
-          ),
-          gallery: [...(s.current.gallery || []), ...(data.gallery || [])],
-        },
-      }
-    })
-    return photos
+  uploadPhotos: async (entryId, files, cbs) => {
+    return uploadFilesResilient<JourneyPhoto>(
+      files,
+      async (file, opts) => {
+        const fd = new FormData()
+        fd.append('photos', file)
+        const data = await journeyApi.uploadPhotos(entryId, fd, opts)
+        const photos: JourneyPhoto[] = data.photos || []
+        const gallery: GalleryPhoto[] = data.gallery || []
+        set(s => {
+          if (!s.current) return s
+          return {
+            current: {
+              ...s.current,
+              entries: s.current.entries.map(e =>
+                e.id === entryId ? { ...e, photos: [...(e.photos || []), ...photos] } : e
+              ),
+              gallery: [...(s.current.gallery || []), ...gallery],
+            },
+          }
+        })
+        return photos
+      },
+      { onProgress: cbs?.onProgress },
+    )
   },
 
-  uploadGalleryPhotos: async (journeyId, formData) => {
-    const data = await journeyApi.uploadGalleryPhotos(journeyId, formData)
-    const photos: GalleryPhoto[] = data.photos || []
-    set(s => {
-      if (!s.current || s.current.id !== journeyId) return s
-      return { current: { ...s.current, gallery: [...(s.current.gallery || []), ...photos] } }
-    })
-    return photos
+  uploadGalleryPhotos: async (journeyId, files, cbs) => {
+    return uploadFilesResilient<GalleryPhoto>(
+      files,
+      async (file, opts) => {
+        const fd = new FormData()
+        let data: { photos?: GalleryPhoto[] }
+        if (isVideoFile(file)) {
+          // Video: grab a poster frame + duration in the browser, then upload the
+          // raw video + poster (#823). No server-side transcoding.
+          const { poster, durationMs } = await captureVideoPoster(file)
+          fd.append('video', file)
+          if (poster) fd.append('poster', poster, 'poster.jpg')
+          if (durationMs != null) fd.append('duration_ms', String(durationMs))
+          data = await journeyApi.uploadGalleryVideo(journeyId, fd, opts)
+        } else {
+          fd.append('photos', file)
+          data = await journeyApi.uploadGalleryPhotos(journeyId, fd, opts)
+        }
+        const photos: GalleryPhoto[] = data.photos || []
+        set(s => {
+          if (!s.current || s.current.id !== journeyId) return s
+          return { current: { ...s.current, gallery: [...(s.current.gallery || []), ...photos] } }
+        })
+        return photos
+      },
+      { onProgress: cbs?.onProgress },
+    )
   },
 
   unlinkPhoto: async (entryId, journeyPhotoId) => {

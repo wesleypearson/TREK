@@ -186,8 +186,8 @@ export default function BackupPanel() {
           <div className="flex items-center gap-3">
             <HardDrive className="w-5 h-5 text-gray-400" />
             <div>
-              <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{t('backup.title')}</h2>
-              <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('backup.subtitle')}</p>
+              <h2 className="font-semibold text-content">{t('backup.title')}</h2>
+              <p className="text-xs mt-1 text-content-muted">{t('backup.subtitle')}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -310,8 +310,8 @@ export default function BackupPanel() {
         <div className="flex items-center gap-3 mb-6">
           <Clock className="w-5 h-5 text-gray-400" />
           <div>
-            <h2 className="font-semibold" style={{ color: 'var(--text-primary)' }}>{t('backup.auto.title')}</h2>
-            <p className="text-xs mt-1" style={{ color: 'var(--text-muted)' }}>{t('backup.auto.subtitle')}</p>
+            <h2 className="font-semibold text-content">{t('backup.auto.title')}</h2>
+            <p className="text-xs mt-1 text-content-muted">{t('backup.auto.subtitle')}</p>
           </div>
         </div>
 
@@ -360,7 +360,7 @@ export default function BackupPanel() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('backup.auto.hour')}</label>
                   <CustomSelect
                     value={String(autoSettings.hour)}
-                    onChange={v => handleAutoSettingsChange('hour', parseInt(v, 10))}
+                    onChange={v => handleAutoSettingsChange('hour', parseInt(String(v), 10))}
                     size="sm"
                     options={HOURS.map(h => {
                       let label: string
@@ -408,7 +408,7 @@ export default function BackupPanel() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">{t('backup.auto.dayOfMonth')}</label>
                   <CustomSelect
                     value={String(autoSettings.day_of_month)}
-                    onChange={v => handleAutoSettingsChange('day_of_month', parseInt(v, 10))}
+                    onChange={v => handleAutoSettingsChange('day_of_month', parseInt(String(v), 10))}
                     size="sm"
                     options={DAYS_OF_MONTH.map(d => ({ value: String(d), label: String(d) }))}
                   />
@@ -458,7 +458,8 @@ export default function BackupPanel() {
       {/* Restore Warning Modal */}
       {restoreConfirm && (
         <div
-          style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          className="bg-[rgba(0,0,0,0.5)]"
+          style={{ position: 'fixed', inset: 0, zIndex: 9999, backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
           onClick={() => setRestoreConfirm(null)}
         >
           <div
@@ -468,14 +469,14 @@ export default function BackupPanel() {
           >
             {/* Red header */}
             <div style={{ background: 'linear-gradient(135deg, #dc2626, #b91c1c)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                <AlertTriangle size={20} style={{ color: 'white' }} />
+              <div className="bg-[rgba(255,255,255,0.2)]" style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <AlertTriangle size={20} className="text-white" />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'white' }}>
+                <h3 className="text-white" style={{ margin: 0, fontSize: 'calc(16px * var(--fs-scale-subtitle, 1))', fontWeight: 700 }}>
                   {t('backup.restoreConfirmTitle')}
                 </h3>
-                <p style={{ margin: '2px 0 0', fontSize: 12, color: 'rgba(255,255,255,0.8)' }}>
+                <p className="text-[rgba(255,255,255,0.8)]" style={{ margin: '2px 0 0', fontSize: 'calc(12px * var(--fs-scale-body, 1))' }}>
                   {restoreConfirm.filename}
                 </p>
               </div>
@@ -483,11 +484,11 @@ export default function BackupPanel() {
 
             {/* Body */}
             <div style={{ padding: '20px 24px' }}>
-              <p className="text-gray-700 dark:text-gray-300" style={{ fontSize: 13, lineHeight: 1.6, margin: 0 }}>
+              <p className="text-gray-700 dark:text-gray-300" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', lineHeight: 1.6, margin: 0 }}>
                 {t('backup.restoreWarning')}
               </p>
 
-              <div style={{ marginTop: 14, padding: '10px 12px', borderRadius: 10, fontSize: 12, lineHeight: 1.5 }}
+              <div style={{ marginTop: 14, padding: '10px 12px', borderRadius: 10, fontSize: 'calc(12px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}
                 className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-800"
               >
                 {t('backup.restoreTip')}
@@ -499,13 +500,14 @@ export default function BackupPanel() {
               <button
                 onClick={() => setRestoreConfirm(null)}
                 className="text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
-                style={{ padding: '9px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
+                style={{ padding: '9px 20px', borderRadius: 10, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
               >
                 {t('common.cancel')}
               </button>
               <button
                 onClick={executeRestore}
-                style={{ padding: '9px 20px', borderRadius: 10, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit', background: '#dc2626', color: 'white' }}
+                className="bg-[#dc2626] text-white"
+                style={{ padding: '9px 20px', borderRadius: 10, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}
                 onMouseEnter={e => e.currentTarget.style.background = '#b91c1c'}
                 onMouseLeave={e => e.currentTarget.style.background = '#dc2626'}
               >

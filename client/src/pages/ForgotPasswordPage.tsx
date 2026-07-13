@@ -1,48 +1,19 @@
-import React, { useState, useEffect, FormEvent, ChangeEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { ChangeEvent } from 'react'
 import { Mail, ArrowLeft, CheckCircle2, Terminal } from 'lucide-react'
 import { useTranslation } from '../i18n'
-import { authApi } from '../api/client'
+import { useForgotPassword } from './forgotPassword/useForgotPassword'
 
 const inputBase: React.CSSProperties = {
   width: '100%', padding: '11px 12px 11px 38px', borderRadius: 12,
-  border: '1px solid #e5e7eb', fontSize: 14, fontFamily: 'inherit',
+  border: '1px solid #e5e7eb', fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontFamily: 'inherit',
   outline: 'none', transition: 'border-color 120ms',
   background: 'white', color: '#111827',
 }
 
 const ForgotPasswordPage: React.FC = () => {
   const { t } = useTranslation()
-  const navigate = useNavigate()
-  const [email, setEmail] = useState('')
-  const [submitted, setSubmitted] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
-  const [smtpConfigured, setSmtpConfigured] = useState<boolean | null>(null)
-
-  useEffect(() => {
-    // Probe whether SMTP is configured so we can warn the user up-front
-    // that the link will land in the server console instead of their
-    // inbox. Null while pending — hint is hidden until we know.
-    authApi.getAppConfig?.()
-      .then((cfg: any) => {
-        const hasEmail = !!cfg?.available_channels?.email
-        setSmtpConfigured(hasEmail)
-      })
-      .catch(() => setSmtpConfigured(null))
-  }, [])
-
-  const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault()
-    if (isLoading) return
-    setIsLoading(true)
-    try {
-      await authApi.forgotPassword({ email: email.trim() })
-    } catch {
-      // Enumeration-safe: success UX regardless of server outcome.
-    }
-    setSubmitted(true)
-    setIsLoading(false)
-  }
+  // Page = wiring container: form state, the SMTP probe and submit live in the hook.
+  const { navigate, email, setEmail, submitted, isLoading, smtpConfigured, handleSubmit } = useForgotPassword()
 
   return (
     <div style={{
@@ -57,7 +28,7 @@ const ForgotPasswordPage: React.FC = () => {
         <button type="button" onClick={() => navigate('/login')} style={{
           display: 'flex', alignItems: 'center', gap: 6,
           background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-          color: '#6b7280', fontSize: 13, fontFamily: 'inherit', marginBottom: 22,
+          color: '#6b7280', fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontFamily: 'inherit', marginBottom: 22,
         }}>
           <ArrowLeft size={14} />{t('login.backToLogin')}
         </button>
@@ -71,10 +42,10 @@ const ForgotPasswordPage: React.FC = () => {
             }}>
               <CheckCircle2 size={28} />
             </div>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: '0 0 10px 0' }}>
+            <h1 style={{ fontSize: 'calc(22px * var(--fs-scale-title, 1))', fontWeight: 700, color: '#111827', margin: '0 0 10px 0' }}>
               {t('login.forgotPasswordSentTitle')}
             </h1>
-            <p style={{ fontSize: 14, color: '#4b5563', lineHeight: 1.55, margin: 0 }}>
+            <p style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', color: '#4b5563', lineHeight: 1.55, margin: 0 }}>
               {t('login.forgotPasswordSentBody')}
             </p>
             {smtpConfigured === false && (
@@ -84,24 +55,24 @@ const ForgotPasswordPage: React.FC = () => {
                 borderRadius: 10, textAlign: 'left',
                 display: 'flex', alignItems: 'flex-start', gap: 10,
               }}>
-                <Terminal size={16} style={{ color: '#92400e', marginTop: 1, flexShrink: 0 }} />
-                <p style={{ fontSize: 12.5, color: '#92400e', lineHeight: 1.55, margin: 0 }}>
+                <Terminal size={16} className="text-[#92400e]" style={{ marginTop: 1, flexShrink: 0 }} />
+                <p style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', color: '#92400e', lineHeight: 1.55, margin: 0 }}>
                   {t('login.forgotPasswordSmtpHintOff')}
                 </p>
               </div>
             )}
             <button type="button" onClick={() => navigate('/login')} style={{
               marginTop: 24, padding: '11px 22px', background: '#111827', color: 'white',
-              border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700,
+              border: 'none', borderRadius: 12, fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700,
               cursor: 'pointer', fontFamily: 'inherit',
             }}>{t('login.backToLogin')}</button>
           </div>
         ) : (
           <>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: '#111827', margin: '0 0 8px 0' }}>
+            <h1 style={{ fontSize: 'calc(22px * var(--fs-scale-title, 1))', fontWeight: 700, color: '#111827', margin: '0 0 8px 0' }}>
               {t('login.forgotPasswordTitle')}
             </h1>
-            <p style={{ fontSize: 13.5, color: '#6b7280', lineHeight: 1.55, margin: '0 0 16px 0' }}>
+            <p style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', color: '#6b7280', lineHeight: 1.55, margin: '0 0 16px 0' }}>
               {t('login.forgotPasswordBody')}
             </p>
             {smtpConfigured === false && (
@@ -110,19 +81,19 @@ const ForgotPasswordPage: React.FC = () => {
                 background: '#fffbeb', border: '1px solid #fde68a',
                 borderRadius: 10, display: 'flex', alignItems: 'flex-start', gap: 10,
               }}>
-                <Terminal size={15} style={{ color: '#92400e', marginTop: 1, flexShrink: 0 }} />
-                <p style={{ fontSize: 12.5, color: '#92400e', lineHeight: 1.5, margin: 0 }}>
+                <Terminal size={15} className="text-[#92400e]" style={{ marginTop: 1, flexShrink: 0 }} />
+                <p style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', color: '#92400e', lineHeight: 1.5, margin: 0 }}>
                   {t('login.forgotPasswordSmtpHintOff')}
                 </p>
               </div>
             )}
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
-                <label style={{ display: 'block', fontSize: 12.5, fontWeight: 600, color: '#374151', marginBottom: 6 }}>
+                <label style={{ display: 'block', fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600, color: '#374151', marginBottom: 6 }}>
                   {t('common.email')}
                 </label>
                 <div style={{ position: 'relative' }}>
-                  <Mail size={15} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', color: '#9ca3af', pointerEvents: 'none' }} />
+                  <Mail size={15} className="text-[#9ca3af]" style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                   <input
                     type="email" value={email}
                     onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
@@ -134,7 +105,7 @@ const ForgotPasswordPage: React.FC = () => {
               </div>
               <button type="submit" disabled={isLoading} style={{
                 width: '100%', padding: '12px', background: '#111827', color: 'white',
-                border: 'none', borderRadius: 12, fontSize: 14, fontWeight: 700,
+                border: 'none', borderRadius: 12, fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700,
                 cursor: isLoading ? 'default' : 'pointer', fontFamily: 'inherit',
                 opacity: isLoading ? 0.7 : 1, transition: 'opacity 0.15s',
               }}>

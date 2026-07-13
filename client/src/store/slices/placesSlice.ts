@@ -9,10 +9,11 @@ type GetState = StoreApi<TripStoreState>['getState']
 
 export interface PlacesSlice {
   refreshPlaces: (tripId: number | string) => Promise<void>
-  addPlace: (tripId: number | string, placeData: Partial<Place>) => Promise<Place>
+  addPlace: (tripId: number | string, placeData: Partial<Place> & { name: string }) => Promise<Place>
   updatePlace: (tripId: number | string, placeId: number, placeData: Partial<Place>) => Promise<Place>
   deletePlace: (tripId: number | string, placeId: number) => Promise<void>
   deletePlacesMany: (tripId: number | string, placeIds: number[]) => Promise<void>
+  updatePlacesMany: (tripId: number | string, placeIds: number[], patch: Partial<Place>) => Promise<void>
 }
 
 export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => ({
@@ -27,7 +28,7 @@ export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => 
 
   addPlace: async (tripId, placeData) => {
     try {
-      const data = await placeRepo.create(tripId, placeData as Record<string, unknown>)
+      const data = await placeRepo.create(tripId, placeData as Record<string, unknown> & { name: string })
       set(state => ({ places: [data.place, ...state.places] }))
       return data.place
     } catch (err: unknown) {
@@ -103,6 +104,35 @@ export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => 
       })
     } catch (err: unknown) {
       throw new Error(getApiErrorMessage(err, 'Error deleting places'))
+    }
+  },
+
+  updatePlacesMany: async (tripId, placeIds, patch) => {
+    if (placeIds.length === 0) return
+    try {
+      await placeRepo.updateMany(tripId, placeIds, patch as Record<string, unknown>)
+      const idSet = new Set(placeIds)
+      set(state => {
+        // Patch both the place pool and the embedded place on each day assignment
+        // (preserving the assignment's own place_time/end_time) so itinerary cards
+        // reflect the change immediately, like single updatePlace does.
+        const updatedAssignments = { ...state.assignments }
+        let changed = false
+        for (const [dayId, items] of Object.entries(state.assignments)) {
+          if (items.some((a: Assignment) => a.place?.id != null && idSet.has(a.place.id))) {
+            updatedAssignments[dayId] = items.map((a: Assignment) =>
+              a.place?.id != null && idSet.has(a.place.id) ? { ...a, place: { ...a.place, ...patch } } : a
+            )
+            changed = true
+          }
+        }
+        return {
+          places: state.places.map(p => idSet.has(p.id) ? { ...p, ...patch } : p),
+          ...(changed ? { assignments: updatedAssignments } : {}),
+        }
+      })
+    } catch (err: unknown) {
+      throw new Error(getApiErrorMessage(err, 'Error updating places'))
     }
   },
 })

@@ -1,6 +1,25 @@
 import { db, canAccessTrip } from '../db/database';
 import crypto from 'crypto';
 import { loadTagsByPlaceIds } from './queryHelpers';
+import { serveFilePath } from './placePhotoCache';
+import { getUserSettings } from './settingsService';
+
+const PLACE_PHOTO_PROXY_PREFIX = '/api/maps/place-photo/';
+
+/**
+ * Place photo proxy URLs (`/api/maps/place-photo/<id>/bytes`) are served by the
+ * JWT-guarded MapsController, so they 401 for an unauthenticated shared-trip
+ * viewer. Rewrite them to the public, token-scoped equivalent
+ * (`/api/shared/<token>/place-photo/<id>/bytes`) so thumbnails load in a shared
+ * link. A simple prefix swap keeps the already-encoded placeId segment intact, so
+ * the URL round-trips. Non-proxy URLs (data:, /uploads/, null) pass through.
+ */
+function rewritePlacePhotoUrl(url: string | null | undefined, token: string): string | null {
+  if (typeof url === 'string' && url.startsWith(PLACE_PHOTO_PROXY_PREFIX)) {
+    return `/api/shared/${token}/place-photo/${url.slice(PLACE_PHOTO_PROXY_PREFIX.length)}`;
+  }
+  return url ?? null;
+}
 
 interface SharePermissions {
   share_map?: boolean;
@@ -113,7 +132,7 @@ export function getSharedTripData(token: string): Record<string, any> | null {
       FROM day_assignments da
       JOIN places p ON da.place_id = p.id
       LEFT JOIN categories c ON p.category_id = c.id
-      WHERE da.day_id IN (${ph})
+      WHERE da.day_id IN (${ph}) AND p.is_private = 0
       ORDER BY da.order_index ASC, da.created_at ASC
     `).all(...dayIds);
 
@@ -129,7 +148,7 @@ export function getSharedTripData(token: string): Record<string, any> | null {
           id: a.place_id, name: a.place_name, description: a.place_description,
           lat: a.lat, lng: a.lng, address: a.address, category_id: a.category_id,
           price: a.price, place_time: a.place_time, end_time: a.end_time,
-          image_url: a.image_url, transport_mode: a.transport_mode,
+          image_url: rewritePlacePhotoUrl(a.image_url, token), transport_mode: a.transport_mode,
           category: a.category_id ? { id: a.category_id, name: a.category_name, color: a.category_color, icon: a.category_icon } : null,
           tags: tagsByPlace[a.place_id] || [],
         }
@@ -146,12 +165,12 @@ export function getSharedTripData(token: string): Record<string, any> | null {
     dayNotes = notesByDay;
   }
 
-  // Places
-  const places = db.prepare(`
+  // Places — private places (custom visibility) never appear on a public share link.
+  const places = (db.prepare(`
     SELECT p.*, c.name as category_name, c.color as category_color, c.icon as category_icon
     FROM places p LEFT JOIN categories c ON p.category_id = c.id
-    WHERE p.trip_id = ? ORDER BY p.created_at DESC
-  `).all(tripId);
+    WHERE p.trip_id = ? AND p.is_private = 0 ORDER BY p.created_at DESC
+  `).all(tripId) as any[]).map((p) => ({ ...p, image_url: rewritePlacePhotoUrl(p.image_url, token) }));
 
   // Reservations — include per-day positions so the client can render the same order as the planner
   const reservations = db.prepare('SELECT * FROM reservations WHERE trip_id = ? ORDER BY reservation_time ASC').all(tripId) as any[];
@@ -176,11 +195,12 @@ export function getSharedTripData(token: string): Record<string, any> | null {
   const accommodations = db.prepare(`
     SELECT a.*, p.name as place_name, p.address as place_address, p.lat as place_lat, p.lng as place_lng
     FROM day_accommodations a JOIN places p ON a.place_id = p.id
-    WHERE a.trip_id = ?
+    WHERE a.trip_id = ? AND p.is_private = 0
   `).all(tripId);
 
-  // Packing
-  const packing = db.prepare('SELECT * FROM packing_items WHERE trip_id = ? ORDER BY sort_order ASC').all(tripId);
+  // Packing — a public viewer is neither owner nor recipient, so only Common items
+  // may surface; never a co-member's private/personal packing items (#858).
+  const packing = db.prepare('SELECT * FROM packing_items WHERE trip_id = ? AND is_private = 0 ORDER BY sort_order ASC').all(tripId);
 
   // Budget
   const budget = db.prepare('SELECT * FROM budget_items WHERE trip_id = ? ORDER BY category ASC').all(tripId);
@@ -201,12 +221,62 @@ export function getSharedTripData(token: string): Record<string, any> | null {
     ? db.prepare('SELECT m.*, u.username, u.avatar FROM collab_messages m JOIN users u ON m.user_id = u.id WHERE m.trip_id = ? AND m.deleted = 0 ORDER BY m.created_at').all(tripId)
     : [];
 
+  // Display currency the share owner sees in their Costs view. A public viewer has
+  // no logged-in user, so the owner's per-user `default_currency` (with the admin
+  // instance default already merged in by getUserSettings) is embedded in the
+  // payload and used by the client to convert every expense — otherwise guests
+  // fall back to the trip's base currency and see the wrong totals (#1361).
+  // getUserSettings merges admin defaults under the user's own settings, so this
+  // honours per-user → admin-default; we then fall back to trip currency → EUR.
+  let baseCurrency = (trip as { currency?: string }).currency || 'EUR';
+  if (shareRow.created_by != null) {
+    const ownerDefault = getUserSettings(shareRow.created_by)['default_currency'];
+    if (typeof ownerDefault === 'string' && ownerDefault.trim()) {
+      baseCurrency = ownerDefault.trim();
+    }
+  }
+
+  // Honour every share flag server-side — the client gates these too, but it must
+  // not rely on that (mirrors journeyShareService). share_map covers the whole
+  // itinerary: days, their assignments/notes, and the place list with coordinates,
+  // addresses and notes. Withhold it when the owner disabled the map.
   return {
-    trip, days, assignments, dayNotes, places, categories, permissions,
+    trip, baseCurrency, categories, permissions,
+    days: permissions.share_map ? days : [],
+    assignments: permissions.share_map ? assignments : {},
+    dayNotes: permissions.share_map ? dayNotes : {},
+    places: permissions.share_map ? places : [],
     reservations: permissions.share_bookings ? reservations : [],
     accommodations: permissions.share_bookings ? accommodations : [],
     packing: permissions.share_packing ? packing : [],
     budget: permissions.share_budget ? budget : [],
     collab: collabMessages,
   };
+}
+
+/**
+ * Resolves the on-disk path for a cached place photo requested through a public
+ * share link. Validates that the token is valid + unexpired and that the place
+ * actually belongs to that token's trip (matched via the stored proxy URL, which
+ * covers both Google `placeId` and Wikimedia `coords:` pseudo-IDs without
+ * depending on google_place_id). Returns null — never throws — so the caller
+ * answers a plain 404, mirroring the authenticated bytes endpoint.
+ */
+export function getSharedPlacePhotoPath(token: string, placeId: string): string | null {
+  const shareRow = db.prepare(
+    "SELECT trip_id, share_map FROM share_tokens WHERE token = ? AND (expires_at IS NULL OR expires_at > datetime('now'))"
+  ).get(token) as { trip_id: string; share_map: number } | undefined;
+  if (!shareRow) return null;
+  // Place photos belong to the map/itinerary section — withhold them when the
+  // owner disabled the map, matching getSharedTripData which no longer returns
+  // the places (and thus their ids) in that case.
+  if (!shareRow.share_map) return null;
+
+  const expectedUrl = `${PLACE_PHOTO_PROXY_PREFIX}${encodeURIComponent(placeId)}/bytes`;
+  const place = db.prepare(
+    'SELECT 1 FROM places WHERE trip_id = ? AND image_url = ?'
+  ).get(shareRow.trip_id, expectedUrl);
+  if (!place) return null;
+
+  return serveFilePath(placeId);
 }

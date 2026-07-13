@@ -22,7 +22,7 @@ import {
   safeBroadcast, MAX_MCP_TRIP_DAYS,
   TOOL_ANNOTATIONS_READONLY, TOOL_ANNOTATIONS_WRITE,
   TOOL_ANNOTATIONS_DELETE, TOOL_ANNOTATIONS_NON_IDEMPOTENT,
-  demoDenied, noAccess, ok,
+  demoDenied, noAccess, ok, hasTripPermission, permissionDenied,
 } from './_shared';
 import { canRead, canReadTrips, canWrite, canDeleteTrips, canShareTrips } from '../scopes';
 
@@ -78,12 +78,15 @@ export function registerTripTools(server: McpServer, userId: number, scopes: str
         start_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
         end_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
         currency: z.string().length(3).optional(),
+        is_archived: z.boolean().optional().describe('Archive (true) or unarchive (false) the trip'),
+        cover_image: z.string().optional().describe('Cover image path, e.g. /uploads/covers/abc.jpg'),
       },
       annotations: TOOL_ANNOTATIONS_WRITE,
     },
-    async ({ tripId, title, description, start_date, end_date, currency }) => {
+    async ({ tripId, title, description, start_date, end_date, currency, is_archived, cover_image }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
+      if (!hasTripPermission('trip_edit', tripId, userId)) return permissionDenied();
       if (start_date) {
         const d = new Date(start_date + 'T00:00:00Z');
         if (isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== start_date)
@@ -94,7 +97,7 @@ export function registerTripTools(server: McpServer, userId: number, scopes: str
         if (isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== end_date)
           return { content: [{ type: 'text' as const, text: 'end_date is not a valid calendar date.' }], isError: true };
       }
-      const { updatedTrip } = updateTrip(tripId, userId, { title, description, start_date, end_date, currency }, 'user');
+      const { updatedTrip } = updateTrip(tripId, userId, { title, description, start_date, end_date, currency, is_archived, cover_image }, 'user');
       safeBroadcast(tripId, 'trip:updated', { trip: updatedTrip });
       return ok({ trip: updatedTrip });
     }
@@ -155,7 +158,7 @@ export function registerTripTools(server: McpServer, userId: number, scopes: str
     },
     async ({ tripId }) => {
       if (!canAccessTrip(tripId, userId)) return noAccess();
-      const summary = getTripSummary(tripId);
+      const summary = getTripSummary(tripId, userId);
       if (!summary) return noAccess();
       // Addon availability gates
       const packingEnabled = isAddonEnabled(ADDON_IDS.PACKING);
@@ -178,8 +181,20 @@ export function registerTripTools(server: McpServer, userId: number, scopes: str
         if (collabFeatures?.chat)  messageCount = countMessages(tripId);
       }
       const notice = getDeprecationNotice();
+      // The core bucket (trip metadata, members WITH email, days with place
+      // coordinates, accommodations) carries confidential PII and itinerary data,
+      // so it is gated on trips:read just like the sub-sections below. Without a
+      // read scope the tool still resolves trip id + title so it stays usable for
+      // navigation (list_trips already covers discovery). trek_ PATs (null scopes)
+      // and any trips:read holder keep the full payload — no behaviour change.
       const summaryData = {
-        ...summary,
+        trip:          R                                             ? summary.trip          : { id: summary.trip.id, title: summary.trip.title },
+        members:       R                                             ? summary.members       : undefined,
+        days:          R                                             ? summary.days          : undefined,
+        // Accommodations are "accommodation details" under reservations:read too
+        // (see SCOPE_INFO) and pair with reservations in the share payload, so a
+        // reservations-scoped token keeps them — gate on either read scope.
+        accommodations: (R || canReadRes)                            ? summary.accommodations : undefined,
         reservations:  canReadRes                                    ? summary.reservations : undefined,
         packing:       canReadPacking                                ? summary.packing      : undefined,
         budget:        canReadBudget                                 ? summary.budget       : undefined,
@@ -321,6 +336,8 @@ export function registerTripTools(server: McpServer, userId: number, scopes: str
       annotations: TOOL_ANNOTATIONS_READONLY,
     },
     async ({ tripId }) => {
+      // Read parity with the REST route GET /api/trips/:tripId/share-link, which
+      // only requires trip membership (share_manage gates create/delete, not read).
       if (!canAccessTrip(tripId, userId)) return noAccess();
       const link = getShareLink(String(tripId));
       return ok({ link });
@@ -344,6 +361,7 @@ export function registerTripTools(server: McpServer, userId: number, scopes: str
     async ({ tripId, share_map, share_bookings, share_packing, share_budget, share_collab }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
+      if (!hasTripPermission('share_manage', tripId, userId)) return permissionDenied();
       const { token, created } = createOrUpdateShareLink(String(tripId), userId, {
         share_map: share_map ?? true,
         share_bookings: share_bookings ?? true,
@@ -367,6 +385,7 @@ export function registerTripTools(server: McpServer, userId: number, scopes: str
     async ({ tripId }) => {
       if (isDemoUser(userId)) return demoDenied();
       if (!canAccessTrip(tripId, userId)) return noAccess();
+      if (!hasTripPermission('share_manage', tripId, userId)) return permissionDenied();
       deleteShareLink(String(tripId));
       return ok({ success: true });
     }

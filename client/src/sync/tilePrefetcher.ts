@@ -17,11 +17,18 @@ import { offlineDb, upsertSyncMeta } from '../db/offlineDb'
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-/** Estimated average tile size in KB (road/transit tiles ~15 KB). */
+/** Estimated average tile size in KB (raster basemap tiles ~15 KB). */
 const AVG_TILE_KB = 15
 
-/** Hard cap: ~50 MB worth of tiles. */
-export const MAX_TILES = Math.floor((50 * 1024) / AVG_TILE_KB) // ≈ 3413
+/**
+ * Hard cap on prefetched tiles (~180 MB).
+ *
+ * MUST stay in sync with the Workbox 'map-tiles' `maxEntries` in
+ * client/vite.config.js (kept equal). If this budget exceeds the SW cache size,
+ * the LRU evicts freshly-prefetched tiles on arrival and the offline map goes
+ * blank — which is exactly the bug this value was raised (from ~3413) to fix.
+ */
+export const MAX_TILES = Math.floor((180 * 1024) / AVG_TILE_KB) // = 12288
 
 const DEFAULT_TILE_URL =
   'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
@@ -136,11 +143,16 @@ export async function prefetchTiles(
   tileUrlTemplate: string,
   minZoom = 10,
   maxZoom = 16,
+  awaitAll = false,
 ): Promise<number> {
   if (!navigator.onLine) return 0
   if (!('serviceWorker' in navigator) || !navigator.serviceWorker.controller) return 0
 
   let fetched = 0
+  // When awaitAll is set (the "prepare for offline" path), we wait for every tile
+  // request to settle so the caller's progress bar only completes once the tiles
+  // are actually downloaded into the SW cache — not merely dispatched.
+  const inflight: Promise<unknown>[] = []
 
   for (let z = minZoom; z <= maxZoom; z++) {
     const minX = lngToTileX(bbox.minLng, z)
@@ -154,14 +166,30 @@ export async function prefetchTiles(
     for (let x = minX; x <= maxX; x++) {
       for (let y = minY; y <= maxY; y++) {
         const url = buildTileUrl(tileUrlTemplate, z, x, y)
-        // Fire-and-forget: SW CacheFirst handler stores the response
-        fetch(url, { mode: 'no-cors' }).catch(() => {})
+        // SW CacheFirst handler stores the response. Fire-and-forget unless the
+        // caller asked to await completion.
+        const p = fetch(url, { mode: 'no-cors' }).catch(() => {})
+        if (awaitAll) inflight.push(p)
         fetched++
       }
     }
   }
 
+  if (awaitAll && inflight.length) await Promise.allSettled(inflight)
   return fetched
+}
+
+/**
+ * Drop the pre-downloaded map-tile cache. Called when the user turns off
+ * "store map tiles offline" (#1135 ask 2) so the bulk tile storage — the real
+ * "whole world map" concern — is reclaimed immediately.
+ */
+export async function clearTileCache(): Promise<void> {
+  try {
+    if (typeof caches !== 'undefined') await caches.delete('map-tiles')
+  } catch {
+    /* Cache Storage unavailable (no SW / private mode) — nothing to clear */
+  }
 }
 
 /**
@@ -172,21 +200,23 @@ export async function prefetchTilesForTrip(
   tripId: number,
   places: Place[],
   tileUrlTemplate?: string,
+  awaitAll = false,
 ): Promise<void> {
   const template = tileUrlTemplate || DEFAULT_TILE_URL
   const bbox = computeBbox(places)
   if (!bbox) return
 
-  // Size guard: if total tile count across all zooms exceeds cap, skip
-  const estimated = countTiles(bbox, 10, 16)
-  if (estimated > MAX_TILES) {
-    console.warn(
-      `[tilePrefetch] trip ${tripId}: estimated ${estimated} tiles exceeds cap (${MAX_TILES}), skipping`,
-    )
-    return
-  }
-
-  const fetched = await prefetchTiles(bbox, template)
+  // Zoom-clamp rather than skip: prefetchTiles fills zooms low→high and stops
+  // once MAX_TILES is reached, so large (region / road-trip) bboxes still get
+  // their lower zooms cached instead of being skipped entirely.
+  //
+  // NOTE: opaque (no-cors) tile responses are padded by Chromium to ~7 MB each
+  // for quota accounting, so the real on-disk budget is far below 180 MB. We
+  // keep no-cors deliberately: switching to cors would break self-hosted/custom
+  // tile providers that don't send CORS headers. To stop the browser evicting
+  // these tiles under the inflated quota, we request persistent storage at app
+  // init instead (sync/persistentStorage.ts).
+  const fetched = await prefetchTiles(bbox, template, 10, 16, awaitAll)
 
   // Update syncMeta with bbox and tile count
   const meta = await offlineDb.syncMeta.get(tripId)
