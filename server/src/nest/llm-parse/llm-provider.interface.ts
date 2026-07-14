@@ -15,8 +15,16 @@ export interface LlmExtractionInput {
   apiKey?: string;
   /** Pre-extracted text (text-like files, or text-only-model mode). */
   text?: string;
-  /** Native binary (PDF) for multimodal providers. */
+  /** Native binary (PDF or image) for multimodal providers. */
   file?: LlmExtractionFile;
+  /**
+   * Generic-task overrides (receipt scanning etc.). Default to the original
+   * travel-reservation behaviour when absent, so booking import is unchanged.
+   */
+  /** Key of the array in the model's JSON output (default 'reservations'). */
+  resultKey?: string;
+  /** The user-turn instruction accompanying the document. */
+  userText?: string;
 }
 
 /**

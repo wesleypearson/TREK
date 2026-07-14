@@ -23,12 +23,18 @@ export class BudgetService {
     return checkPermission('budget_edit', user.role, trip.user_id, user.id, trip.user_id !== user.id);
   }
 
-  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined): void {
-    broadcast(tripId, event, payload, socketId);
+  broadcast(tripId: string, event: string, payload: Record<string, unknown>, socketId: string | undefined, onlyUserId?: number): void {
+    // Keep the legacy 4-arg call shape when no user scoping applies.
+    if (onlyUserId != null) broadcast(tripId, event, payload, socketId, onlyUserId);
+    else broadcast(tripId, event, payload, socketId);
   }
 
-  list(tripId: string) {
-    return svc.listBudgetItems(tripId);
+  list(tripId: string, viewerId?: number) {
+    return svc.listBudgetItems(tripId, viewerId);
+  }
+
+  getItem(id: string, tripId: string, viewerId?: number) {
+    return svc.getBudgetItem(id, tripId, viewerId);
   }
 
   perPersonSummary(tripId: string) {
@@ -41,18 +47,18 @@ export class BudgetService {
     return svc.calculateSettlement(tripId, { base: effectiveBase, rates, tripCurrency });
   }
 
-  async create(tripId: string, data: Parameters<typeof svc.createBudgetItem>[1]) {
+  async create(tripId: string, data: Parameters<typeof svc.createBudgetItem>[1], createdBy?: number) {
     await svc.freezeForeignRate(tripId, data);
-    return svc.createBudgetItem(tripId, data);
+    return svc.createBudgetItem(tripId, data, createdBy);
   }
 
-  async update(id: string, tripId: string, data: Parameters<typeof svc.updateBudgetItem>[2]) {
+  async update(id: string, tripId: string, data: Parameters<typeof svc.updateBudgetItem>[2], actingUserId?: number) {
     await svc.freezeForeignRate(tripId, data, id);
-    return svc.updateBudgetItem(id, tripId, data);
+    return svc.updateBudgetItem(id, tripId, data, actingUserId);
   }
 
-  remove(id: string, tripId: string): boolean {
-    return svc.deleteBudgetItem(id, tripId);
+  remove(id: string, tripId: string, viewerId?: number): boolean {
+    return svc.deleteBudgetItem(id, tripId, viewerId);
   }
 
   updateMembers(id: string, tripId: string, userIds: number[]) {

@@ -20,14 +20,16 @@ export class AnthropicClient implements LlmExtractionClient {
 
     const content: unknown[] = [];
     if (input.file) {
+      // Images use the image block type; PDFs (and anything else) the document type.
       content.push({
-        type: 'document',
+        type: input.file.mimeType.startsWith('image/') ? 'image' : 'document',
         source: { type: 'base64', media_type: input.file.mimeType, data: input.file.data.toString('base64') },
       });
     }
+    const userText = input.userText ?? USER_TEXT;
     content.push({
       type: 'text',
-      text: input.text ? `${USER_TEXT}\n\n${input.text}` : USER_TEXT,
+      text: input.text ? `${userText}\n\n${input.text}` : userText,
     });
 
     const body = {
@@ -72,7 +74,7 @@ export class AnthropicClient implements LlmExtractionClient {
 
     const data = (await res.json()) as {
       stop_reason?: string;
-      content?: { type: string; name?: string; input?: { reservations?: unknown } }[];
+      content?: { type: string; name?: string; input?: Record<string, unknown> }[];
     };
 
     if (data.stop_reason === 'refusal') {
@@ -80,8 +82,9 @@ export class AnthropicClient implements LlmExtractionClient {
     }
 
     const toolUse = data.content?.find(b => b.type === 'tool_use' && b.name === TOOL_NAME);
-    const reservations = toolUse?.input?.reservations;
-    return Array.isArray(reservations) ? (reservations as Record<string, unknown>[]) : [];
+    const resultKey = input.resultKey ?? 'reservations';
+    const items = (toolUse?.input as Record<string, unknown> | undefined)?.[resultKey];
+    return Array.isArray(items) ? (items as Record<string, unknown>[]) : [];
   }
 }
 

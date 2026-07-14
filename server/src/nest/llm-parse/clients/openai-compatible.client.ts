@@ -27,7 +27,7 @@ export class OpenAiCompatibleClient implements LlmExtractionClient {
 
     const userContent: unknown[] = nuextract
       ? [{ type: 'text', text: buildNuExtractUserText(input.text ?? '') }]
-      : [{ type: 'text', text: input.text ? `${USER_TEXT}\n\n${input.text}` : USER_TEXT }];
+      : [{ type: 'text', text: input.text ? `${input.userText ?? USER_TEXT}\n\n${input.text}` : (input.userText ?? USER_TEXT) }];
     // Only genuine images go natively (as image_url) — OpenAI-compatible servers
     // (notably Ollama) reject `file`/PDF content parts. PDFs reach this client as
     // pre-extracted text (see llm-parse.service.ts), never as bytes.
@@ -58,7 +58,7 @@ export class OpenAiCompatibleClient implements LlmExtractionClient {
         : {
             response_format: {
               type: 'json_schema' as const,
-              json_schema: { name: 'reservations', schema: input.jsonSchema, strict: false },
+              json_schema: { name: input.resultKey ?? 'reservations', schema: input.jsonSchema, strict: false },
             },
           }),
     };
@@ -91,7 +91,7 @@ export class OpenAiCompatibleClient implements LlmExtractionClient {
       choices?: { message?: { content?: string } }[];
     };
     const content = data.choices?.[0]?.message?.content;
-    return nuextract ? parseNuExtract(content) : parseReservations(content);
+    return nuextract ? parseNuExtract(content) : parseResult(content, input.resultKey ?? 'reservations');
   }
 }
 
@@ -113,12 +113,12 @@ function parseNuExtract(content: string | undefined | null): Record<string, unkn
 
 const USER_TEXT = 'Extract every travel reservation from the following document as schema.org JSON-LD.';
 
-/** Tolerant parse: strip code fences, JSON.parse, pull `reservations`. `[]` on failure. */
-function parseReservations(content: string | undefined | null): Record<string, unknown>[] {
+/** Tolerant parse: strip code fences, JSON.parse, pull the result array. `[]` on failure. */
+function parseResult(content: string | undefined | null, resultKey: string): Record<string, unknown>[] {
   const parsed = parseJson(content);
   if (Array.isArray(parsed)) return parsed as Record<string, unknown>[];
-  if (parsed && typeof parsed === 'object' && Array.isArray((parsed as { reservations?: unknown }).reservations)) {
-    return (parsed as { reservations: Record<string, unknown>[] }).reservations;
+  if (parsed && typeof parsed === 'object' && Array.isArray((parsed as Record<string, unknown>)[resultKey])) {
+    return (parsed as Record<string, Record<string, unknown>[]>)[resultKey];
   }
   return [];
 }

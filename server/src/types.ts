@@ -138,6 +138,12 @@ export interface BudgetItem {
   reservation_id?: number | null;
   paid_by_user_id?: number | null;
   expense_date?: string | null;
+  /** Who entered the expense (custom); NULL on legacy rows. */
+  created_by?: number | null;
+  /** 1 = personal expense visible only to created_by; 0 = group expense (custom). */
+  is_private?: number;
+  /** Scanned receipt / tax invoice stored in trip_files (custom). */
+  receipt_file_id?: number | null;
   sort_order: number;
   created_at?: string;
   members?: BudgetItemMember[];

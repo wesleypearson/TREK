@@ -115,6 +115,10 @@ export const budgetItemSchema = z.object({
   reservation_id: z.number().nullable().optional(),
   paid_by_user_id: z.number().nullable().optional(),
   expense_date: z.string().nullable().optional(),
+  // Custom expenses feature: creator + personal flag + scanned receipt link.
+  created_by: z.number().nullable().optional(),
+  is_private: z.number().nullable().optional(),
+  receipt_file_id: z.number().nullable().optional(),
   sort_order: z.number().optional(),
   created_at: z.string().optional(),
   members: z.array(budgetItemMemberSchema).optional(),
