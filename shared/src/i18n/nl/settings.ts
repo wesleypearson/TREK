@@ -494,6 +494,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Bron',
   'settings.pluginActivity.columns.when': 'Wanneer',
   'settings.pluginActivity.columns.status': 'Resultaat',
+  'settings.paymentDetails': 'Betaalgegevens',
+  'settings.paymentDetailsHint': 'Worden getoond op de openbare rekeningen die je deelt, zodat mensen weten hoe ze je kunnen terugbetalen. Alle velden zijn optioneel en alleen zichtbaar voor wie een van je rekeninglinks heeft.',
+  'settings.paymentBank': 'Bankoverschrijving (bijv. BSB + rekeningnummer)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Overige betaalinstructies',
+  'settings.paymentSaved': 'Betaalgegevens opgeslagen',
 };
 
 export default settings;

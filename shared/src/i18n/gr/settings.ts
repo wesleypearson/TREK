@@ -504,6 +504,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Πόρος',
   'settings.pluginActivity.columns.when': 'Πότε',
   'settings.pluginActivity.columns.status': 'Αποτέλεσμα',
+  'settings.paymentDetails': 'Στοιχεία πληρωμής',
+  'settings.paymentDetailsHint': 'Εμφανίζονται στους δημόσιους λογαριασμούς που μοιράζεστε, ώστε να ξέρουν πώς να σας εξοφλήσουν. Όλα τα πεδία είναι προαιρετικά και ορατά μόνο σε όποιον έχει έναν από τους συνδέσμους σας.',
+  'settings.paymentBank': 'Τραπεζικό έμβασμα (π.χ. BSB + αριθμός λογαριασμού)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Άλλες οδηγίες πληρωμής',
+  'settings.paymentSaved': 'Τα στοιχεία πληρωμής αποθηκεύτηκαν',
 };
 
 export default settings;

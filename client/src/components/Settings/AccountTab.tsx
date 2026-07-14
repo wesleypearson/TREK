@@ -9,6 +9,7 @@ import { getApiErrorMessage } from '../../types'
 import type { UserWithOidc } from '../../types'
 import Section from './Section'
 import PasskeysSection from './PasskeysSection'
+import PaymentDetailsSection from './PaymentDetailsSection'
 
 const MFA_BACKUP_SESSION_KEY = 'trek_mfa_backup_codes_pending'
 
@@ -500,6 +501,9 @@ export default function AccountTab(): React.ReactElement {
           </button>
         </div>
       </Section>
+
+      {/* Payment details for public expense tabs (custom) */}
+      <PaymentDetailsSection />
 
       {/* Delete Account Blocked */}
       {showDeleteConfirm === 'blocked' && (

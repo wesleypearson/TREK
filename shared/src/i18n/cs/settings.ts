@@ -486,6 +486,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Zdroj',
   'settings.pluginActivity.columns.when': 'Kdy',
   'settings.pluginActivity.columns.status': 'Výsledek',
+  'settings.paymentDetails': 'Platební údaje',
+  'settings.paymentDetailsHint': 'Zobrazují se na veřejných účtech, které sdílíte, aby lidé věděli, jak vám peníze vrátit. Všechna pole jsou volitelná a vidí je jen ten, kdo má některý z vašich odkazů.',
+  'settings.paymentBank': 'Bankovní převod (např. BSB + číslo účtu)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Jiné platební pokyny',
+  'settings.paymentSaved': 'Platební údaje uloženy',
 };
 
 export default settings;

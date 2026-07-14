@@ -495,6 +495,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Tài nguyên',
   'settings.pluginActivity.columns.when': 'Thời điểm',
   'settings.pluginActivity.columns.status': 'Kết quả',
+  'settings.paymentDetails': 'Thông tin thanh toán',
+  'settings.paymentDetailsHint': 'Hiển thị trên các sổ nợ công khai mà bạn chia sẻ, để mọi người biết cách trả tiền lại cho bạn. Tất cả các trường đều không bắt buộc và chỉ người có một trong các liên kết sổ nợ của bạn mới thấy.',
+  'settings.paymentBank': 'Chuyển khoản ngân hàng (vd: BSB + số tài khoản)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Hướng dẫn thanh toán khác',
+  'settings.paymentSaved': 'Đã lưu thông tin thanh toán',
 };
 
 export default settings;

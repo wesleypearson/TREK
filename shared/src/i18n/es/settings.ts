@@ -494,6 +494,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Recurso',
   'settings.pluginActivity.columns.when': 'Cuándo',
   'settings.pluginActivity.columns.status': 'Resultado',
+  'settings.paymentDetails': 'Datos de pago',
+  'settings.paymentDetailsHint': 'Se muestran en las cuentas públicas que compartes, para que sepan cómo devolverte el dinero. Todos los campos son opcionales y solo los ve quien tenga uno de tus enlaces de cuenta.',
+  'settings.paymentBank': 'Transferencia bancaria (p. ej. BSB + número de cuenta)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Otras instrucciones de pago',
+  'settings.paymentSaved': 'Datos de pago guardados',
 };
 
 export default settings;

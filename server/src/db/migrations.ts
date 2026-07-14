@@ -3679,6 +3679,58 @@ function runMigrations(db: Database.Database): void {
       }
       db.exec('CREATE INDEX IF NOT EXISTS idx_budget_items_created_by ON budget_items (created_by)');
     },
+
+    // Public expense tabs (custom): a per-person running balance the owner can
+    // share as an unguessable public link — no Travla account needed to view.
+    // Items freeze the label/amount at share time so the tab survives later
+    // budget edits; payments the owner records reduce the balance; the visitor
+    // may claim their first/last name once; join_token links an invite_tokens
+    // row (trip-bound) so the person can register and join from the tab page.
+    () => {
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS expense_tabs (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          trip_id INTEGER NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+          owner_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          token TEXT NOT NULL UNIQUE,
+          first_name TEXT NOT NULL,
+          last_name TEXT NOT NULL DEFAULT '',
+          claimed_first_name TEXT,
+          claimed_last_name TEXT,
+          claimed_at TEXT,
+          join_token TEXT,
+          currency TEXT,
+          revoked_at TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS expense_tab_items (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          tab_id INTEGER NOT NULL REFERENCES expense_tabs(id) ON DELETE CASCADE,
+          budget_item_id INTEGER REFERENCES budget_items(id) ON DELETE SET NULL,
+          label TEXT NOT NULL,
+          amount REAL NOT NULL,
+          currency TEXT,
+          expense_date TEXT,
+          share_receipt INTEGER NOT NULL DEFAULT 0,
+          receipt_file_id INTEGER REFERENCES trip_files(id) ON DELETE SET NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS expense_tab_payments (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          tab_id INTEGER NOT NULL REFERENCES expense_tabs(id) ON DELETE CASCADE,
+          amount REAL NOT NULL,
+          note TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      db.exec('CREATE INDEX IF NOT EXISTS idx_expense_tabs_trip ON expense_tabs (trip_id)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_expense_tab_items_tab ON expense_tab_items (tab_id)');
+      db.exec('CREATE INDEX IF NOT EXISTS idx_expense_tab_payments_tab ON expense_tab_payments (tab_id)');
+    },
   ];
 
   if (currentVersion < migrations.length) {

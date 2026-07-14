@@ -493,6 +493,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Zasób',
   'settings.pluginActivity.columns.when': 'Kiedy',
   'settings.pluginActivity.columns.status': 'Wynik',
+  'settings.paymentDetails': 'Dane do płatności',
+  'settings.paymentDetailsHint': 'Wyświetlane na publicznych rachunkach, które udostępniasz — dzięki temu wiadomo, jak oddać ci pieniądze. Wszystkie pola są opcjonalne i widoczne tylko dla osób z jednym z twoich linków.',
+  'settings.paymentBank': 'Przelew bankowy (np. BSB + numer konta)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Inne instrukcje płatności',
+  'settings.paymentSaved': 'Dane do płatności zapisane',
 };
 
 export default settings;

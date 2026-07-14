@@ -490,6 +490,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Kaynak',
   'settings.pluginActivity.columns.when': 'Ne zaman',
   'settings.pluginActivity.columns.status': 'Sonuç',
+  'settings.paymentDetails': 'Ödeme bilgileri',
+  'settings.paymentDetailsHint': 'Paylaştığınız herkese açık masraf hesaplarında gösterilir; böylece insanlar borcunu nasıl ödeyeceğini bilir. Tüm alanlar isteğe bağlıdır ve yalnızca hesap bağlantılarınızdan birine sahip kişiler görebilir.',
+  'settings.paymentBank': 'Banka havalesi (örn. BSB + hesap numarası)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Diğer ödeme talimatları',
+  'settings.paymentSaved': 'Ödeme bilgileri kaydedildi',
 };
 
 export default settings;

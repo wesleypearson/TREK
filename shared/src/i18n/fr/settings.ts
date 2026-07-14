@@ -501,6 +501,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Ressource',
   'settings.pluginActivity.columns.when': 'Quand',
   'settings.pluginActivity.columns.status': 'Résultat',
+  'settings.paymentDetails': 'Informations de paiement',
+  'settings.paymentDetailsHint': "Affichées sur les ardoises publiques que vous partagez, pour que l'on sache comment vous rembourser. Tous les champs sont facultatifs et visibles uniquement avec l'un de vos liens d'ardoise.",
+  'settings.paymentBank': 'Virement bancaire (p. ex. BSB + numéro de compte)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Autres instructions de paiement',
+  'settings.paymentSaved': 'Informations de paiement enregistrées',
 };
 
 export default settings;

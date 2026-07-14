@@ -493,6 +493,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Risorsa',
   'settings.pluginActivity.columns.when': 'Quando',
   'settings.pluginActivity.columns.status': 'Esito',
+  'settings.paymentDetails': 'Dati di pagamento',
+  'settings.paymentDetailsHint': 'Mostrati sui conti pubblici che condividi, così chi ti deve dei soldi sa come ripagarti. Tutti i campi sono facoltativi e visibili solo a chi ha uno dei tuoi link.',
+  'settings.paymentBank': 'Bonifico bancario (es. BSB + numero di conto)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Altre istruzioni di pagamento',
+  'settings.paymentSaved': 'Dati di pagamento salvati',
 };
 
 export default settings;

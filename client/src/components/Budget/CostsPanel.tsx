@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt } from 'lucide-react'
+import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt, Link2 } from 'lucide-react'
 import { useTripStore } from '../../store/tripStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -13,6 +13,7 @@ import { useIsMobile } from '../../hooks/useIsMobile'
 import { formatMoney, currencyDecimals, currencyLocale } from '../../utils/formatters'
 import { openFile } from '../../utils/fileDownload'
 import Modal from '../shared/Modal'
+import ExpenseTabsModal from './ExpenseTabsModal'
 import CustomSelect from '../shared/CustomSelect'
 import { CustomDatePicker } from '../shared/CustomDateTimePicker'
 import { SYMBOLS, currenciesWith, SPLIT_COLORS } from './BudgetPanel.constants'
@@ -212,6 +213,9 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
   const [editing, setEditing] = useState<BudgetItem | null>(null)
   const [editingSettlement, setEditingSettlement] = useState<Settlement | null>(null)
   const [addingPayment, setAddingPayment] = useState(false)
+  // Public expense tabs (custom): false = closed, {} = browse, { item } = charge
+  // that ledger expense to a tab.
+  const [tabsModal, setTabsModal] = useState<false | { item?: BudgetItem }>(false)
 
   const people = tripMembers
   const personById = useCallback((id: number) => people.find(p => p.id === id), [people])
@@ -467,6 +471,11 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         </div>
         {canEdit && (
           <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => setTabsModal({})}
+              className="bg-surface-card border border-edge text-content"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 16px', borderRadius: 12, fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <Link2 size={16} /> {t('costs.tabs')}
+            </button>
             <button onClick={settleAll} disabled={!(settlement?.flows || []).length}
               className="bg-surface-card border border-edge text-content disabled:opacity-40"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 16px', borderRadius: 12, fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -603,6 +612,11 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           onSaved={() => { setEditingSettlement(null); setAddingPayment(false); loadSettlement() }} />
       )}
 
+      {tabsModal !== false && (
+        <ExpenseTabsModal tripId={tripId} base={base} locale={locale} addItemFor={tabsModal.item ?? null}
+          onClose={() => setTabsModal(false)} />
+      )}
+
       <style>{`
         .costs-root {
           --c-bg: #f8fafc; --c-bg2: oklch(0.965 0.01 70);
@@ -723,7 +737,10 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, gap: 8 }}>
             <div className="text-content" style={{ fontSize: 'calc(19px * var(--fs-scale-subtitle, 1))', fontWeight: 700, letterSpacing: '-0.02em', display: 'flex', alignItems: 'baseline', gap: 8 }}>{t('costs.settleUp')} <span className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{(settlement?.flows || []).length}</span></div>
             {canEdit && (
-              <button onClick={() => setAddingPayment(true)} className="text-content-muted bg-surface-card border border-edge" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 9, fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}><Plus size={13} /> {t('costs.addPayment')}</button>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <button onClick={() => setTabsModal({})} className="text-content-muted bg-surface-card border border-edge" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 9, fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}><Link2 size={13} /> {t('costs.tabs')}</button>
+                <button onClick={() => setAddingPayment(true)} className="text-content-muted bg-surface-card border border-edge" style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 9, fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}><Plus size={13} /> {t('costs.addPayment')}</button>
+              </div>
             )}
           </div>
           <SettleFlows />
@@ -849,6 +866,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           {canEdit && (
             <div className="exp-actions" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
               <button title={t('common.edit')} onClick={() => { setEditing(e); setModalOpen(true) }} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer' }}><Pencil size={13} /></button>
+              <button title={t('costs.addToTab')} onClick={() => setTabsModal({ item: e })} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer' }}><Link2 size={13} /></button>
               <button title={t('common.delete')} onClick={() => handleDelete(e.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer', color: '#dc2626' }}><Trash2 size={13} /></button>
             </div>
           )}

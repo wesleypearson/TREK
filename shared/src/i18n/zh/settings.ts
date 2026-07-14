@@ -461,6 +461,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': '资源',
   'settings.pluginActivity.columns.when': '时间',
   'settings.pluginActivity.columns.status': '结果',
+  'settings.paymentDetails': '收款方式',
+  'settings.paymentDetailsHint': '显示在您分享的公开消费账单上，让对方知道如何还钱给您。所有字段均为可选，只有拿到您账单链接的人才能看到。',
+  'settings.paymentBank': '银行转账（如 BSB + 账号）',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': '其他付款说明',
+  'settings.paymentSaved': '收款方式已保存',
 };
 
 export default settings;

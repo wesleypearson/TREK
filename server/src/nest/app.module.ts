@@ -31,6 +31,7 @@ import { JourneyModule } from './journey/journey.module';
 import { CollectionsModule } from './collections/collections.module';
 import { ShareModule } from './share/share.module';
 import { TripInviteModule } from './trip-invite/trip-invite.module';
+import { ExpenseTabsModule } from './expense-tabs/expense-tabs.module';
 import { TransitModule } from './transit/transit.module';
 import { FeedsModule } from './feeds/feeds.module';
 import { SettingsModule } from './settings/settings.module';
@@ -52,7 +53,7 @@ import { IdempotencyInterceptor } from './common/idempotency.interceptor';
  * migrated.
  */
 @Module({
-  imports: [DatabaseModule, WeatherModule, HelpModule, AirportsModule, ConfigModule, SystemNoticesModule, MapsModule, CategoriesModule, TagsModule, NotificationsModule, AtlasModule, VacayModule, PackingModule, TodoModule, BudgetModule, ReservationsModule, DaysModule, AssignmentsModule, PlacesModule, TripsModule, CollabModule, FilesModule, PhotosModule, MemoriesModule, AirtrailModule, JourneyModule, CollectionsModule, ShareModule, TripInviteModule, TransitModule, FeedsModule, SettingsModule, BackupModule, AuthModule, OidcModule, OauthModule, AdminModule, AddonsModule, PluginsModule, BookingImportModule],
+  imports: [DatabaseModule, WeatherModule, HelpModule, AirportsModule, ConfigModule, SystemNoticesModule, MapsModule, CategoriesModule, TagsModule, NotificationsModule, AtlasModule, VacayModule, PackingModule, TodoModule, BudgetModule, ReservationsModule, DaysModule, AssignmentsModule, PlacesModule, TripsModule, CollabModule, FilesModule, PhotosModule, MemoriesModule, AirtrailModule, JourneyModule, CollectionsModule, ShareModule, TripInviteModule, ExpenseTabsModule, TransitModule, FeedsModule, SettingsModule, BackupModule, AuthModule, OidcModule, OauthModule, AdminModule, AddonsModule, PluginsModule, BookingImportModule],
   controllers: [HealthController],
   providers: [
     HealthService,
