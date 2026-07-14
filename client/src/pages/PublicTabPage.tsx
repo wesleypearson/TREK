@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { Copy, Check, Receipt, Landmark, Smartphone, Wallet, HandCoins, UserPlus, ArrowDownRight, ArrowUpRight } from 'lucide-react'
 import { useTranslation } from '../i18n'
 import { publicTabApi, type PublicTabData } from '../api/client'
 import { formatMoney } from '../utils/formatters'
+import { usePublicTab } from './publicTab/usePublicTab'
 
 /**
  * /public/tab/:token — the hosted repayment page (custom expense tabs).
@@ -13,7 +12,8 @@ import { formatMoney } from '../utils/formatters'
  * owner's payment methods — no Travla account needed. First visit asks for the
  * visitor's name (one-time, stored against the tab) and offers a one-use join
  * link to register into the trip. Styled like SharedTripPage: fixed light
- * palette, no session, no stores.
+ * palette, no session, no stores. Page = wiring container: all state lives
+ * in usePublicTab().
  */
 
 const PAYMENT_META: { key: keyof PublicTabData['payment_methods']; labelKey: string; Icon: typeof Landmark }[] = [
@@ -24,45 +24,10 @@ const PAYMENT_META: { key: keyof PublicTabData['payment_methods']; labelKey: str
 ]
 
 export default function PublicTabPage() {
-  const { token } = useParams<{ token: string }>()
   const { t, locale } = useTranslation()
-  const [data, setData] = useState<PublicTabData | null>(null)
-  const [error, setError] = useState(false)
-  const [copied, setCopied] = useState<string | null>(null)
-  const [firstName, setFirstName] = useState('')
-  const [lastName, setLastName] = useState('')
-  const [claiming, setClaiming] = useState(false)
-  const [claimError, setClaimError] = useState(false)
-
-  useEffect(() => {
-    if (!token) return
-    publicTabApi.get(token).then(setData).catch(() => setError(true))
-  }, [token])
+  const { token, data, error, copied, firstName, setFirstName, lastName, setLastName, claiming, claimError, copy, submitClaim } = usePublicTab()
 
   const fmt = (v: number) => formatMoney(v, data?.currency || 'AUD', locale)
-
-  const copy = async (key: string, value: string) => {
-    try {
-      await navigator.clipboard.writeText(value)
-      setCopied(key)
-      setTimeout(() => setCopied(c => (c === key ? null : c)), 1600)
-    } catch { /* clipboard unavailable (http / old browser) — the text stays selectable */ }
-  }
-
-  const submitClaim = async () => {
-    if (!token || !firstName.trim() || !lastName.trim()) return
-    setClaiming(true)
-    setClaimError(false)
-    try {
-      await publicTabApi.claim(token, firstName.trim(), lastName.trim())
-      const fresh = await publicTabApi.get(token)
-      setData(fresh)
-    } catch {
-      setClaimError(true)
-    } finally {
-      setClaiming(false)
-    }
-  }
 
   if (error) return (
     <div className="bg-[#f3f4f6]" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
