@@ -838,6 +838,74 @@ export const budgetApi = {
   scanReceipt: (tripId: number | string, formData: FormData) => postMultipart(`/trips/${tripId}/budget/receipt-scan`, formData),
 }
 
+// Public expense tabs (custom): per-person running balances shared as a public
+// link. Owner side is trip-scoped; the /public/tabs endpoints need no session.
+export interface ExpenseTabItem {
+  id: number
+  tab_id: number
+  budget_item_id?: number | null
+  label: string
+  amount: number
+  currency?: string | null
+  expense_date?: string | null
+  share_receipt: number
+  receipt_file_id?: number | null
+  created_at?: string
+}
+export interface ExpenseTabPayment { id: number; tab_id: number; amount: number; note: string | null; created_at: string }
+export interface ExpenseTab {
+  id: number
+  trip_id: number
+  token: string
+  first_name: string
+  last_name: string
+  claimed_first_name?: string | null
+  claimed_last_name?: string | null
+  claimed_at?: string | null
+  join_token?: string | null
+  currency?: string | null
+  revoked_at?: string | null
+  created_at?: string
+  charged: number
+  paid: number
+  balance: number
+  items: ExpenseTabItem[]
+  payments: ExpenseTabPayment[]
+}
+export interface PublicTabData {
+  owner_name: string
+  trip_title: string
+  currency: string
+  first_name: string
+  last_name: string
+  claimed: boolean
+  payment_methods: Partial<Record<'payment_bank' | 'payment_payid' | 'payment_venmo' | 'payment_other', string>>
+  items: { id: number; label: string; amount: number; currency?: string | null; expense_date?: string | null; created_at?: string; has_receipt: boolean }[]
+  payments: { id: number; amount: number; note: string | null; created_at: string }[]
+  charged: number
+  paid: number
+  balance: number
+  join_url: string | null
+}
+
+export const expenseTabsApi = {
+  list: (tripId: number | string): Promise<{ tabs: ExpenseTab[] }> => apiClient.get(`/trips/${tripId}/expense-tabs`).then(r => r.data),
+  create: (tripId: number | string, data: { first_name: string; last_name?: string; currency?: string | null }): Promise<{ tab: ExpenseTab }> => apiClient.post(`/trips/${tripId}/expense-tabs`, data).then(r => r.data),
+  addItem: (tripId: number | string, tabId: number, data: { budget_item_id?: number | null; label?: string; amount: number; share_receipt?: boolean }): Promise<{ item: ExpenseTabItem }> => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/items`, data).then(r => r.data),
+  removeItem: (tripId: number | string, tabId: number, itemId: number) => apiClient.delete(`/trips/${tripId}/expense-tabs/${tabId}/items/${itemId}`).then(r => r.data),
+  addPayment: (tripId: number | string, tabId: number, data: { amount: number; note?: string | null }): Promise<{ payment: ExpenseTabPayment }> => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/payments`, data).then(r => r.data),
+  removePayment: (tripId: number | string, tabId: number, paymentId: number) => apiClient.delete(`/trips/${tripId}/expense-tabs/${tabId}/payments/${paymentId}`).then(r => r.data),
+  setRevoked: (tripId: number | string, tabId: number, revoked: boolean) => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/revoke`, { revoked }).then(r => r.data),
+  delete: (tripId: number | string, tabId: number) => apiClient.delete(`/trips/${tripId}/expense-tabs/${tabId}`).then(r => r.data),
+  csvUrl: (tripId: number | string, tabId: number) => `/api/trips/${tripId}/expense-tabs/${tabId}/export.csv`,
+}
+
+export const publicTabApi = {
+  get: (token: string): Promise<PublicTabData> => apiClient.get(`/public/tabs/${token}`).then(r => r.data),
+  claim: (token: string, firstName: string, lastName: string) => apiClient.post(`/public/tabs/${token}/claim`, { first_name: firstName, last_name: lastName }).then(r => r.data),
+  receiptUrl: (token: string, itemId: number) => `/api/public/tabs/${token}/items/${itemId}/receipt`,
+}
+
 export const filesApi = {
   list: (tripId: number | string, trash?: boolean) => apiClient.get(`/trips/${tripId}/files`, { params: trash ? { trash: 'true' } : {} }).then(r => r.data),
   upload: (tripId: number | string, formData: FormData, opts?: UploadOptions) => postMultipart(`/trips/${tripId}/files`, formData, opts),

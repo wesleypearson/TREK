@@ -494,6 +494,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Erőforrás',
   'settings.pluginActivity.columns.when': 'Mikor',
   'settings.pluginActivity.columns.status': 'Eredmény',
+  'settings.paymentDetails': 'Fizetési adatok',
+  'settings.paymentDetailsHint': 'A megosztott nyilvános számláidon jelennek meg, hogy tudják, hogyan fizethetnek vissza neked. Minden mező opcionális, és csak az láthatja, akinek megvan az egyik számlalinked.',
+  'settings.paymentBank': 'Banki átutalás (pl. BSB + számlaszám)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Egyéb fizetési útmutató',
+  'settings.paymentSaved': 'Fizetési adatok mentve',
 };
 
 export default settings;

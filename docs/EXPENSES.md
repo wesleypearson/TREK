@@ -1,8 +1,9 @@
-# Expenses — group/personal splitting and receipt scanning (Travla custom)
+# Expenses — group/personal splitting, receipt scanning, public tabs (Travla custom)
 
-Travla extends TREK's budget ledger with three things: personal expenses,
-scanned receipts, and AI line-item extraction. Everything else (multi-payer,
-equal/custom splits, settlement, "who owes whom" flows) is stock TREK.
+Travla extends TREK's budget ledger with four things: personal expenses,
+scanned receipts, AI line-item extraction, and public expense tabs. Everything
+else (multi-payer, equal/custom splits, settlement, "who owes whom" flows) is
+stock TREK.
 
 ## Group vs personal expenses
 
@@ -47,6 +48,42 @@ photographed receipt stays attached either way.
 > companion app (or a Shortcut posting to `/api/trips/:id/budget/receipt-scan`
 > with a bearer token).
 
+## Public expense tabs ("send them a link")
+
+A **tab** is a per-person running balance you share as an unguessable public
+link — for anyone who owes you money, whether or not they're on the trip or
+have a Travla account. Costs → **Tabs** creates one per person (first/last
+name); every ledger expense row has an **Add to tab** action that charges an
+amount (defaults to the expense total, editable to their share) onto the tab.
+The label, amount, date and currency are **frozen at share time**, so editing
+or deleting the original expense never rewrites what the other person saw.
+Unpaid charges simply accumulate: share again next week and the same link
+shows the new total.
+
+The public page (`/public/tab/<token>`) needs no login and shows:
+
+- the balance owing plus every charge and payment,
+- your **payment details** from Settings → Account → Payment details
+  (bank transfer, PayID, Venmo, other — only filled-in fields appear),
+- the **original receipt** for a charge, but only when you ticked "share the
+  receipt" for that specific charge (images/PDFs render inline; anything else
+  is forced to download),
+- a one-time **name confirmation** ("basic first and last name") stored on the
+  tab so you can see who opened it,
+- a one-use **join link** that registers an account bound to this trip
+  (disappears once used).
+
+When money arrives you **record a payment** on the tab (balance = charges −
+payments); the link keeps working until you pause (revocable, reversible) or
+delete the tab. Every route is rate-limited per IP and an invalid, paused or
+deleted token answers 404.
+
+**Accounting export**: each tab exports a CSV (Date/Type/Description/Amount/
+Currency with a balance row) and the owner-side JSON endpoints below are a
+stable shape for feeding AU accounting tools (Xero/MYOB CSV import works
+as-is; direct OAuth integrations would need app credentials registered with
+those providers).
+
 ## API summary
 
 - `POST /api/trips/:tripId/budget/receipt-scan` — multipart `file`; 200 →
@@ -56,3 +93,14 @@ photographed receipt stays attached either way.
 - `POST/PUT /api/trips/:tripId/budget[/:id]` — accepts `is_private: boolean`
   and `receipt_file_id: number|null`; non-creator `is_private` changes are
   ignored.
+- `GET/POST /api/trips/:tripId/expense-tabs` — list/create tabs (create body:
+  `{ first_name, last_name?, currency? }`). Tabs are strictly per-owner.
+- `POST /:id/items` `{ budget_item_id?, label?, amount, share_receipt? }`,
+  `DELETE /:id/items/:itemId`, `POST /:id/payments` `{ amount, note? }`,
+  `DELETE /:id/payments/:paymentId`, `POST /:id/revoke` `{ revoked }`,
+  `DELETE /:id`, `GET /:id/export.csv`.
+- Public, unauthenticated: `GET /api/public/tabs/:token`,
+  `POST /api/public/tabs/:token/claim` `{ first_name, last_name }`,
+  `GET /api/public/tabs/:token/items/:itemId/receipt`.
+- Payment details live in user settings keys `payment_bank`, `payment_payid`,
+  `payment_venmo`, `payment_other`.

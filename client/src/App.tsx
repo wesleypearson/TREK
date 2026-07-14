@@ -22,6 +22,7 @@ import JourneyDetailPage from './pages/JourneyDetailPage'
 import CollectionsPage from './pages/CollectionsPage'
 import JourneyPublicPage from './pages/JourneyPublicPage'
 import SharedTripPage from './pages/SharedTripPage'
+import PublicTabPage from './pages/PublicTabPage'
 import JoinTripPage from './pages/JoinTripPage'
 import InAppNotificationsPage from './pages/InAppNotificationsPage.tsx'
 import OAuthAuthorizePage from './pages/OAuthAuthorizePage'
@@ -181,7 +182,9 @@ export default function App() {
   }, [])
 
   const location = useLocation()
-  const isSharedPage = location.pathname.startsWith('/shared/')
+  // The public tab page renders the neutral light look like /shared (the journey
+  // public page opts out — it ships its own dark-mode styling).
+  const isSharedPage = location.pathname.startsWith('/shared/') || location.pathname.startsWith('/public/tab/')
 
   useEffect(() => {
     const run = () =>
@@ -217,6 +220,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/shared/:token" element={<SharedTripPage />} />
         <Route path="/public/journey/:token" element={<JourneyPublicPage />} />
+        <Route path="/public/tab/:token" element={<PublicTabPage />} />
         <Route path="/register" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />

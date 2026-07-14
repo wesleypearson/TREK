@@ -496,6 +496,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Ressource',
   'settings.pluginActivity.columns.when': 'Zeitpunkt',
   'settings.pluginActivity.columns.status': 'Ergebnis',
+  'settings.paymentDetails': 'Zahlungsinformationen',
+  'settings.paymentDetailsHint': 'Wird auf den öffentlichen Deckeln angezeigt, die du teilst — so wissen andere, wie sie dir Geld zurückzahlen können. Alle Felder sind optional und nur für Personen mit einem deiner Deckel-Links sichtbar.',
+  'settings.paymentBank': 'Banküberweisung (z. B. BSB + Kontonummer)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Sonstige Zahlungshinweise',
+  'settings.paymentSaved': 'Zahlungsinformationen gespeichert',
 };
 
 export default settings;

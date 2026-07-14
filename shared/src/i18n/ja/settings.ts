@@ -466,6 +466,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'リソース',
   'settings.pluginActivity.columns.when': '日時',
   'settings.pluginActivity.columns.status': '結果',
+  'settings.paymentDetails': '支払い先情報',
+  'settings.paymentDetailsHint': '共有した公開ツケページに表示され、相手があなたへの返済方法を確認できます。すべて任意項目で、あなたのツケのリンクを持つ人にのみ表示されます。',
+  'settings.paymentBank': '銀行振込（例：BSB + 口座番号）',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'その他の支払い方法',
+  'settings.paymentSaved': '支払い先情報を保存しました',
 };
 
 export default settings;

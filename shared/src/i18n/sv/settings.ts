@@ -490,6 +490,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Resurs',
   'settings.pluginActivity.columns.when': 'När',
   'settings.pluginActivity.columns.status': 'Resultat',
+  'settings.paymentDetails': 'Betalningsuppgifter',
+  'settings.paymentDetailsHint': 'Visas på de offentliga notor du delar, så att andra vet hur de kan betala tillbaka. Alla fält är valfria och syns bara för den som har en av dina notalänkar.',
+  'settings.paymentBank': 'Banköverföring (t.ex. BSB + kontonummer)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Övriga betalningsinstruktioner',
+  'settings.paymentSaved': 'Betalningsuppgifter sparade',
 };
 
 export default settings;

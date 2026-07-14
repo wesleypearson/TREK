@@ -492,6 +492,13 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.resource': 'Sumber daya',
   'settings.pluginActivity.columns.when': 'Waktu',
   'settings.pluginActivity.columns.status': 'Hasil',
+  'settings.paymentDetails': 'Detail pembayaran',
+  'settings.paymentDetailsHint': 'Ditampilkan di tagihan publik yang Anda bagikan, agar orang tahu cara membayar Anda kembali. Semua kolom bersifat opsional dan hanya terlihat oleh orang yang memiliki salah satu tautan tagihan Anda.',
+  'settings.paymentBank': 'Transfer bank (mis. BSB + nomor rekening)',
+  'settings.paymentPayid': 'PayID',
+  'settings.paymentVenmo': 'Venmo',
+  'settings.paymentOther': 'Instruksi pembayaran lainnya',
+  'settings.paymentSaved': 'Detail pembayaran disimpan',
 };
 
 export default settings;
