@@ -106,12 +106,12 @@ describe('BudgetService', () => {
   });
 
   it('create / update / remove / members / paid / payers delegate', async () => {
-    await svc().create('5', { name: 'Hotel' } as never);
-    expect(budget.createBudgetItem).toHaveBeenCalledWith('5', { name: 'Hotel' });
-    await svc().update('9', '5', { name: 'X' });
-    expect(budget.updateBudgetItem).toHaveBeenCalledWith('9', '5', { name: 'X' });
-    svc().remove('9', '5');
-    expect(budget.deleteBudgetItem).toHaveBeenCalledWith('9', '5');
+    await svc().create('5', { name: 'Hotel' } as never, 1);
+    expect(budget.createBudgetItem).toHaveBeenCalledWith('5', { name: 'Hotel' }, 1);
+    await svc().update('9', '5', { name: 'X' }, 1);
+    expect(budget.updateBudgetItem).toHaveBeenCalledWith('9', '5', { name: 'X' }, 1);
+    svc().remove('9', '5', 1);
+    expect(budget.deleteBudgetItem).toHaveBeenCalledWith('9', '5', 1);
     svc().updateMembers('9', '5', [2, 3]);
     expect(budget.updateMembers).toHaveBeenCalledWith('9', '5', [2, 3]);
     svc().toggleMemberPaid('9', '5', '2', true);
