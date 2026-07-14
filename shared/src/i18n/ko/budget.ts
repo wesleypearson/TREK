@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': '모든 카테고리',
   'costs.filter.allDays': '모든 날짜',
   'costs.expensesCount': '지출 {count}건',
+  'costs.scanReceipt': '영수증 스캔',
+  'costs.scanningReceipt': '영수증 읽는 중…',
+  'costs.scanFailed': '영수증을 읽을 수 없습니다 — 직접 입력할 수 있습니다.',
+  'costs.personalExpense': '개인 지출 (나만)',
+  'costs.personal': '개인',
+  'costs.viewReceipt': '영수증 보기',
 };
 export default budget;

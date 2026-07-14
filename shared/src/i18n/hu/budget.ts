@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Összes kategória',
   'costs.filter.allDays': 'Összes nap',
   'costs.expensesCount': '{count} kiadás',
+  'costs.scanReceipt': 'Blokk beolvasása',
+  'costs.scanningReceipt': 'Blokk feldolgozása…',
+  'costs.scanFailed': 'Nem sikerült beolvasni a blokkot — kézzel is rögzítheted.',
+  'costs.personalExpense': 'Személyes költség (csak én)',
+  'costs.personal': 'Személyes',
+  'costs.viewReceipt': 'Blokk megtekintése',
 };
 export default budget;

@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download } from 'lucide-react'
+import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt } from 'lucide-react'
 import { useTripStore } from '../../store/tripStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -11,6 +11,7 @@ import { budgetApi } from '../../api/client'
 import { useExchangeRates } from '../../hooks/useExchangeRates'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { formatMoney, currencyDecimals, currencyLocale } from '../../utils/formatters'
+import { openFile } from '../../utils/fileDownload'
 import Modal from '../shared/Modal'
 import CustomSelect from '../shared/CustomSelect'
 import { CustomDatePicker } from '../shared/CustomDateTimePicker'
@@ -81,6 +82,79 @@ export function calculateTicketShares(items: TicketItem[]): { shares: Record<num
   }
 
   return { shares: finalShares, total: totalCents / 100 }
+}
+
+// Receipt photos the scan endpoint shouldn't take as-is: exotic image types the
+// vision model can't ingest (e.g. HEIC from an iPhone camera roll) and oversized
+// photos are re-encoded client-side to a ≤2000px JPEG before upload. Safari
+// decodes HEIC natively (via createImageBitmap or <img>), so the conversion is
+// free there; anywhere decoding fails we fall back to the original file — the
+// server accepts HEIC/PDF too, it just costs more upload bytes.
+const RECEIPT_PASSTHROUGH_TYPES = ['image/jpeg', 'image/png', 'image/webp']
+const RECEIPT_MAX_BYTES = 4 * 1024 * 1024
+const RECEIPT_MAX_EDGE = 2500
+const RECEIPT_TARGET_EDGE = 2000
+
+async function decodeReceiptImage(file: File): Promise<ImageBitmap | HTMLImageElement> {
+  if (typeof createImageBitmap === 'function') {
+    try { return await createImageBitmap(file) } catch { /* fall through to <img> (Safari decodes HEIC there) */ }
+  }
+  return await new Promise<HTMLImageElement>((resolve, reject) => {
+    const url = URL.createObjectURL(file)
+    const img = new Image()
+    // Revoking on load is safe: the image is fully decoded once onload fires.
+    img.onload = () => { URL.revokeObjectURL(url); resolve(img) }
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Image decode failed')) }
+    img.src = url
+  })
+}
+
+export async function prepareReceiptImage(file: File): Promise<File> {
+  if (!file.type.startsWith('image/')) return file
+  const passthroughType = RECEIPT_PASSTHROUGH_TYPES.includes(file.type)
+  const smallEnough = file.size <= RECEIPT_MAX_BYTES
+  // A well-typed small image only needs the dimension check, which requires a
+  // real decoder — keep it as-is where createImageBitmap is missing (jsdom, old
+  // Safari) instead of risking a hang on the <img> path.
+  if (passthroughType && smallEnough && typeof createImageBitmap !== 'function') return file
+  try {
+    const source = await decodeReceiptImage(file)
+    const w = source instanceof HTMLImageElement ? source.naturalWidth : source.width
+    const h = source instanceof HTMLImageElement ? source.naturalHeight : source.height
+    const longEdge = Math.max(w, h)
+    if (!longEdge) return file
+    if (passthroughType && smallEnough && longEdge <= RECEIPT_MAX_EDGE) {
+      if (!(source instanceof HTMLImageElement)) source.close()
+      return file
+    }
+    const scale = Math.min(1, RECEIPT_TARGET_EDGE / longEdge)
+    const canvas = document.createElement('canvas')
+    canvas.width = Math.max(1, Math.round(w * scale))
+    canvas.height = Math.max(1, Math.round(h * scale))
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return file
+    ctx.drawImage(source, 0, 0, canvas.width, canvas.height)
+    if (!(source instanceof HTMLImageElement)) source.close()
+    const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.82))
+    if (!blob) return file
+    return new File([blob], file.name.replace(/\.[^.]+$/, '') + '.jpg', { type: 'image/jpeg' })
+  } catch {
+    return file
+  }
+}
+
+// Shape of a successful POST /budget/receipt-scan response (the 409/502 error
+// bodies carry `error` plus the stored `file` so the receipt stays attachable).
+interface ReceiptScanResponse {
+  file?: { id?: number }
+  receipt?: {
+    merchant?: string | null
+    date?: string | null
+    currency?: string | null
+    total?: number | null
+    items?: { name: string; price: number; quantity?: number | null }[]
+  }
+  warnings?: string[]
 }
 
 interface CostsPanelProps {
@@ -728,6 +802,18 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         <div style={{ minWidth: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 6 }}>
             <span className="text-content" style={{ fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', fontWeight: 600 }}>{e.name}</span>
+            {!!e.is_private && (
+              <span title={t('costs.personal')} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-faint)', flexShrink: 0 }}>
+                <Lock size={11} />
+              </span>
+            )}
+            {e.receipt_file_id != null && (
+              <button type="button" title={t('costs.viewReceipt')}
+                onClick={() => openFile(`/api/trips/${tripId}/files/${e.receipt_file_id}/download`).catch(() => toast.error(t('common.unknownError')))}
+                style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--text-faint)', flexShrink: 0 }}>
+                <Receipt size={11} />
+              </button>
+            )}
             {unfinished && !isMobile && (
               <span title={t('costs.unfinishedHint')} style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '2px 8px 2px 6px', borderRadius: 999, background: 'rgba(217,119,6,0.14)', color: '#d97706', fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 700, flexShrink: 0 }}>
                 <span style={{ width: 14, height: 14, borderRadius: '50%', background: '#d97706', color: '#fff', display: 'grid', placeItems: 'center', fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 800 }}>!</span>
@@ -1037,6 +1123,18 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
 
   const [saving, setSaving] = useState(false)
 
+  // Personal expenses (visible only to their creator, excluded from the group
+  // settlement). Only the creator's is_private change is honored server-side, so
+  // the toggle is hidden when editing someone else's item.
+  const [isPrivate, setIsPrivate] = useState(!!editing?.is_private)
+  const canTogglePrivate = !editing || editing.created_by == null || editing.created_by === me
+
+  // Scanned/attached receipt: kept across edits, set by a successful (or even
+  // failed-but-stored, 409/502) receipt scan.
+  const [receiptFileId, setReceiptFileId] = useState<number | null>(editing?.receipt_file_id ?? null)
+  const [scanning, setScanning] = useState(false)
+  const scanInputRef = useRef<HTMLInputElement>(null)
+
   const isTicketMode = splitMode === 'ticket'
 
   const ticketInfo = useMemo(() => {
@@ -1120,6 +1218,42 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
     }))
   }
 
+  const handleScanPick = async (picked: File) => {
+    setScanning(true)
+    try {
+      const file = await prepareReceiptImage(picked)
+      const fd = new FormData()
+      fd.append('file', file, file.name)
+      const res: ReceiptScanResponse = await budgetApi.scanReceipt(tripId, fd)
+      if (res.file?.id) setReceiptFileId(res.file.id)
+      const receipt = res.receipt
+      if (receipt?.merchant && !name.trim()) setName(receipt.merchant)
+      if (receipt?.date) setDay(receipt.date)
+      if (receipt?.currency) setCurrency(receipt.currency.toUpperCase())
+      const items = receipt?.items || []
+      if (items.length > 0) {
+        setSplitMode('ticket')
+        // Participants start EMPTY on purpose: the payer must explicitly assign
+        // who shared each line — nobody gets billed for lines they didn't have.
+        setTicketItems(items.map(item => ({
+          id: String(Date.now() + Math.random()),
+          name: (item.quantity || 1) > 1 ? `${item.name} x${item.quantity}` : item.name,
+          price: String(item.price),
+          participants: new Set<number>(),
+        })))
+      }
+      for (const w of res.warnings || []) toast.warning(w)
+    } catch (err) {
+      // 409 (no AI / text-only model) and 502 (AI failed) carry a human-readable
+      // error plus the stored file — keep it attached to the manual entry.
+      const resp = (err as { response?: { data?: { error?: string; file?: { id?: number } } } })?.response?.data
+      if (resp?.file?.id) setReceiptFileId(resp.file.id)
+      toast.error(resp?.error || t('costs.scanFailed'))
+    } finally {
+      setScanning(false)
+    }
+  }
+
   const toggleParticipant = (id: number) => {
     const nextParts = new Set(participants)
     if (nextParts.has(id)) {
@@ -1156,6 +1290,8 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
       member_ids: [...participants],
       expense_date: day || null,
       total_price: totalNum,
+      is_private: isPrivate,
+      receipt_file_id: receiptFileId,
       note: splitMode === 'ticket' ? 'TICKETJSON:' + JSON.stringify({
         items: ticketItems.map(item => ({
           name: item.name,
@@ -1188,6 +1324,17 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
         </div>
       }>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div>
+          <button type="button" onClick={() => scanInputRef.current?.click()} disabled={scanning}
+            className="bg-surface-secondary border border-edge text-content-muted"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 10, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: scanning ? 0.7 : 1 }}>
+            {scanning ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />}
+            {scanning ? t('costs.scanningReceipt') : t('costs.scanReceipt')}
+          </button>
+          <input ref={scanInputRef} type="file" accept="image/*,application/pdf" capture="environment"
+            style={{ display: 'none' }}
+            onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleScanPick(f) }} />
+        </div>
         <div>
           <label className={labelCls}>{t('costs.whatFor')}</label>
           <input value={name} onChange={e => setName(e.target.value)} placeholder={t('costs.namePlaceholder')} className={inputCls} style={{ borderRadius: 10, padding: '11px 13px', fontSize: 'calc(14px * var(--fs-scale-body, 1))', outline: 'none' }} />
@@ -1251,6 +1398,14 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
             ]}
             style={{ width: '100%' }} />
         </div>
+
+        {canTogglePrivate && (
+          <label className="text-content" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500, alignSelf: 'flex-start' }}>
+            <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} style={{ cursor: 'pointer' }} />
+            <Lock size={13} className="text-content-faint" />
+            {t('costs.personalExpense')}
+          </label>
+        )}
 
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>

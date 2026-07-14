@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Alle categorieën',
   'costs.filter.allDays': 'Alle dagen',
   'costs.expensesCount': '{count} uitgaven',
+  'costs.scanReceipt': 'Bon scannen',
+  'costs.scanningReceipt': 'Bon wordt gelezen…',
+  'costs.scanFailed': 'Kon de bon niet lezen — je kunt hem nog steeds handmatig invoeren.',
+  'costs.personalExpense': 'Persoonlijke uitgave (alleen ik)',
+  'costs.personal': 'Persoonlijk',
+  'costs.viewReceipt': 'Bon bekijken',
 };
 export default budget;

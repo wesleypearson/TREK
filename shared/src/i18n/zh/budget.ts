@@ -125,5 +125,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': '所有类别',
   'costs.filter.allDays': '所有日期',
   'costs.expensesCount': '{count} 笔支出',
+  'costs.scanReceipt': '扫描小票',
+  'costs.scanningReceipt': '正在读取小票…',
+  'costs.scanFailed': '无法读取小票 — 您仍可手动输入。',
+  'costs.personalExpense': '个人支出（仅自己）',
+  'costs.personal': '个人',
+  'costs.viewReceipt': '查看小票',
 };
 export default budget;

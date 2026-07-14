@@ -3658,6 +3658,27 @@ function runMigrations(db: Database.Database): void {
       }
       db.exec('CREATE INDEX IF NOT EXISTS idx_places_created_by ON places (created_by)');
     },
+
+    // Expenses (custom): personal vs group expenses + scanned receipts.
+    // created_by records who entered the expense; is_private=1 makes it a
+    // PERSONAL expense — visible only to its creator and excluded from the
+    // group settlement / per-person math. receipt_file_id links the scanned
+    // tax invoice / receipt image stored in trip_files (private to the
+    // uploader by default, like any file). Idempotent — migrations after the
+    // #1119 reconciliation (v135) must tolerate a re-run.
+    () => {
+      const columns = db.prepare("PRAGMA table_info('budget_items')").all() as Array<{ name: string }>;
+      if (!columns.some((c) => c.name === 'created_by')) {
+        db.exec('ALTER TABLE budget_items ADD COLUMN created_by INTEGER REFERENCES users(id) ON DELETE SET NULL');
+      }
+      if (!columns.some((c) => c.name === 'is_private')) {
+        db.exec('ALTER TABLE budget_items ADD COLUMN is_private INTEGER NOT NULL DEFAULT 0');
+      }
+      if (!columns.some((c) => c.name === 'receipt_file_id')) {
+        db.exec('ALTER TABLE budget_items ADD COLUMN receipt_file_id INTEGER REFERENCES trip_files(id) ON DELETE SET NULL');
+      }
+      db.exec('CREATE INDEX IF NOT EXISTS idx_budget_items_created_by ON budget_items (created_by)');
+    },
   ];
 
   if (currentVersion < migrations.length) {

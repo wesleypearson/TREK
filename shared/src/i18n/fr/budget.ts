@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Toutes les catégories',
   'costs.filter.allDays': 'Tous les jours',
   'costs.expensesCount': '{count} dépenses',
+  'costs.scanReceipt': 'Scanner le reçu',
+  'costs.scanningReceipt': 'Lecture du reçu…',
+  'costs.scanFailed': 'Impossible de lire le reçu — vous pouvez toujours le saisir manuellement.',
+  'costs.personalExpense': 'Dépense personnelle (moi uniquement)',
+  'costs.personal': 'Personnelle',
+  'costs.viewReceipt': 'Voir le reçu',
 };
 export default budget;

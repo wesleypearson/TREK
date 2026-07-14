@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Alla kategorier',
   'costs.filter.allDays': 'Alla dagar',
   'costs.expensesCount': '{count} utgifter',
+  'costs.scanReceipt': 'Skanna kvitto',
+  'costs.scanningReceipt': 'Läser kvittot…',
+  'costs.scanFailed': 'Kvittot kunde inte läsas — du kan fortfarande ange det manuellt.',
+  'costs.personalExpense': 'Personlig utgift (bara jag)',
+  'costs.personal': 'Personlig',
+  'costs.viewReceipt': 'Visa kvitto',
 };
 export default budget;

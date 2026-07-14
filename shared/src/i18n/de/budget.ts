@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.splitEqually': 'Gleichmäßig',
   'costs.splitCustom': 'Individuell',
   'costs.splitTicket': 'Beleg',
+  'costs.scanReceipt': 'Beleg scannen',
+  'costs.scanningReceipt': 'Beleg wird gelesen…',
+  'costs.scanFailed': 'Beleg konnte nicht gelesen werden — du kannst ihn weiterhin manuell erfassen.',
+  'costs.personalExpense': 'Persönliche Ausgabe (nur ich)',
+  'costs.personal': 'Persönlich',
+  'costs.viewReceipt': 'Beleg anzeigen',
 };
 export default budget;

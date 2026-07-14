@@ -115,6 +115,10 @@ export const budgetItemSchema = z.object({
   reservation_id: z.number().nullable().optional(),
   paid_by_user_id: z.number().nullable().optional(),
   expense_date: z.string().nullable().optional(),
+  // Custom expenses feature: creator + personal flag + scanned receipt link.
+  created_by: z.number().nullable().optional(),
+  is_private: z.number().nullable().optional(),
+  receipt_file_id: z.number().nullable().optional(),
   sort_order: z.number().optional(),
   created_at: z.string().optional(),
   members: z.array(budgetItemMemberSchema).optional(),
@@ -148,6 +152,10 @@ export const budgetCreateItemRequestSchema = z.object({
   days: z.number().nullable().optional(),
   note: z.string().nullable().optional(),
   expense_date: z.string().nullable().optional(),
+  // Custom expenses feature: personal flag + scanned receipt link. Accepts a
+  // boolean (new UI) or the raw 0/1 the item row carries (legacy edit paths).
+  is_private: z.union([z.boolean(), z.number()]).optional(),
+  receipt_file_id: z.number().nullable().optional(),
   // Link this expense to a reservation (e.g. created from a booking's
   // "add expense" flow). The server stores it on budget_items.reservation_id.
   reservation_id: z.number().optional(),
@@ -168,6 +176,10 @@ export const budgetUpdateItemRequestSchema = z.object({
   days: z.number().nullable().optional(),
   note: z.string().nullable().optional(),
   expense_date: z.string().nullable().optional(),
+  // Custom expenses feature: personal flag + scanned receipt link. Accepts a
+  // boolean (new UI) or the raw 0/1 the item row carries (legacy edit paths).
+  is_private: z.union([z.boolean(), z.number()]).optional(),
+  receipt_file_id: z.number().nullable().optional(),
 });
 export type BudgetUpdateItemRequest = z.infer<typeof budgetUpdateItemRequestSchema>;
 

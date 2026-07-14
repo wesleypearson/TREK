@@ -4,15 +4,25 @@ import {
   Delete,
   Get,
   Headers,
+  HttpCode,
   HttpException,
   Param,
   Post,
   Put,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import type { User } from '../../types';
 import { BudgetService } from './budget.service';
+import { ReceiptScanService, ReceiptScanUnavailableError } from './receipt-scan.service';
+
+// Receipt photos/PDFs only; 15 MB covers any phone photo.
+const RECEIPT_UPLOAD = { storage: memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } };
+const RECEIPT_MIMES = /^(image\/(jpeg|png|webp|gif|heic|heif)|application\/pdf)$/;
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 
@@ -29,7 +39,10 @@ import { CurrentUser } from '../auth/current-user.decorator';
 @Controller('api/trips/:tripId/budget')
 @UseGuards(JwtAuthGuard)
 export class BudgetController {
-  constructor(private readonly budget: BudgetService) {}
+  constructor(
+    private readonly budget: BudgetService,
+    private readonly receipts: ReceiptScanService,
+  ) {}
 
   private requireTrip(tripId: string, user: User) {
     const trip = this.budget.verifyTripAccess(tripId, user.id);
@@ -48,7 +61,7 @@ export class BudgetController {
   @Get()
   list(@CurrentUser() user: User, @Param('tripId') tripId: string) {
     this.requireTrip(tripId, user);
-    return { items: this.budget.list(tripId) };
+    return { items: this.budget.list(tripId, user.id) };
   }
 
   @Get('summary/per-person')
@@ -136,11 +149,47 @@ export class BudgetController {
     return { success: true };
   }
 
+  /**
+   * Scan a receipt / tax invoice (custom): stores the upload as the caller's
+   * PRIVATE trip file, then extracts merchant/date/currency/total/line items
+   * via the configured AI. 409 with a human-readable reason when no capable
+   * AI is available — the stored file is still returned so a manual expense
+   * can attach it.
+   */
+  @Post('receipt-scan')
+  @HttpCode(200)
+  @UseInterceptors(FileInterceptor('file', RECEIPT_UPLOAD))
+  async receiptScan(
+    @CurrentUser() user: User,
+    @Param('tripId') tripId: string,
+    @UploadedFile() file: Express.Multer.File | undefined,
+  ) {
+    const trip = this.requireTrip(tripId, user);
+    this.requireEdit(trip, user);
+    if (!file) {
+      throw new HttpException({ error: 'No file uploaded' }, 400);
+    }
+    if (!RECEIPT_MIMES.test(file.mimetype || '')) {
+      throw new HttpException({ error: 'Receipt must be a photo (jpg/png/webp/heic) or a PDF' }, 400);
+    }
+    const stored = this.receipts.storeReceiptFile(tripId, user.id, file);
+    try {
+      const { receipt, warnings } = await this.receipts.parseReceipt(user.id, file);
+      return { file: stored, receipt, warnings };
+    } catch (err) {
+      if (err instanceof ReceiptScanUnavailableError) {
+        throw new HttpException({ error: err.message, file: stored }, 409);
+      }
+      console.error('[receipt-scan] extraction failed:', err instanceof Error ? err.message : err);
+      throw new HttpException({ error: 'The AI could not read this receipt. You can still enter the lines manually.', file: stored }, 502);
+    }
+  }
+
   @Post()
   async create(
     @CurrentUser() user: User,
     @Param('tripId') tripId: string,
-    @Body() body: { name?: string; category?: string; total_price?: number; persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null; reservation_id?: number },
+    @Body() body: { name?: string; category?: string; total_price?: number; persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null; reservation_id?: number; is_private?: boolean; receipt_file_id?: number | null },
     @Headers('x-socket-id') socketId?: string,
   ) {
     const trip = this.requireTrip(tripId, user);
@@ -148,8 +197,9 @@ export class BudgetController {
     if (!body.name) {
       throw new HttpException({ error: 'Name is required' }, 400);
     }
-    const item = await this.budget.create(tripId, body as { name: string });
-    this.budget.broadcast(tripId, 'budget:created', { item }, socketId);
+    const item = await this.budget.create(tripId, body as { name: string }, user.id);
+    // A personal expense (custom) is only its creator's business — scope the event.
+    this.budget.broadcast(tripId, 'budget:created', { item }, socketId, item.is_private ? user.id : undefined);
     return { item };
   }
 
@@ -191,14 +241,29 @@ export class BudgetController {
   ) {
     const trip = this.requireTrip(tripId, user);
     this.requireEdit(trip, user);
-    const updated = await this.budget.update(id, tripId, body);
+    const before = this.budget.getItem(id, tripId, user.id);
+    if (!before) {
+      throw new HttpException({ error: 'Budget item not found' }, 404);
+    }
+    const updated = await this.budget.update(id, tripId, body, user.id);
     if (!updated) {
       throw new HttpException({ error: 'Budget item not found' }, 404);
     }
     if (updated.reservation_id && body.total_price !== undefined) {
       this.budget.syncReservationPrice(tripId, updated.reservation_id, updated.total_price, socketId);
     }
-    this.budget.broadcast(tripId, 'budget:updated', { item: updated }, socketId);
+    const wasPrivate = !!before.is_private;
+    const isPrivate = !!updated.is_private;
+    if (wasPrivate && !isPrivate) {
+      // Now a group expense: the rest of the room learns about it for the first time.
+      this.budget.broadcast(tripId, 'budget:created', { item: updated }, socketId);
+    } else if (!wasPrivate && isPrivate) {
+      // Now personal: everyone else drops it; the creator's other tabs update.
+      this.budget.broadcast(tripId, 'budget:deleted', { itemId: Number(id) }, socketId, undefined);
+      this.budget.broadcast(tripId, 'budget:updated', { item: updated }, socketId, user.id);
+    } else {
+      this.budget.broadcast(tripId, 'budget:updated', { item: updated }, socketId, isPrivate ? user.id : undefined);
+    }
     return { item: updated };
   }
 
@@ -214,6 +279,9 @@ export class BudgetController {
     this.requireEdit(trip, user);
     if (!Array.isArray(userIds)) {
       throw new HttpException({ error: 'user_ids must be an array' }, 400);
+    }
+    if (!this.budget.getItem(id, tripId, user.id)) {
+      throw new HttpException({ error: 'Budget item not found' }, 404);
     }
     const result = this.budget.updateMembers(id, tripId, userIds);
     if (!result) {
@@ -236,6 +304,9 @@ export class BudgetController {
     if (!Array.isArray(payers)) {
       throw new HttpException({ error: 'payers must be an array' }, 400);
     }
+    if (!this.budget.getItem(id, tripId, user.id)) {
+      throw new HttpException({ error: 'Budget item not found' }, 404);
+    }
     const item = this.budget.setPayers(id, tripId, payers as { user_id: number; amount: number }[]);
     if (!item) {
       throw new HttpException({ error: 'Budget item not found' }, 404);
@@ -255,6 +326,9 @@ export class BudgetController {
   ) {
     const trip = this.requireTrip(tripId, user);
     this.requireEdit(trip, user);
+    if (!this.budget.getItem(id, tripId, user.id)) {
+      throw new HttpException({ error: 'Budget item not found' }, 404);
+    }
     const member = this.budget.toggleMemberPaid(id, tripId, userId, paid);
     this.budget.broadcast(tripId, 'budget:member-paid-updated', { itemId: Number(id), userId: Number(userId), paid: paid ? 1 : 0 }, socketId);
     return { member };
@@ -269,10 +343,11 @@ export class BudgetController {
   ) {
     const trip = this.requireTrip(tripId, user);
     this.requireEdit(trip, user);
-    if (!this.budget.remove(id, tripId)) {
+    const before = this.budget.getItem(id, tripId, user.id);
+    if (!before || !this.budget.remove(id, tripId, user.id)) {
       throw new HttpException({ error: 'Budget item not found' }, 404);
     }
-    this.budget.broadcast(tripId, 'budget:deleted', { itemId: Number(id) }, socketId);
+    this.budget.broadcast(tripId, 'budget:deleted', { itemId: Number(id) }, socketId, before.is_private ? user.id : undefined);
     return { success: true };
   }
 }

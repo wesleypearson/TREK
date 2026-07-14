@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Wszystkie kategorie',
   'costs.filter.allDays': 'Wszystkie dni',
   'costs.expensesCount': '{count} wydatków',
+  'costs.scanReceipt': 'Zeskanuj paragon',
+  'costs.scanningReceipt': 'Odczytywanie paragonu…',
+  'costs.scanFailed': 'Nie udało się odczytać paragonu — możesz wprowadzić go ręcznie.',
+  'costs.personalExpense': 'Wydatek osobisty (tylko ja)',
+  'costs.personal': 'Osobisty',
+  'costs.viewReceipt': 'Zobacz paragon',
 };
 export default budget;

@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Все категории',
   'costs.filter.allDays': 'Все дни',
   'costs.expensesCount': 'Расходов: {count}',
+  'costs.scanReceipt': 'Сканировать чек',
+  'costs.scanningReceipt': 'Чтение чека…',
+  'costs.scanFailed': 'Не удалось распознать чек — вы можете ввести его вручную.',
+  'costs.personalExpense': 'Личный расход (только я)',
+  'costs.personal': 'Личный',
+  'costs.viewReceipt': 'Посмотреть чек',
 };
 export default budget;

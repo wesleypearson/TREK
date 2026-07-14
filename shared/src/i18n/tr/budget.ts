@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Tüm kategoriler',
   'costs.filter.allDays': 'Tüm günler',
   'costs.expensesCount': '{count} harcama',
+  'costs.scanReceipt': 'Fiş tara',
+  'costs.scanningReceipt': 'Fiş okunuyor…',
+  'costs.scanFailed': 'Fiş okunamadı — yine de elle girebilirsiniz.',
+  'costs.personalExpense': 'Kişisel harcama (sadece ben)',
+  'costs.personal': 'Kişisel',
+  'costs.viewReceipt': 'Fişi görüntüle',
 };
 export default budget;

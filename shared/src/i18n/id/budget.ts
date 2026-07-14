@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Semua kategori',
   'costs.filter.allDays': 'Semua hari',
   'costs.expensesCount': '{count} pengeluaran',
+  'costs.scanReceipt': 'Pindai struk',
+  'costs.scanningReceipt': 'Membaca struk…',
+  'costs.scanFailed': 'Struk tidak dapat dibaca — Anda tetap bisa memasukkannya secara manual.',
+  'costs.personalExpense': 'Pengeluaran pribadi (hanya saya)',
+  'costs.personal': 'Pribadi',
+  'costs.viewReceipt': 'Lihat struk',
 };
 export default budget;

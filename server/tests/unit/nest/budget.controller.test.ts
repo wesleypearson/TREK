@@ -11,6 +11,10 @@ function makeService(overrides: Partial<BudgetService> = {}): BudgetService {
   return {
     verifyTripAccess: vi.fn().mockReturnValue(trip),
     canEdit: vi.fn().mockReturnValue(true),
+    // Item mutations pre-check visibility (personal expenses 404 for
+    // non-creators); default to a visible group item — mirrors canViewFile
+    // in files.controller.test.ts.
+    getItem: vi.fn().mockReturnValue({ id: 9, is_private: 0, created_by: 1 }),
     broadcast: vi.fn(),
     syncReservationPrice: vi.fn(),
     ...overrides,
@@ -174,7 +178,8 @@ describe('BudgetController (parity with the legacy /api/trips/:tripId/budget rou
       const broadcast = vi.fn();
       const svc = makeService({ create, broadcast } as Partial<BudgetService>);
       expect(await new BudgetController(svc).create(user, '5', { name: 'Hotel', total_price: 200 }, 'sock')).toEqual({ item: { id: 9, name: 'Hotel' } });
-      expect(broadcast).toHaveBeenCalledWith('5', 'budget:created', { item: { id: 9, name: 'Hotel' } }, 'sock');
+      // A group expense broadcasts to the whole trip (no per-user scoping).
+      expect(broadcast).toHaveBeenCalledWith('5', 'budget:created', { item: { id: 9, name: 'Hotel' } }, 'sock', undefined);
     });
   });
 
@@ -193,7 +198,7 @@ describe('BudgetController (parity with the legacy /api/trips/:tripId/budget rou
       const svc = makeService({ update, syncReservationPrice, broadcast } as Partial<BudgetService>);
       await new BudgetController(svc).update(user, '5', '9', { total_price: 250 }, 'sock');
       expect(syncReservationPrice).toHaveBeenCalledWith('5', 42, 250, 'sock');
-      expect(broadcast).toHaveBeenCalledWith('5', 'budget:updated', { item: { id: 9, reservation_id: 42, total_price: 250 } }, 'sock');
+      expect(broadcast).toHaveBeenCalledWith('5', 'budget:updated', { item: { id: 9, reservation_id: 42, total_price: 250 } }, 'sock', undefined);
     });
 
     it('does not sync when the item has no linked reservation', async () => {

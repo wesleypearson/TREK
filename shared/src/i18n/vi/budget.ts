@@ -126,6 +126,12 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Tất cả danh mục',
   'costs.filter.allDays': 'Tất cả các ngày',
   'costs.expensesCount': '{count} chi phí',
+  'costs.scanReceipt': 'Quét hóa đơn',
+  'costs.scanningReceipt': 'Đang đọc hóa đơn…',
+  'costs.scanFailed': 'Không thể đọc hóa đơn — bạn vẫn có thể nhập thủ công.',
+  'costs.personalExpense': 'Chi tiêu cá nhân (chỉ mình tôi)',
+  'costs.personal': 'Cá nhân',
+  'costs.viewReceipt': 'Xem hóa đơn',
 };
 
 export default budget;

@@ -48,13 +48,36 @@ function writeItemPayers(itemId: number | string, payers: { user_id: number; amo
 // CRUD
 // ---------------------------------------------------------------------------
 
-export function listBudgetItems(tripId: string | number) {
+/**
+ * Personal vs group expenses (custom, mirrors files/places visibility): a
+ * PERSONAL expense (is_private=1) is visible only to its creator and never
+ * contributes to the group settlement or per-person math. Legacy rows with no
+ * creator stay group-visible.
+ */
+export const BUDGET_VISIBILITY_SQL = '(bi.is_private = 0 OR bi.created_by IS NULL OR bi.created_by = ?)';
+
+export function canViewBudgetItem(
+  item: { is_private?: number | null; created_by?: number | null },
+  userId: number | null | undefined,
+): boolean {
+  if (!item.is_private) return true;
+  if (item.created_by == null) return true;
+  return userId != null && item.created_by === userId;
+}
+
+export function listBudgetItems(tripId: string | number, viewerId?: number) {
+  let where = 'bi.trip_id = ?';
+  const params: (string | number)[] = [Number(tripId)];
+  if (viewerId != null) {
+    where += ` AND ${BUDGET_VISIBILITY_SQL}`;
+    params.push(viewerId);
+  }
   const items = db.prepare(`
     SELECT bi.* FROM budget_items bi
     LEFT JOIN budget_category_order bco ON bco.trip_id = bi.trip_id AND bco.category = bi.category
-    WHERE bi.trip_id = ?
+    WHERE ${where}
     ORDER BY COALESCE(bco.sort_order, 999999) ASC, bi.sort_order ASC
-  `).all(tripId) as BudgetItem[];
+  `).all(...params) as BudgetItem[];
 
   const itemIds = items.map(i => i.id);
   const membersByItem: Record<number, (BudgetItemMember & { avatar_url: string | null })[]> = {};
@@ -150,7 +173,9 @@ export function createBudgetItem(
     members?: { user_id: number; amount?: number | null }[];
     persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null;
     reservation_id?: number | null;
+    is_private?: boolean | number; receipt_file_id?: number | null;
   },
+  createdBy?: number,
 ) {
   const maxOrder = db.prepare(
     'SELECT MAX(sort_order) as max FROM budget_items WHERE trip_id = ?'
@@ -173,7 +198,7 @@ export function createBudgetItem(
   const total = data.payers && data.payers.length > 0 ? payerTotal : (data.total_price || 0);
 
   const result = db.prepare(
-    'INSERT INTO budget_items (trip_id, category, name, total_price, currency, exchange_rate, persons, days, note, sort_order, expense_date, reservation_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO budget_items (trip_id, category, name, total_price, currency, exchange_rate, persons, days, note, sort_order, expense_date, reservation_id, created_by, is_private, receipt_file_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     tripId,
     cat,
@@ -187,6 +212,10 @@ export function createBudgetItem(
     sortOrder,
     data.expense_date || null,
     data.reservation_id != null ? data.reservation_id : null,
+    createdBy ?? null,
+    // Expenses default to GROUP; is_private=1 marks a personal expense.
+    data.is_private ? 1 : 0,
+    data.receipt_file_id != null ? data.receipt_file_id : null,
   );
 
   const itemId = result.lastInsertRowid as number;
@@ -206,9 +235,11 @@ export function createBudgetItem(
 }
 
 /** Fetch a single budget item hydrated with its members and payers, scoped to the trip. */
-export function getBudgetItem(id: string | number, tripId: string | number): BudgetItem | null {
+export function getBudgetItem(id: string | number, tripId: string | number, viewerId?: number): BudgetItem | null {
   const item = db.prepare('SELECT * FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId) as BudgetItem | undefined;
   if (!item) return null;
+  // Another member's personal expense is indistinguishable from a missing one.
+  if (viewerId != null && !canViewBudgetItem(item, viewerId)) return null;
   item.members = loadItemMembers(id);
   item.payers = loadItemPayers(id);
   return item;
@@ -234,10 +265,14 @@ export function updateBudgetItem(
     payers?: { user_id: number; amount: number }[]; member_ids?: number[];
     members?: { user_id: number; amount?: number | null }[];
     persons?: number | null; days?: number | null; note?: string | null; sort_order?: number; expense_date?: string | null;
+    is_private?: boolean | number; receipt_file_id?: number | null;
   },
+  actingUserId?: number,
 ) {
-  const item = db.prepare('SELECT * FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId);
+  const item = db.prepare('SELECT * FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId) as BudgetItem | undefined;
   if (!item) return null;
+  // Another member's personal expense can't be edited — 404 parity (custom).
+  if (actingUserId != null && !canViewBudgetItem(item, actingUserId)) return null;
 
   db.prepare(`
     UPDATE budget_items SET
@@ -265,6 +300,19 @@ export function updateBudgetItem(
     data.expense_date !== undefined ? 1 : 0, data.expense_date !== undefined ? (data.expense_date || null) : null,
     id,
   );
+
+  // Personal/group flip (custom): only the creator may change it; a legacy item
+  // with no creator on record is claimed by the acting user when made personal.
+  if (data.is_private !== undefined && actingUserId != null) {
+    const isCreator = item.created_by == null || item.created_by === actingUserId;
+    if (isCreator) {
+      db.prepare('UPDATE budget_items SET is_private = ?, created_by = COALESCE(created_by, ?) WHERE id = ?')
+        .run(data.is_private ? 1 : 0, actingUserId, id);
+    }
+  }
+  if (data.receipt_file_id !== undefined) {
+    db.prepare('UPDATE budget_items SET receipt_file_id = ? WHERE id = ?').run(data.receipt_file_id, id);
+  }
 
   // Optional inline payer/member replacement (the edit modal saves all at once).
   if (data.payers !== undefined) {
@@ -318,9 +366,13 @@ export function setItemPayers(id: string | number, tripId: string | number, paye
   return updated;
 }
 
-export function deleteBudgetItem(id: string | number, tripId: string | number): boolean {
-  const item = db.prepare('SELECT id FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId);
+export function deleteBudgetItem(id: string | number, tripId: string | number, viewerId?: number): boolean {
+  const item = db.prepare('SELECT id, is_private, created_by FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId) as
+    | { id: number; is_private?: number; created_by?: number | null }
+    | undefined;
   if (!item) return false;
+  // Another member's personal expense can't be deleted — 404 parity (custom).
+  if (viewerId != null && !canViewBudgetItem(item, viewerId)) return false;
   db.prepare('DELETE FROM budget_items WHERE id = ?').run(id);
   return true;
 }
@@ -382,7 +434,7 @@ export function getPerPersonSummary(tripId: string | number) {
     FROM budget_item_members bm
     JOIN budget_items bi ON bm.budget_item_id = bi.id
     JOIN users u ON bm.user_id = u.id
-    WHERE bi.trip_id = ?
+    WHERE bi.trip_id = ? AND bi.is_private = 0
     GROUP BY bm.user_id
   `).all(tripId) as { user_id: number; username: string; avatar: string | null; total_assigned: number; total_paid: number; items_count: number }[];
 
@@ -463,7 +515,8 @@ export function calculateSettlement(
     return base === tripCurrency ? amount : (rates && rates[tripCurrency] > 0 ? amount * rates[tripCurrency] : amount);
   };
 
-  const items = db.prepare('SELECT * FROM budget_items WHERE trip_id = ?').all(tripId) as BudgetItem[];
+  // Personal expenses (custom) never join the group math.
+  const items = db.prepare('SELECT * FROM budget_items WHERE trip_id = ? AND is_private = 0').all(tripId) as BudgetItem[];
   const allMembers = db.prepare(`
     SELECT bm.budget_item_id, bm.user_id, bm.amount, COALESCE(u.display_name, u.username) AS username, u.avatar
     FROM budget_item_members bm

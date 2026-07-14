@@ -126,6 +126,12 @@ const budget: TranslationStrings = {
   'costs.unfinishedHint': 'Total only — not settled yet',
   'costs.tapToInclude': 'Tap to include',
   'costs.amount': 'Amount',
+  'costs.scanReceipt': 'Scan receipt',
+  'costs.scanningReceipt': 'Reading receipt…',
+  'costs.scanFailed': 'Could not read the receipt — you can still enter it manually.',
+  'costs.personalExpense': 'Personal expense (only me)',
+  'costs.personal': 'Personal',
+  'costs.viewReceipt': 'View receipt',
 };
 
 export default budget;
