@@ -1437,30 +1437,47 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
                     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                       <input
                         type="text"
-                        placeholder="Item name"
+                        placeholder={t('costs.itemName')}
                         value={item.name}
                         onChange={e => handleUpdateItemName(item.id, e.target.value)}
                         className="bg-surface-input border border-edge text-content"
-                        style={{ flex: 2, padding: '6px 10px', borderRadius: 8, fontSize: 13, border: '1px solid var(--border-color)', outline: 'none' }}
+                        // minWidth: 0 lets the name shrink on phones — without it the
+                        // input's intrinsic width squeezed the price box to ZERO width,
+                        // making the amount untappable on mobile (the "can't type a
+                        // number" bug). The price box gets a guaranteed fixed basis.
+                        style={{ flex: '1 1 auto', minWidth: 0, padding: '6px 10px', borderRadius: 8, fontSize: 13, border: '1px solid var(--border-color)', outline: 'none' }}
                       />
-                      <div className="bg-surface-input border border-edge" style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '0 8px', borderRadius: 8 }}>
-                        <span className="text-content-faint" style={{ fontSize: 12 }}>{sym(currency)}</span>
+                      <div className="bg-surface-input border border-edge" style={{ flex: '0 0 104px', display: 'flex', alignItems: 'center', padding: '0 8px', borderRadius: 8 }}>
+                        <span className="text-content-faint" style={{ fontSize: 12, flexShrink: 0 }}>{sym(currency)}</span>
                         <NumericInput
                           mode="decimal"
                           placeholder="0.00"
                           value={item.price}
                           onValueChange={v => handleUpdateItemPrice(item.id, v)}
                           className="text-content"
-                          style={{ width: '100%', border: 0, background: 'none', outline: 'none', fontSize: 13, fontWeight: 600, textAlign: 'right', padding: '6px 0' }}
+                          style={{ width: '100%', minWidth: 0, border: 0, background: 'none', outline: 'none', fontSize: 13, fontWeight: 600, textAlign: 'right', padding: '6px 0' }}
                         />
                       </div>
-                      <button type="button" onClick={() => handleRemoveItem(item.id)} className="text-content-muted" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 4 }}>
+                      <button type="button" onClick={() => handleRemoveItem(item.id)} className="text-content-muted" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 4, flexShrink: 0 }}>
                         <Trash2 size={15} />
                       </button>
                     </div>
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
-                      <span className="text-content-faint" style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', marginRight: 4 }}>Splitting:</span>
+                      <span className="text-content-faint" style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', marginRight: 4 }}>{t('costs.splitting')}</span>
+                      {(() => {
+                        const all = item.participants.size === people.length
+                        return (
+                          <button
+                            type="button"
+                            onClick={() => setTicketItems(prev => prev.map(it => it.id === item.id ? { ...it, participants: all ? new Set<number>() : new Set(people.map(p => p.id)) } : it))}
+                            className={all ? 'bg-surface-card text-content border' : 'bg-surface-secondary text-content-muted border border-edge'}
+                            style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', border: all ? '1px solid var(--text-primary)' : undefined }}
+                          >
+                            {t('costs.everyone')}
+                          </button>
+                        )
+                      })()}
                       {people.map((p, pIdx) => {
                         const active = item.participants.has(p.id)
                         return (
@@ -1484,8 +1501,11 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
               </div>
 
               <button type="button" onClick={handleAddEmptyItem} className="border border-dashed border-edge text-content-muted" style={{ padding: '8px 12px', borderRadius: 10, background: 'none', fontSize: 13, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
-                <Plus size={14} /> Add item
+                <Plus size={14} /> {t('costs.addItem')}
               </button>
+              {ticketItems.length > 0 && !ticketValid && (
+                <div className="text-content-faint" style={{ fontSize: 12 }}>{t('costs.ticketHint')}</div>
+              )}
 
               {ticketItems.length > 0 && (
                 <div className="bg-surface-secondary border border-edge" style={{ padding: 12, borderRadius: 10 }}>
