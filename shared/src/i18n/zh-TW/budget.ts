@@ -125,5 +125,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': '所有類別',
   'costs.filter.allDays': '所有日期',
   'costs.expensesCount': '{count} 筆支出',
+  'costs.scanReceipt': '掃描收據',
+  'costs.scanningReceipt': '正在讀取收據…',
+  'costs.scanFailed': '無法讀取收據 — 您仍可手動輸入。',
+  'costs.personalExpense': '個人支出（僅自己）',
+  'costs.personal': '個人',
+  'costs.viewReceipt': '查看收據',
 };
 export default budget;

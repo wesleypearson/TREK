@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Tutte le categorie',
   'costs.filter.allDays': 'Tutti i giorni',
   'costs.expensesCount': '{count} spese',
+  'costs.scanReceipt': 'Scansiona scontrino',
+  'costs.scanningReceipt': 'Lettura dello scontrino…',
+  'costs.scanFailed': 'Impossibile leggere lo scontrino — puoi comunque inserirlo manualmente.',
+  'costs.personalExpense': 'Spesa personale (solo io)',
+  'costs.personal': 'Personale',
+  'costs.viewReceipt': 'Vedi scontrino',
 };
 export default budget;

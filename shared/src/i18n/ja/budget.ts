@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'すべてのカテゴリー',
   'costs.filter.allDays': 'すべての日',
   'costs.expensesCount': '{count}件の支出',
+  'costs.scanReceipt': 'レシートをスキャン',
+  'costs.scanningReceipt': 'レシートを読み取り中…',
+  'costs.scanFailed': 'レシートを読み取れませんでした — 手動で入力できます。',
+  'costs.personalExpense': '個人的な支出（自分のみ）',
+  'costs.personal': '個人',
+  'costs.viewReceipt': 'レシートを表示',
 };
 export default budget;

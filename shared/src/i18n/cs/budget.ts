@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Všechny kategorie',
   'costs.filter.allDays': 'Všechny dny',
   'costs.expensesCount': '{count} výdajů',
+  'costs.scanReceipt': 'Naskenovat účtenku',
+  'costs.scanningReceipt': 'Čtení účtenky…',
+  'costs.scanFailed': 'Účtenku se nepodařilo přečíst — můžete ji zadat ručně.',
+  'costs.personalExpense': 'Osobní výdaj (jen já)',
+  'costs.personal': 'Osobní',
+  'costs.viewReceipt': 'Zobrazit účtenku',
 };
 export default budget;

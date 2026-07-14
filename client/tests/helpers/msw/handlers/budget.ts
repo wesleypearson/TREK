@@ -35,4 +35,21 @@ export const budgetHandlers = [
     const body = await request.json() as { paid: boolean };
     return HttpResponse.json({ success: true, paid: body.paid });
   }),
+
+  http.post('/api/trips/:id/budget/receipt-scan', ({ params }) => {
+    return HttpResponse.json({
+      file: { id: 77, trip_id: Number(params.id), original_name: 'receipt.jpg', url: `/api/trips/${params.id}/files/77/download` },
+      receipt: {
+        merchant: 'SuperMart',
+        date: '2025-06-15',
+        currency: 'EUR',
+        total: 12.5,
+        items: [
+          { name: 'Apples', price: 3.5 },
+          { name: 'Beer', price: 9, quantity: 2 },
+        ],
+      },
+      warnings: [],
+    });
+  }),
 ];

@@ -126,5 +126,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'كل الفئات',
   'costs.filter.allDays': 'كل الأيام',
   'costs.expensesCount': '{count} مصروف',
+  'costs.scanReceipt': 'مسح الإيصال',
+  'costs.scanningReceipt': 'جارٍ قراءة الإيصال…',
+  'costs.scanFailed': 'تعذّرت قراءة الإيصال — لا يزال بإمكانك إدخاله يدويًا.',
+  'costs.personalExpense': 'نفقة شخصية (أنا فقط)',
+  'costs.personal': 'شخصي',
+  'costs.viewReceipt': 'عرض الإيصال',
 };
 export default budget;

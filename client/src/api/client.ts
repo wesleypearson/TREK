@@ -833,6 +833,9 @@ export const budgetApi = {
   deleteSettlement: (tripId: number | string, settlementId: number) => apiClient.delete(`/trips/${tripId}/budget/settlements/${settlementId}`).then(r => r.data),
   reorderItems: (tripId: number | string, orderedIds: number[]) => apiClient.put(`/trips/${tripId}/budget/reorder/items`, { orderedIds }).then(r => r.data),
   reorderCategories: (tripId: number | string, orderedCategories: string[]) => apiClient.put(`/trips/${tripId}/budget/reorder/categories`, { orderedCategories } satisfies BudgetReorderCategoriesRequest).then(r => r.data),
+  // AI receipt scan: stores the photo/PDF as a trip file and extracts the line
+  // items. 409/502 still carry the stored `file` so it can be attached manually.
+  scanReceipt: (tripId: number | string, formData: FormData) => postMultipart(`/trips/${tripId}/budget/receipt-scan`, formData),
 }
 
 export const filesApi = {

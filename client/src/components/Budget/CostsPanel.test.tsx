@@ -1,5 +1,5 @@
 // FE-COMP-COSTS: settlements surfaced inline in the Costs ledger (issue #1241)
-import { render, screen, waitFor } from '../../../tests/helpers/render'
+import { render, screen, waitFor, fireEvent } from '../../../tests/helpers/render'
 import { http, HttpResponse } from 'msw'
 import { server } from '../../../tests/helpers/msw/server'
 import { useAuthStore } from '../../store/authStore'
@@ -304,5 +304,93 @@ describe('CostsPanel — settlements in the ledger', () => {
       expect.objectContaining({ user_id: 2, amount: 25 }),
     ]))
     expect(posted!.note).toContain('TICKETJSON:')
+  })
+})
+
+describe('CostsPanel — expenses feature (receipt scan + personal expenses)', () => {
+  it('shows the personal toggle and sends is_private in the create payload', async () => {
+    let posted: Record<string, unknown> | null = null
+    server.use(
+      http.get('/api/trips/1/budget', () => HttpResponse.json({ items: [] })),
+      http.get('/api/trips/1/budget/settlement', () => HttpResponse.json({ balances: [], flows: [], settlements: [] })),
+      http.post('/api/trips/1/budget', async ({ request }) => {
+        posted = await request.json() as Record<string, unknown>
+        return HttpResponse.json({ item: { ...buildBudgetItem({ trip_id: 1, name: 'Souvenir' }), id: 11 } })
+      }),
+    )
+    const { default: userEvent } = await import('@testing-library/user-event')
+    const user = userEvent.setup()
+    render(<CostsPanel tripId={1} tripMembers={tripMembers} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Add expense' }))
+    await user.type(await screen.findByPlaceholderText('e.g. Dinner, souvenirs, gas…'), 'Souvenir')
+    await user.type(screen.getAllByPlaceholderText('0.00')[0], '15')
+
+    await user.click(screen.getByRole('checkbox', { name: /Personal expense \(only me\)/i }))
+
+    const addBtns = screen.getAllByRole('button', { name: 'Add expense' })
+    await user.click(addBtns[addBtns.length - 1]) // footer submit
+    await waitFor(() => expect(posted).toBeTruthy())
+    expect(posted!.is_private).toBe(true)
+    expect(posted!.receipt_file_id).toBeNull() // no receipt was scanned/attached
+  })
+
+  it('scans a receipt and prefills ticket items with empty participants', async () => {
+    let posted: Record<string, unknown> | null = null
+    server.use(
+      http.get('/api/trips/1/budget', () => HttpResponse.json({ items: [] })),
+      http.get('/api/trips/1/budget/settlement', () => HttpResponse.json({ balances: [], flows: [], settlements: [] })),
+      http.post('/api/trips/1/budget', async ({ request }) => {
+        posted = await request.json() as Record<string, unknown>
+        return HttpResponse.json({ item: { ...buildBudgetItem({ trip_id: 1, name: 'SuperMart' }), id: 12 } })
+      }),
+    )
+    const { default: userEvent } = await import('@testing-library/user-event')
+    const user = userEvent.setup()
+    render(<CostsPanel tripId={1} tripMembers={tripMembers} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Add expense' }))
+    expect(screen.getByRole('button', { name: 'Scan receipt' })).toBeInTheDocument()
+
+    // The scan button drives a hidden file input; the shared handler answers the upload.
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
+    fireEvent.change(fileInput, { target: { files: [new File(['jpg'], 'receipt.jpg', { type: 'image/jpeg' })] } })
+
+    // Prefill from the parsed receipt: merchant → name, items → ticket lines
+    // (quantity folded into the label), split mode switched to ticket.
+    await screen.findByDisplayValue('SuperMart')
+    expect(screen.getByDisplayValue('Apples')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('Beer x2')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('3.5')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('9')).toBeInTheDocument()
+    // Ticket total is the sum of the scanned lines and stays read-only.
+    expect(screen.getByDisplayValue('12.50')).toBeDisabled()
+
+    // Participants start EMPTY — the payer must explicitly assign people, so the
+    // save stays disabled until every line has at least one participant.
+    const addBtns = screen.getAllByRole('button', { name: 'Add expense' })
+    expect(addBtns[addBtns.length - 1]).toBeDisabled()
+
+    // Assign both lines to alice, then save — the receipt file id rides along.
+    const aliceChips = screen.getAllByRole('button', { name: /alice/i })
+    await user.click(aliceChips[0])
+    await user.click(aliceChips[1])
+    await user.click(addBtns[addBtns.length - 1])
+    await waitFor(() => expect(posted).toBeTruthy())
+    expect(posted!.receipt_file_id).toBe(77)
+    expect(posted!.total_price).toBe(12.5)
+    expect(posted!.note).toContain('TICKETJSON:')
+  })
+
+  it('shows the Personal badge on a private expense row', async () => {
+    const item = { ...buildBudgetItem({ trip_id: 1, category: 'health', name: 'Massage' }), total_price: 40, expense_date: '2025-06-15', is_private: 1 }
+    server.use(
+      http.get('/api/trips/1/budget', () => HttpResponse.json({ items: [item] })),
+      http.get('/api/trips/1/budget/settlement', () => HttpResponse.json({ balances: [], flows: [], settlements: [] })),
+    )
+    render(<CostsPanel tripId={1} tripMembers={tripMembers} />)
+
+    await screen.findByText('Massage')
+    expect(screen.getByTitle('Personal')).toBeInTheDocument()
   })
 })

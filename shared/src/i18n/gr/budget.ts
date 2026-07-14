@@ -127,5 +127,11 @@ const budget: TranslationStrings = {
   'costs.filter.allCategories': 'Όλες οι κατηγορίες',
   'costs.filter.allDays': 'Όλες οι ημέρες',
   'costs.expensesCount': '{count} έξοδα',
+  'costs.scanReceipt': 'Σάρωση απόδειξης',
+  'costs.scanningReceipt': 'Ανάγνωση απόδειξης…',
+  'costs.scanFailed': 'Δεν ήταν δυνατή η ανάγνωση της απόδειξης — μπορείτε να την καταχωρίσετε χειροκίνητα.',
+  'costs.personalExpense': 'Προσωπικό έξοδο (μόνο εγώ)',
+  'costs.personal': 'Προσωπικό',
+  'costs.viewReceipt': 'Προβολή απόδειξης',
 };
 export default budget;
