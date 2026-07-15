@@ -11,14 +11,6 @@ const system_notice: TranslationStrings = {
   'system_notice.welcome_v1.highlight_offline': 'Funziona offline su mobile',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',
-  'system_notice.thank_you_support.title': 'Grazie per usare Travla',
-  'system_notice.thank_you_support.body':
-    "Un piccolo grazie per aver installato Travla — significa davvero molto per me.\n\nSono uno sviluppatore indipendente e creo Travla nel mio tempo libero. È nato come un piccolo strumento solo per i miei viaggi, e sono sinceramente sbalordito dal supporto e dall'interesse che la community mi ha dimostrato da allora. Travla è fatto con tanto cuore da parte mia — ma anche grazie ai tanti fantastici collaboratori esterni che hanno contribuito a dargli forma.\n\n**Travla è open source e completamente gratuito — e resterà così per sempre. Nessun piano a pagamento, nessun abbonamento, nessuna fregatura. Te lo prometto.**\n\nSe Travla ti è utile e vuoi sostenerne lo sviluppo, un piccolo caffè mi aiuta davvero a continuare a costruirlo — nessuna pressione, ma ogni tazza tiene vive le notti tarde.\n\nGrazie per essere qui.\n\n— Maurice",
-  'system_notice.thank_you_support.highlight_opensource': '100% open source su GitHub',
-  'system_notice.thank_you_support.highlight_free': 'Gratis per sempre — mai un piano a pagamento',
-  'system_notice.thank_you_support.highlight_community': 'Creato insieme alla community',
-  'system_notice.thank_you_support.cta_bmc': 'Buy Me a Coffee',
-  'system_notice.thank_you_support.cta_kofi': 'Supporta su Ko-fi',
   'system_notice.pager.prev': 'Avviso precedente',
   'system_notice.pager.next': 'Avviso successivo',
   'system_notice.pager.counter': '{current} / {total}',
@@ -48,9 +40,6 @@ const system_notice: TranslationStrings = {
   'system_notice.v3_mcp.highlight_scopes': '24 scope di autorizzazione granulari',
   'system_notice.v3_mcp.highlight_deprecated': 'Token statici trek_ deprecati',
   'system_notice.v3_mcp.highlight_tools': 'Strumenti e prompt estesi',
-  'system_notice.v3_thankyou.title': 'Una nota personale da parte mia',
-  'system_notice.v3_thankyou.body':
-    "Prima di andare avanti — voglio prendermi un momento.\n\nTravla è nato come un progetto secondario che ho costruito per i miei viaggi. Non avrei mai immaginato che sarebbe cresciuto fino a diventare qualcosa di cui 4.000 di voi si fidano per pianificare le proprie avventure. Ogni stella, ogni issue, ogni richiesta di funzionalità — le leggo tutte, e sono loro a tenermi in piedi nelle notti tarde tra un lavoro a tempo pieno e l'università.\n\nVoglio che sappiate: Travla sarà sempre open source, sempre self-hosted, sempre vostro. Nessun tracciamento, nessun abbonamento, nessuna fregatura. Solo uno strumento creato da qualcuno che ama viaggiare tanto quanto voi.\n\nUn ringraziamento speciale a [jubnl](https://github.com/jubnl) — sei diventato un collaboratore incredibile. Molto di ciò che rende la 3.0 fantastica porta la tua impronta. Grazie per aver creduto in questo progetto quando era ancora acerbo.\n\nE a ognuno di voi che ha segnalato un bug, tradotto una stringa, condiviso Travla con un amico o semplicemente lo ha usato per pianificare un viaggio — **grazie**. Voi siete il motivo per cui tutto questo esiste.\n\nA molte altre avventure insieme.\n\n— Maurice\n\n---\n\n[Unisciti alla community su Discord](https://discord.gg/7Q6M6jDwzf)\n\nSe Travla rende i tuoi viaggi migliori, un [piccolo caffè](https://ko-fi.com/mauriceboe) aiuta sempre a tenere le luci accese.",
   'system_notice.v3014_whitespace_collision.title': 'Azione richiesta: conflitto di account utente',
   'system_notice.v3014_whitespace_collision.body':
     "L'aggiornamento 3.0.14 ha rilevato uno o più conflitti di nome utente o e-mail causati da spazi iniziali o finali nei valori memorizzati. Gli account interessati sono stati rinominati automaticamente. Controlla i log del server per le righe che iniziano con **[migration] WHITESPACE COLLISION** per identificare quali account richiedono revisione.",

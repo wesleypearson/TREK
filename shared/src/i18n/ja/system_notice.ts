@@ -24,9 +24,6 @@ const system_notice: TranslationStrings = {
   'system_notice.v3_mcp.highlight_scopes': '24の詳細な権限スコープ',
   'system_notice.v3_mcp.highlight_deprecated': '静的trek_トークンは非推奨',
   'system_notice.v3_mcp.highlight_tools': 'ツールとプロンプトを拡張',
-  'system_notice.v3_thankyou.title': '開発者より一言',
-  'system_notice.v3_thankyou.body':
-    '少しだけお時間をください。\n\nTravlaは、自分の旅のために作った小さな個人プロジェクトでした。それが今では4,000人以上に使ってもらえるとは思ってもいませんでした。スターも、Issueも、機能要望も、すべて目を通しています。\n\nTravlaはこれからもオープンソース、自分でホストでき、あなたのものです。トラッキングなし、サブスクなし。旅が好きな人が作ったツールです。\n\nhttps://github.com/jubnlにも感謝を。3.0の多くはあなたのおかげです。\n\nバグ報告、翻訳、共有、利用してくれたすべての方へ—本当にありがとうございます。\n\nこれからも一緒に旅を。\n\n— Maurice',
   'system_notice.v3014_whitespace_collision.title': '対応が必要：ユーザーアカウントの競合',
   'system_notice.v3014_whitespace_collision.body':
     '3.0.14 へのアップグレードにより、保存されているアカウントの先頭または末尾の空白が原因で、ユーザー名またはメールアドレスの競合が1件以上検出されました。影響を受けたアカウントは自動的にリネームされています。対象となるアカウントを特定するには、サーバーログで **[migration] WHITESPACE COLLISION** で始まる行を確認してください。',
@@ -39,14 +36,6 @@ const system_notice: TranslationStrings = {
   'system_notice.welcome_v1.highlight_offline': 'モバイルでオフライン対応',
   'system_notice.dev_test_modal.title': '[Dev] テスト通知',
   'system_notice.dev_test_modal.body': 'これは開発用テスト通知です。',
-  'system_notice.thank_you_support.title': 'Travlaを使ってくれてありがとう',
-  'system_notice.thank_you_support.body':
-    'Travlaをインストールしてくれて、ちょっとお礼を言わせてください。本当に、心から嬉しいです。\n\n私は一人で開発をしていて、Travlaは空いた時間に作っています。もともとは自分の旅のためだけの小さなツールでしたが、それ以来コミュニティから寄せられる応援や関心に、正直なところ圧倒されています。Travlaは私自身がたくさんの思いを込めて作っていますが、それと同時に、形づくるのを手伝ってくれた多くの素晴らしい外部コントリビューターのおかげでもあります。\n\n**Travlaはオープンソースで、完全に無料です。そしてこれからもずっと変わりません。有料プランも、サブスクリプションも、隠れた仕掛けも、一切ありません。約束します。**\n\nもしTravlaがあなたの役に立っていて、開発を応援したいと思ってもらえたなら、ちょっとしたコーヒー一杯が、これからも作り続ける本当の支えになります。まったく無理はしないでください。でも一杯ごとに、夜なべの作業が続けられます。\n\nここにいてくれて、ありがとう。\n\n— Maurice',
-  'system_notice.thank_you_support.highlight_opensource': 'GitHubで100%オープンソース',
-  'system_notice.thank_you_support.highlight_free': '永久に無料 — 有料プランは一切なし',
-  'system_notice.thank_you_support.highlight_community': 'コミュニティと一緒に作っています',
-  'system_notice.thank_you_support.cta_bmc': 'Buy Me a Coffee',
-  'system_notice.thank_you_support.cta_kofi': 'Ko-fiで応援する',
   'system_notice.pager.prev': '前へ',
   'system_notice.pager.next': '次へ',
   'system_notice.pager.counter': '{current} / {total}',

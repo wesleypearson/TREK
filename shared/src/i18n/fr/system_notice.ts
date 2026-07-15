@@ -11,14 +11,6 @@ const system_notice: TranslationStrings = {
   'system_notice.welcome_v1.highlight_offline': 'Fonctionne hors ligne sur mobile',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',
-  'system_notice.thank_you_support.title': "Merci d'utiliser Travla",
-  'system_notice.thank_you_support.body':
-    "Un petit mot pour te remercier d'avoir installé Travla — ça compte vraiment beaucoup pour moi.\n\nJe suis développeur en solo et je construis Travla sur mon temps libre. Au départ, c'était juste un petit outil pour mes propres voyages, et je suis honnêtement bluffé par le soutien et l'intérêt de la communauté depuis. Travla est fait avec beaucoup de cœur de mon côté — mais aussi grâce aux nombreux et formidables contributeurs externes qui ont aidé à lui donner forme.\n\n**Travla est open source et entièrement gratuit — et le restera pour toujours. Pas de formules payantes, pas d'abonnements, aucun piège. Promis.**\n\nSi Travla t'est utile et que tu souhaites soutenir son développement, un petit café m'aide sincèrement à continuer — sans aucune pression, mais chaque tasse fait avancer les nuits blanches.\n\nMerci d'être là.\n\n— Maurice",
-  'system_notice.thank_you_support.highlight_opensource': '100 % open source sur GitHub',
-  'system_notice.thank_you_support.highlight_free': 'Gratuit pour toujours — jamais de formules payantes',
-  'system_notice.thank_you_support.highlight_community': 'Construit avec la communauté',
-  'system_notice.thank_you_support.cta_bmc': 'Buy Me a Coffee',
-  'system_notice.thank_you_support.cta_kofi': 'Soutenir sur Ko-fi',
   'system_notice.pager.prev': 'Avis précédent',
   'system_notice.pager.next': 'Avis suivant',
   'system_notice.pager.counter': '{current} / {total}',
@@ -48,9 +40,6 @@ const system_notice: TranslationStrings = {
   'system_notice.v3_mcp.highlight_scopes': '24 scopes de permissions granulaires',
   'system_notice.v3_mcp.highlight_deprecated': 'Tokens statiques trek_ dépréciés',
   'system_notice.v3_mcp.highlight_tools': 'Outils et prompts étendus',
-  'system_notice.v3_thankyou.title': 'Un mot personnel de ma part',
-  'system_notice.v3_thankyou.body':
-    "Avant de continuer — je veux prendre un instant.\n\nTravla a commencé comme un projet perso que j'ai construit pour mes propres voyages. Je n'aurais jamais imaginé qu'il grandirait au point que 4 000 d'entre vous lui fassent confiance pour planifier vos aventures. Chaque étoile, chaque issue, chaque demande de fonctionnalité — je les lis toutes, et ce sont elles qui me font tenir pendant les nuits blanches entre un travail à temps plein et l'université.\n\nJe veux que vous sachiez : Travla sera toujours open source, toujours auto-hébergé, toujours à vous. Pas de tracking, pas d'abonnements, pas de conditions cachées. Juste un outil construit par quelqu'un qui aime voyager autant que vous.\n\nUn merci tout particulier à [jubnl](https://github.com/jubnl) — tu es devenu un collaborateur incroyable. Une grande partie de ce qui rend la 3.0 géniale porte ton empreinte. Merci d'avoir cru en ce projet quand il était encore brut.\n\nEt à chacun d'entre vous qui a signalé un bug, traduit une chaîne, partagé Travla avec un ami ou simplement l'a utilisé pour planifier un voyage — **merci**. Vous êtes la raison pour laquelle tout ceci existe.\n\nÀ de nombreuses autres aventures ensemble.\n\n— Maurice\n\n---\n\n[Rejoins la communauté sur Discord](https://discord.gg/7Q6M6jDwzf)\n\nSi Travla rend tes voyages meilleurs, un [petit café](https://ko-fi.com/mauriceboe) aide toujours à garder les lumières allumées.",
   'system_notice.v3014_whitespace_collision.title': 'Action requise : conflit de compte utilisateur',
   'system_notice.v3014_whitespace_collision.body':
     "La mise à niveau 3.0.14 a détecté un ou plusieurs conflits de nom d'utilisateur ou d'adresse e-mail causés par des espaces en début ou en fin de valeur dans les comptes enregistrés. Les comptes concernés ont été renommés automatiquement. Consultez les journaux du serveur pour les lignes commençant par **[migration] WHITESPACE COLLISION** afin d'identifier les comptes nécessitant une vérification.",

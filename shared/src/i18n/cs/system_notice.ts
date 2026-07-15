@@ -11,14 +11,6 @@ const system_notice: TranslationStrings = {
   'system_notice.welcome_v1.highlight_offline': 'Funguje offline na mobilu',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',
-  'system_notice.thank_you_support.title': 'Děkuji, že používáte Travla',
-  'system_notice.thank_you_support.body':
-    'Rychlé poděkování za to, že jste si nainstalovali Travla — upřímně, znamená to pro mě hodně.\n\nJsem jediný vývojář a Travla tvořím ve svém volném čase. Začalo to jako malý nástroj jen pro mé vlastní cesty a od té doby mě podpora a zájem komunity naprosto dostávají. Travla dělám s velkým srdcem — ale také díky mnoha úžasným externím přispěvatelům, kteří ho pomohli utvářet.\n\n**Travla je open source a zcela zdarma — a tak to navždy zůstane. Žádné placené verze, žádná předplatná, žádné háčky. Slibuji.**\n\nPokud je pro vás Travla užitečný a chtěli byste podpořit jeho vývoj, malá káva mi opravdu pomáhá pokračovat ve tvoření — žádný tlak, ale každý šálek mi pomáhá přečkat pozdní noci.\n\nDěkuji, že jste tady.\n\n— Maurice',
-  'system_notice.thank_you_support.highlight_opensource': '100% open source na GitHubu',
-  'system_notice.thank_you_support.highlight_free': 'Navždy zdarma — nikdy žádné placené verze',
-  'system_notice.thank_you_support.highlight_community': 'Tvořeno společně s komunitou',
-  'system_notice.thank_you_support.cta_bmc': 'Buy Me a Coffee',
-  'system_notice.thank_you_support.cta_kofi': 'Podpořit na Ko-fi',
   'system_notice.pager.prev': 'Předchozí oznámení',
   'system_notice.pager.next': 'Další oznámení',
   'system_notice.pager.counter': '{current} / {total}',
@@ -48,9 +40,6 @@ const system_notice: TranslationStrings = {
   'system_notice.v3_mcp.highlight_scopes': '24 jemnozrnných oprávnění',
   'system_notice.v3_mcp.highlight_deprecated': 'Statické tokeny trek_ zastaralé',
   'system_notice.v3_mcp.highlight_tools': 'Rozšířená sada nástrojů a promptů',
-  'system_notice.v3_thankyou.title': 'Osobní slovo ode mě',
-  'system_notice.v3_thankyou.body':
-    'Než budete pokračovat — chci se na chvíli zastavit.\n\nTravla začal jako vedlejší projekt, který jsem vytvořil pro své vlastní cesty. Nikdy jsem si nepředstavoval, že vyroste v něco, čemu 4 000 z vás důvěřuje při plánování svých dobrodružství. Každou hvězdičku, každý issue, každý požadavek na funkci — všechny čtu a právě ony mě drží při životě během pozdních nocí mezi prací na plný úvazek a univerzitou.\n\nChci, abyste věděli: Travla bude vždy open source, vždy self-hosted, vždy váš. Žádné sledování, žádná předplatná, žádné háčky. Jen nástroj vytvořený někým, kdo miluje cestování stejně jako vy.\n\nZvláštní poděkování patří [jubnl](https://github.com/jubnl) — stal ses neuvěřitelným spolupracovníkem. Tolik z toho, co dělá verzi 3.0 skvělou, nese tvůj rukopis. Děkuji, že jsi věřil tomuto projektu, když byl ještě v plenkách.\n\nA každému z vás, kdo nahlásil chybu, přeložil řetězec, sdílel Travla s přítelem nebo ho jednoduše použil k plánování cesty — **děkuji**. Vy jste důvod, proč tohle existuje.\n\nNa mnoho dalších dobrodružství společně.\n\n— Maurice\n\n---\n\n[Přidej se ke komunitě na Discordu](https://discord.gg/7Q6M6jDwzf)\n\nPokud ti Travla zlepšuje cestování, [malá káva](https://ko-fi.com/mauriceboe) vždy pomůže udržet světla rozsvícená.',
   'system_notice.v3014_whitespace_collision.title': 'Vyžadována akce: konflikt uživatelského účtu',
   'system_notice.v3014_whitespace_collision.body':
     'Aktualizace 3.0.14 zjistila jeden nebo více konfliktů uživatelského jména nebo e-mailu způsobených mezerami na začátku nebo konci uložených hodnot. Dotčené účty byly automaticky přejmenovány. Zkontrolujte protokoly serveru na řádky začínající **[migration] WHITESPACE COLLISION** a zjistěte, které účty vyžadují kontrolu.',

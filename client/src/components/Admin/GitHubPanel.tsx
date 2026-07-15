@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Tag, Calendar, ExternalLink, ChevronDown, ChevronUp, Loader2, Heart, Coffee, Bug, Lightbulb, BookOpen } from 'lucide-react'
+import { Tag, Calendar, ExternalLink, ChevronDown, ChevronUp, Loader2, Bug, Lightbulb, BookOpen } from 'lucide-react'
 import { getLocaleForLanguage, useTranslation } from '../../i18n'
 import apiClient from '../../api/client'
 
@@ -130,42 +130,8 @@ export default function GitHubPanel({ isPrerelease = false }: { isPrerelease?: b
 
   return (
     <div className="space-y-3">
-      {/* Support cards */}
+      {/* Community cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <a
-          href="https://ko-fi.com/mauriceboe"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-xl border overflow-hidden flex items-center gap-4 px-5 py-4 transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] bg-surface-card border-edge no-underline"
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#ff5e5b'; e.currentTarget.style.boxShadow = '0 0 0 1px #ff5e5b22' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-primary)'; e.currentTarget.style.boxShadow = 'none' }}
-        >
-          <div className="bg-[#ff5e5b15]" style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Coffee size={20} className="text-[#ff5e5b]" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold text-content">Ko-fi</div>
-            <div className="text-xs text-content-faint">{t('admin.github.support')}</div>
-          </div>
-          <ExternalLink size={14} className="ml-auto flex-shrink-0 text-content-faint" />
-        </a>
-        <a
-          href="https://buymeacoffee.com/mauriceboe"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="rounded-xl border overflow-hidden flex items-center gap-4 px-5 py-4 transition-[border-color,box-shadow] duration-200 ease-[cubic-bezier(0.23,1,0.32,1)] bg-surface-card border-edge no-underline"
-          onMouseEnter={e => { e.currentTarget.style.borderColor = '#ffdd00'; e.currentTarget.style.boxShadow = '0 0 0 1px #ffdd0022' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border-primary)'; e.currentTarget.style.boxShadow = 'none' }}
-        >
-          <div className="bg-[#ffdd0015]" style={{ width: 40, height: 40, borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <Heart size={20} className="text-[#ffdd00]" />
-          </div>
-          <div>
-            <div className="text-sm font-semibold text-content">Buy Me a Coffee</div>
-            <div className="text-xs text-content-faint">{t('admin.github.support')}</div>
-          </div>
-          <ExternalLink size={14} className="ml-auto flex-shrink-0 text-content-faint" />
-        </a>
         <a
           href="https://discord.gg/NhZBDSd4qW"
           target="_blank"
