@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': '通过一次性邀请在此服务器上创建免费账号，即可查看完整行程。',
   'publicTab.expired': '此链接已失效',
   'publicTab.expiredHint': '请向发给您链接的人索取新的链接。',
+  'publicTab.youOwe': '您欠 {name}',
+  'publicTab.ofTotal': '您在 {amount} 中的份额',
+  'publicTab.paidTo': '已支付给 {name}',
+  'publicTab.liveNote': '此账单会实时跟踪您在旅行共同消费中的份额。',
 };
 export default shared;

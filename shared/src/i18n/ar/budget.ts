@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'أُضيف إلى الحساب',
   'costs.tabsFootnote': 'يمكن لأي شخص لديه رابط الحساب رؤية بنوده ودفعاته وبيانات الدفع الخاصة بك.',
   'costs.personalHint': 'لا يُقسَّم ولا يُسوَّى — يُسجَّل فقط كمصروفك الخاص.',
+  'costs.tabLinkNewGuest': 'ضيف مؤقت جديد — يشارك في كل تقسيم',
+  'costs.tabLinkMember': 'ربط بـ {name}',
+  'costs.tabLinkNone': 'الاسم فقط (دون ربط بعضو)',
+  'costs.tabLinkHint': 'الحسابات المربوطة تتبع سجل الرحلة: شارك فاتورة عبر تعيين هذا الشخص في تقسيم المصروف.',
+  'costs.tabLinked': 'مربوط',
+  'costs.tabLiveHint': 'يتبع سجل الرحلة — شارك الفواتير مع {name} عبر تعيينه في تقسيم المصروف.',
+  'costs.tabOwedTo': 'المستحق عليه',
+  'costs.tabPaidTo': 'دُفع إلى {name}',
+  'costs.tabNoLinkedCharge': 'الحسابات المربوطة تتبع التقسيم — عيّن الشخص في المصروف بدلًا من ذلك.',
 };
 export default budget;

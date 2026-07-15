@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Hozz létre ingyenes fiókot ezen a szerveren egy egyszer használatos meghívóval, és nézd meg a teljes utat.',
   'publicTab.expired': 'Ez a link már nem aktív',
   'publicTab.expiredHint': 'Kérj újat attól, aki küldte.',
+  'publicTab.youOwe': 'Tartozásod {name} felé',
+  'publicTab.ofTotal': 'a te részed ebből: {amount}',
+  'publicTab.paidTo': 'Fizetve {name} részére',
+  'publicTab.liveNote': 'Ez a számla valós időben követi a részedet az út közös költségeiből.',
 };
 export default shared;

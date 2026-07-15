@@ -853,6 +853,16 @@ export interface ExpenseTabItem {
   created_at?: string
 }
 export interface ExpenseTabPayment { id: number; tab_id: number; amount: number; note: string | null; created_at: string }
+// Live ledger position of a member-linked tab (single temp guest per trip).
+export interface TabLivePosition {
+  currency: string
+  charges: { id: number; label: string; total: number; share: number; currency?: string | null; expense_date?: string | null; created_at?: string }[]
+  owed: { user_id: number; name: string; amount: number; payment_methods: Partial<Record<'payment_bank' | 'payment_payid' | 'payment_venmo' | 'payment_other', string>> }[]
+  payments: { id: number; to_name: string; amount: number; currency?: string | null; created_at: string }[]
+  balance: number
+  charged: number
+  paid: number
+}
 export interface ExpenseTab {
   id: number
   trip_id: number
@@ -866,6 +876,9 @@ export interface ExpenseTab {
   currency?: string | null
   revoked_at?: string | null
   created_at?: string
+  member_user_id?: number | null
+  member?: { user_id: number; name: string; is_guest: boolean } | null
+  live?: TabLivePosition | null
   charged: number
   paid: number
   balance: number
@@ -886,11 +899,12 @@ export interface PublicTabData {
   paid: number
   balance: number
   join_url: string | null
+  live?: TabLivePosition | null
 }
 
 export const expenseTabsApi = {
   list: (tripId: number | string): Promise<{ tabs: ExpenseTab[] }> => apiClient.get(`/trips/${tripId}/expense-tabs`).then(r => r.data),
-  create: (tripId: number | string, data: { first_name: string; last_name?: string; currency?: string | null }): Promise<{ tab: ExpenseTab }> => apiClient.post(`/trips/${tripId}/expense-tabs`, data).then(r => r.data),
+  create: (tripId: number | string, data: { first_name: string; last_name?: string; currency?: string | null; member_user_id?: number | null; create_guest?: boolean }): Promise<{ tab: ExpenseTab }> => apiClient.post(`/trips/${tripId}/expense-tabs`, data).then(r => r.data),
   addItem: (tripId: number | string, tabId: number, data: { budget_item_id?: number | null; label?: string; amount: number; share_receipt?: boolean }): Promise<{ item: ExpenseTabItem }> => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/items`, data).then(r => r.data),
   removeItem: (tripId: number | string, tabId: number, itemId: number) => apiClient.delete(`/trips/${tripId}/expense-tabs/${tabId}/items/${itemId}`).then(r => r.data),
   addPayment: (tripId: number | string, tabId: number, data: { amount: number; note?: string | null }): Promise<{ payment: ExpenseTabPayment }> => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/payments`, data).then(r => r.data),

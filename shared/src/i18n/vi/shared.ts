@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Tạo tài khoản miễn phí trên máy chủ này bằng lời mời dùng một lần và xem toàn bộ chuyến đi.',
   'publicTab.expired': 'Liên kết này không còn hoạt động',
   'publicTab.expiredHint': 'Hãy hỏi người đã gửi để nhận liên kết mới.',
+  'publicTab.youOwe': 'Bạn nợ {name}',
+  'publicTab.ofTotal': 'phần của bạn trong {amount}',
+  'publicTab.paidTo': 'Đã trả cho {name}',
+  'publicTab.liveNote': 'Sổ nợ này theo dõi phần của bạn trong các hóa đơn chung của chuyến đi theo thời gian thực.',
 };
 export default shared;

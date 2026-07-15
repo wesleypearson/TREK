@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Tillagd på notan',
   'costs.tabsFootnote': 'Alla med en notalänk kan se dess poster, betalningar och dina betalningsuppgifter.',
   'costs.personalHint': 'Delas inte och regleras inte — bokförs bara som din egen utgift.',
+  'costs.tabLinkNewGuest': 'Ny tillfällig gäst — är med i varje delning',
+  'costs.tabLinkMember': 'Koppla till {name}',
+  'costs.tabLinkNone': 'Endast namn (ingen koppling till medlem)',
+  'costs.tabLinkHint': 'Kopplade notor följer resans räkenskaper: dela en räkning genom att lägga till personen i utgiftens delning.',
+  'costs.tabLinked': 'Kopplad',
+  'costs.tabLiveHint': 'Följer resans räkenskaper — dela räkningar med {name} genom att lägga till personen i utgiftens delning.',
+  'costs.tabOwedTo': 'Är skyldig',
+  'costs.tabPaidTo': 'Betalat till {name}',
+  'costs.tabNoLinkedCharge': 'Kopplade notor följer delningen — lägg till personen i utgiften i stället.',
 };
 export default budget;

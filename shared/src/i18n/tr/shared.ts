@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Tek seferlik bir davetle bu sunucuda ücretsiz bir hesap oluşturun ve gezinin tamamını görün.',
   'publicTab.expired': 'Bu bağlantı artık etkin değil',
   'publicTab.expiredHint': 'Bağlantıyı gönderen kişiden yenisini isteyin.',
+  'publicTab.youOwe': '{name} adlı kişiye borcunuz',
+  'publicTab.ofTotal': '{amount} içindeki payınız',
+  'publicTab.paidTo': '{name} adlı kişiye ödendi',
+  'publicTab.liveNote': 'Bu hesap, gezinin ortak masraflarındaki payınızı gerçek zamanlı takip eder.',
 };
 export default shared;

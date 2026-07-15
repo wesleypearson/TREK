@@ -138,4 +138,43 @@ describe('PublicTabPage', () => {
       await waitFor(() => expect(screen.getByText(/no longer active/i)).toBeInTheDocument());
     });
   });
+
+  describe('FE-PAGE-TAB-007: member-linked tabs render the live ledger position', () => {
+    it('shows per-creditor owed cards with their payment methods and share-of-total charges', async () => {
+      server.use(http.get('/api/public/tabs/:token', () => HttpResponse.json({
+        ...tabPayload,
+        items: [],
+        payments: [],
+        live: {
+          currency: 'AUD',
+          charges: [{ id: 9, label: 'Sunset Cruise', total: 120, share: 60, currency: 'AUD', expense_date: '2026-07-18', created_at: '2026-07-15 08:00:00' }],
+          owed: [
+            { user_id: 1, name: 'Wesley', amount: 60, payment_methods: { payment_payid: 'wes@pay.id' } },
+            { user_id: 2, name: 'John', amount: 15, payment_methods: {} },
+          ],
+          payments: [{ id: 3, to_name: 'Wesley', amount: 25, currency: 'AUD', created_at: '2026-07-14 10:00:00' }],
+          balance: 75,
+          charged: 60,
+          paid: 25,
+        },
+      })));
+      renderTab();
+      await waitFor(() => expect(screen.getByText('Hi Lisa,')).toBeInTheDocument());
+      // Hero uses the live balance; the live note explains the tracking.
+      expect(screen.getByText(/75\.00/)).toBeInTheDocument();
+      expect(screen.getByText(/in real time/i)).toBeInTheDocument();
+      // One card per creditor, each with only their own methods.
+      expect(screen.getByText('You owe Wesley')).toBeInTheDocument();
+      expect(screen.getByText('You owe John')).toBeInTheDocument();
+      expect(screen.getByText('wes@pay.id')).toBeInTheDocument();
+      // Charge shows the member's share and references the bill total.
+      expect(screen.getByText('Sunset Cruise')).toBeInTheDocument();
+      expect(screen.getByText(/your share of .*120/i)).toBeInTheDocument();
+      // Settle-ups are labelled with who was paid.
+      expect(screen.getByText('Paid Wesley')).toBeInTheDocument();
+      // The standalone-tab single payment-methods card is replaced by the
+      // per-creditor ones (the owner bank string is not repeated).
+      expect(screen.queryByText('BSB 062-000 Acct 1234 5678')).not.toBeInTheDocument();
+    });
+  });
 });

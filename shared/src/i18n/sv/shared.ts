@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Skapa ett gratiskonto på den här servern med en engångsinbjudan och se hela resan.',
   'publicTab.expired': 'Länken är inte längre aktiv',
   'publicTab.expiredHint': 'Be personen som skickade den om en ny.',
+  'publicTab.youOwe': 'Du är skyldig {name}',
+  'publicTab.ofTotal': 'din andel av {amount}',
+  'publicTab.paidTo': 'Betalat till {name}',
+  'publicTab.liveNote': 'Den här notan följer din andel av resans delade räkningar i realtid.',
 };
 export default shared;

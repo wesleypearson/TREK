@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Auf den Deckel gesetzt',
   'costs.tabsFootnote': 'Jeder mit einem Deckel-Link kann dessen Posten, Zahlungen und deine Zahlungsinformationen sehen.',
   'costs.personalHint': 'Wird nicht geteilt oder verrechnet — nur als deine eigene Ausgabe erfasst.',
+  'costs.tabLinkNewGuest': 'Neuer temporärer Gast — macht bei jeder Aufteilung mit',
+  'costs.tabLinkMember': 'Mit {name} verknüpfen',
+  'costs.tabLinkNone': 'Nur Name (ohne Mitglieder-Verknüpfung)',
+  'costs.tabLinkHint': 'Verknüpfte Deckel folgen der Reiseabrechnung: Teile eine Rechnung, indem du diese Person bei der Aufteilung der Ausgabe auswählst.',
+  'costs.tabLinked': 'Verknüpft',
+  'costs.tabLiveHint': 'Folgt der Reiseabrechnung — teile Rechnungen mit {name}, indem du die Person bei der Aufteilung der Ausgabe auswählst.',
+  'costs.tabOwedTo': 'Schuldet',
+  'costs.tabPaidTo': 'An {name} gezahlt',
+  'costs.tabNoLinkedCharge': 'Verknüpfte Deckel folgen der Aufteilung — wähle die Person stattdessen in der Ausgabe aus.',
 };
 export default budget;

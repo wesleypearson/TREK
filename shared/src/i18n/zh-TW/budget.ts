@@ -167,5 +167,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': '已記入帳單',
   'costs.tabsFootnote': '任何擁有帳單連結的人都能看到其中的消費、付款以及您的收款方式。',
   'costs.personalHint': '不分攤、不結算——僅記錄為你自己的支出。',
+  'costs.tabLinkNewGuest': '新增臨時訪客 — 參與所有分攤',
+  'costs.tabLinkMember': '連結到 {name}',
+  'costs.tabLinkNone': '僅姓名（不連結成員）',
+  'costs.tabLinkHint': '已連結的帳單會跟隨旅程帳目：在費用分攤中指定此人即可共同分擔帳單。',
+  'costs.tabLinked': '已連結',
+  'costs.tabLiveHint': '跟隨旅程帳目 — 在費用分攤中指定 {name} 即可共同分擔帳單。',
+  'costs.tabOwedTo': '欠款',
+  'costs.tabPaidTo': '已支付給 {name}',
+  'costs.tabNoLinkedCharge': '已連結的帳單跟隨分攤 — 請改為在費用中指定此人。',
 };
 export default budget;

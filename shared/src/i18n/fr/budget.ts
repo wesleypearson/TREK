@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': "Ajouté à l'ardoise",
   'costs.tabsFootnote': "Toute personne disposant d'un lien d'ardoise peut voir ses dépenses, ses paiements et vos informations de paiement.",
   'costs.personalHint': 'Ni partagée ni réglée — simplement enregistrée comme votre propre dépense.',
+  'costs.tabLinkNewGuest': 'Nouvel invité temporaire — inclus dans chaque partage',
+  'costs.tabLinkMember': 'Lier à {name}',
+  'costs.tabLinkNone': 'Nom seulement (sans lien avec un membre)',
+  'costs.tabLinkHint': 'Les ardoises liées suivent les comptes du voyage : partagez une note en incluant cette personne dans le partage de la dépense.',
+  'costs.tabLinked': 'Liée',
+  'costs.tabLiveHint': 'Suit les comptes du voyage — partagez des notes avec {name} en incluant cette personne dans le partage de la dépense.',
+  'costs.tabOwedTo': 'Doit',
+  'costs.tabPaidTo': 'Payé à {name}',
+  'costs.tabNoLinkedCharge': 'Les ardoises liées suivent le partage — incluez plutôt la personne dans la dépense.',
 };
 export default budget;

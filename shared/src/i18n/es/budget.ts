@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Añadido a la cuenta',
   'costs.tabsFootnote': 'Cualquiera con el enlace de una cuenta puede ver sus cargos, sus pagos y tus datos de pago.',
   'costs.personalHint': 'No se divide ni se liquida — solo se registra como tu propio gasto.',
+  'costs.tabLinkNewGuest': 'Nuevo invitado temporal — entra en todos los repartos',
+  'costs.tabLinkMember': 'Vincular a {name}',
+  'costs.tabLinkNone': 'Solo el nombre (sin vínculo con un miembro)',
+  'costs.tabLinkHint': 'Las cuentas vinculadas siguen el registro del viaje: comparte una factura asignando a esta persona en el reparto del gasto.',
+  'costs.tabLinked': 'Vinculada',
+  'costs.tabLiveHint': 'Sigue el registro del viaje — comparte facturas con {name} asignándole en el reparto del gasto.',
+  'costs.tabOwedTo': 'Debe',
+  'costs.tabPaidTo': 'Pagado a {name}',
+  'costs.tabNoLinkedCharge': 'Las cuentas vinculadas siguen el reparto — asigna a la persona en el gasto.',
 };
 export default budget;

@@ -46,9 +46,14 @@ export default function PublicTabPage() {
     </div>
   )
 
-  const owing = data.balance > 0.004
+  // A member-linked tab renders the LIVE ledger position (share of every group
+  // bill + who is owed); a standalone tab renders its frozen charge list.
+  const live = data.live || null
+  const balance = live ? live.balance : data.balance
+  const owing = balance > 0.004
   const paymentEntries = PAYMENT_META.filter(m => data.payment_methods[m.key])
   const sortedItems = [...data.items].sort((a, b) => String(b.expense_date || b.created_at || '').localeCompare(String(a.expense_date || a.created_at || '')))
+  const heroFmt = (v: number) => formatMoney(v, live?.currency || data.currency || 'AUD', locale)
 
   const fmtDate = (d?: string | null) => {
     if (!d) return ''
@@ -78,13 +83,14 @@ export default function PublicTabPage() {
         <div className="bg-white" style={{ borderRadius: 18, padding: '22px 24px', boxShadow: '0 10px 30px -12px rgba(0,0,0,0.25)', textAlign: 'center' }}>
           <div className="text-[#6b7280]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{t('publicTab.balance')}</div>
           <div style={{ fontSize: 'calc(42px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', marginTop: 6, color: owing ? '#dc2626' : '#16a34a' }}>
-            {fmt(Math.max(data.balance, 0))}
+            {heroFmt(Math.max(balance, 0))}
           </div>
           {!owing && <div className="text-[#16a34a]" style={{ marginTop: 4, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{t('publicTab.settled')}</div>}
           <div className="text-[#9ca3af]" style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 12, fontSize: 'calc(12px * var(--fs-scale-body, 1))' }}>
-            <span>{t('publicTab.totalCharged')} · <b className="text-[#374151]">{fmt(data.charged)}</b></span>
-            <span>{t('publicTab.totalPaid')} · <b className="text-[#374151]">{fmt(data.paid)}</b></span>
+            <span>{t('publicTab.totalCharged')} · <b className="text-[#374151]">{heroFmt(live ? live.charged : data.charged)}</b></span>
+            <span>{t('publicTab.totalPaid')} · <b className="text-[#374151]">{heroFmt(live ? live.paid : data.paid)}</b></span>
           </div>
+          {live && <div className="text-[#9ca3af]" style={{ marginTop: 10, fontSize: 'calc(11px * var(--fs-scale-caption, 1))', lineHeight: 1.4 }}>{t('publicTab.liveNote')}</div>}
         </div>
 
         {/* One-time name confirmation */}
@@ -111,8 +117,39 @@ export default function PublicTabPage() {
           </div>
         )}
 
-        {/* How to pay */}
-        {owing && paymentEntries.length > 0 && (
+        {/* Who you owe (live, member-linked tabs): one card per creditor with
+            their own payment details. */}
+        {live && live.owed.map(o => {
+          const entries = PAYMENT_META.filter(m => o.payment_methods[m.key])
+          return (
+            <div key={o.user_id} className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: entries.length ? 12 : 0 }}>
+                <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{t('publicTab.youOwe', { name: o.name })}</div>
+                <div className="text-[#dc2626]" style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>{heroFmt(o.amount)}</div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {entries.map(({ key, labelKey, Icon }) => (
+                  <div key={key} className="bg-[#f9fafb] border border-[#f3f4f6]" style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 12 }}>
+                    <div className="bg-white border border-[#e5e7eb]" style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', flexShrink: 0 }}>
+                      <Icon size={16} className="text-[#374151]" />
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="text-[#6b7280]" style={{ fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>{t(labelKey)}</div>
+                      <div className="text-[#111827]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{o.payment_methods[key]}</div>
+                    </div>
+                    <button onClick={() => copy(`${o.user_id}:${key}`, o.payment_methods[key]!)} title={t('publicTab.copy')}
+                      className="bg-white border border-[#e5e7eb] text-[#6b7280]" style={{ width: 32, height: 32, borderRadius: 9, display: 'grid', placeItems: 'center', cursor: 'pointer', flexShrink: 0 }}>
+                      {copied === `${o.user_id}:${key}` ? <Check size={14} className="text-[#16a34a]" /> : <Copy size={14} />}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )
+        })}
+
+        {/* How to pay (standalone tabs: the tab owner's details) */}
+        {!live && owing && paymentEntries.length > 0 && (
           <div className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700, marginBottom: 12 }}>{t('publicTab.payWith', { owner: data.owner_name })}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -138,10 +175,21 @@ export default function PublicTabPage() {
         {/* Charges */}
         <div className="bg-white" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
           <div className="bg-[#f9fafb] text-[#6b7280]" style={{ padding: '10px 20px', fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 6 }}>
-            <ArrowDownRight size={13} /> {t('publicTab.charges')} · {sortedItems.length}
+            <ArrowDownRight size={13} /> {t('publicTab.charges')} · {live ? live.charges.length : sortedItems.length}
           </div>
-          {sortedItems.length === 0 && <div className="text-[#9ca3af]" style={{ padding: '18px 20px', fontSize: 'calc(13px * var(--fs-scale-body, 1))' }}>—</div>}
-          {sortedItems.map(item => (
+          {(live ? live.charges.length : sortedItems.length) === 0 && <div className="text-[#9ca3af]" style={{ padding: '18px 20px', fontSize: 'calc(13px * var(--fs-scale-body, 1))' }}>—</div>}
+          {live && live.charges.map(c => (
+            <div key={c.id} style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #f9fafb' }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className="text-[#111827]" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{c.label}</div>
+                <div className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', marginTop: 1 }}>
+                  {fmtDate(c.expense_date || c.created_at)}{c.share < c.total ? ` · ${t('publicTab.ofTotal', { amount: formatMoney(c.total, c.currency || live.currency, locale) })}` : ''}
+                </div>
+              </div>
+              <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>{formatMoney(c.share, c.currency || live.currency, locale)}</div>
+            </div>
+          ))}
+          {!live && sortedItems.map(item => (
             <div key={item.id} style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #f9fafb' }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div className="text-[#111827]" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{item.label}</div>
@@ -160,13 +208,22 @@ export default function PublicTabPage() {
           ))}
         </div>
 
-        {/* Payments received */}
-        {data.payments.length > 0 && (
+        {/* Payments made / received */}
+        {(live ? live.payments.length : data.payments.length) > 0 && (
           <div className="bg-white" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
             <div className="bg-[#f9fafb] text-[#6b7280]" style={{ padding: '10px 20px', fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 6 }}>
-              <ArrowUpRight size={13} /> {t('publicTab.payments')} · {data.payments.length}
+              <ArrowUpRight size={13} /> {t('publicTab.payments')} · {live ? live.payments.length : data.payments.length}
             </div>
-            {data.payments.map(p => (
+            {live && live.payments.map(p => (
+              <div key={p.id} style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #f9fafb' }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="text-[#111827]" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{t('publicTab.paidTo', { name: p.to_name })}</div>
+                  <div className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', marginTop: 1 }}>{fmtDate(p.created_at)}</div>
+                </div>
+                <div className="text-[#16a34a]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{formatMoney(p.amount, p.currency || live.currency, locale)}</div>
+              </div>
+            ))}
+            {!live && data.payments.map(p => (
               <div key={p.id} style={{ padding: '12px 20px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: '1px solid #f9fafb' }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="text-[#111827]" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{p.note || t('publicTab.payments')}</div>

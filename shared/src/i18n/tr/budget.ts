@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Hesaba yazıldı',
   'costs.tabsFootnote': 'Hesap bağlantısına sahip olan herkes hesaba yazılanları, ödemeleri ve ödeme bilgilerinizi görebilir.',
   'costs.personalHint': 'Bölüşülmez ve hesaplaşmaya girmez — yalnızca kendi harcaman olarak kaydedilir.',
+  'costs.tabLinkNewGuest': 'Yeni geçici misafir — her bölüşüme katılır',
+  'costs.tabLinkMember': '{name} ile bağla',
+  'costs.tabLinkNone': 'Yalnızca isim (üye bağlantısı yok)',
+  'costs.tabLinkHint': 'Bağlı hesaplar gezi defterini takip eder: bir masrafı paylaşmak için bu kişiyi masrafın bölüşümüne ekleyin.',
+  'costs.tabLinked': 'Bağlı',
+  'costs.tabLiveHint': 'Gezi defterini takip eder — {name} ile masraf paylaşmak için kişiyi masrafın bölüşümüne ekleyin.',
+  'costs.tabOwedTo': 'Borcu',
+  'costs.tabPaidTo': '{name} adlı kişiye ödendi',
+  'costs.tabNoLinkedCharge': 'Bağlı hesaplar bölüşümü takip eder — bunun yerine kişiyi masrafa ekleyin.',
 };
 export default budget;

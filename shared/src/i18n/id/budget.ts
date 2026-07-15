@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Ditambahkan ke tagihan',
   'costs.tabsFootnote': 'Siapa pun yang memiliki tautan tagihan dapat melihat biayanya, pembayarannya, dan detail pembayaran Anda.',
   'costs.personalHint': 'Tidak dibagi atau diselesaikan — hanya dicatat sebagai pengeluaran pribadimu.',
+  'costs.tabLinkNewGuest': 'Tamu sementara baru — ikut dalam setiap pembagian',
+  'costs.tabLinkMember': 'Tautkan ke {name}',
+  'costs.tabLinkNone': 'Hanya nama (tanpa tautan anggota)',
+  'costs.tabLinkHint': 'Tagihan tertaut mengikuti pembukuan perjalanan: bagikan biaya dengan menetapkan orang ini dalam pembagian pengeluaran.',
+  'costs.tabLinked': 'Tertaut',
+  'costs.tabLiveHint': 'Mengikuti pembukuan perjalanan — bagikan biaya dengan {name} dengan menetapkannya dalam pembagian pengeluaran.',
+  'costs.tabOwedTo': 'Berutang',
+  'costs.tabPaidTo': 'Dibayar kepada {name}',
+  'costs.tabNoLinkedCharge': 'Tagihan tertaut mengikuti pembagian — sebagai gantinya, tetapkan orang tersebut di pengeluaran.',
 };
 export default budget;

@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Δημιουργήστε δωρεάν λογαριασμό σε αυτόν τον διακομιστή με μια πρόσκληση μίας χρήσης και δείτε όλο το ταξίδι.',
   'publicTab.expired': 'Αυτός ο σύνδεσμος δεν είναι πλέον ενεργός',
   'publicTab.expiredHint': 'Ζητήστε έναν καινούριο από το άτομο που σας τον έστειλε.',
+  'publicTab.youOwe': 'Οφείλετε στον/στην {name}',
+  'publicTab.ofTotal': 'το μερίδιό σας από {amount}',
+  'publicTab.paidTo': 'Πληρωμή προς {name}',
+  'publicTab.liveNote': 'Αυτός ο λογαριασμός παρακολουθεί σε πραγματικό χρόνο το μερίδιό σας στα κοινά έξοδα του ταξιδιού.',
 };
 export default shared;
