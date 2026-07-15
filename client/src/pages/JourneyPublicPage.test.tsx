@@ -223,10 +223,11 @@ describe('JourneyPublicPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Tokyo 2026')).toBeInTheDocument();
     });
-    // Footer shows "Travla" brand and "Made with" text
+    // Footer shows the "Travla" brand
     expect(screen.getByText('Travla')).toBeInTheDocument();
-    expect(screen.getByText(/Made with/)).toBeInTheDocument();
-    expect(screen.getByText('GitHub')).toBeInTheDocument();
+    // No personal attribution / promo line on the public footer
+    expect(screen.queryByText(/Made with/)).not.toBeInTheDocument();
+    expect(screen.queryByText('GitHub')).not.toBeInTheDocument();
   });
 
   it('FE-PAGE-PUBLICJOURNEY-008: gallery tab switches view', async () => {

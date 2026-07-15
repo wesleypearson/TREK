@@ -414,7 +414,6 @@ export default function SharedTripPage() {
             <img src="/icons/icon.svg" alt="Travla" width="18" height="18" style={{ borderRadius: 4 }} />
             <span className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{t('shared.sharedVia')} <strong className="text-[#6b7280]">Travla</strong></span>
           </div>
-          <div className="text-[#d1d5db]" style={{ marginTop: 8, fontSize: 'calc(10px * var(--fs-scale-caption, 1))' }}>Made with <span className="text-[#ef4444]">&hearts;</span> by Maurice · <a href="https://github.com/mauriceboe/TREK" className="text-[#9ca3af]" style={{ textDecoration: 'none' }}>GitHub</a></div>
         </div>
       </div>
     </div>
