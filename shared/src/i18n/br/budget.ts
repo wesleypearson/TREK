@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Adicionado à comanda',
   'costs.tabsFootnote': 'Qualquer pessoa com o link de uma comanda pode ver os lançamentos, os pagamentos e seus dados de pagamento.',
   'costs.personalHint': 'Não é dividida nem acertada — apenas registrada como sua própria despesa.',
+  'costs.tabLinkNewGuest': 'Novo convidado temporário — entra em todas as divisões',
+  'costs.tabLinkMember': 'Vincular a {name}',
+  'costs.tabLinkNone': 'Apenas o nome (sem vínculo com membro)',
+  'costs.tabLinkHint': 'Comandas vinculadas seguem o registro da viagem: para dividir uma conta, inclua essa pessoa na divisão da despesa.',
+  'costs.tabLinked': 'Vinculada',
+  'costs.tabLiveHint': 'Segue o registro da viagem — divida contas com {name} incluindo a pessoa na divisão da despesa.',
+  'costs.tabOwedTo': 'Deve',
+  'costs.tabPaidTo': 'Pago a {name}',
+  'costs.tabNoLinkedCharge': 'Comandas vinculadas seguem a divisão — em vez disso, inclua a pessoa na despesa.',
 };
 export default budget;

@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Erstelle mit einer einmaligen Einladung ein kostenloses Konto auf diesem Server und sieh dir die ganze Reise an.',
   'publicTab.expired': 'Dieser Link ist nicht mehr aktiv',
   'publicTab.expiredHint': 'Bitte die Person, die ihn dir geschickt hat, um einen neuen.',
+  'publicTab.youOwe': 'Du schuldest {name}',
+  'publicTab.ofTotal': 'dein Anteil von {amount}',
+  'publicTab.paidTo': 'An {name} gezahlt',
+  'publicTab.liveNote': 'Dieser Deckel zeigt deinen Anteil an den gemeinsamen Rechnungen der Reise in Echtzeit.',
 };
 export default shared;

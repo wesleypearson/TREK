@@ -167,5 +167,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': '已记入账单',
   'costs.tabsFootnote': '任何拥有账单链接的人都能看到其中的消费、付款以及您的收款方式。',
   'costs.personalHint': '不分摊、不结算——仅记录为你自己的支出。',
+  'costs.tabLinkNewGuest': '新建临时访客 — 参与所有分摊',
+  'costs.tabLinkMember': '关联到 {name}',
+  'costs.tabLinkNone': '仅姓名（不关联成员）',
+  'costs.tabLinkHint': '已关联的账单会跟随旅行账目：在费用分摊中指定此人即可共同分担账单。',
+  'costs.tabLinked': '已关联',
+  'costs.tabLiveHint': '跟随旅行账目 — 在费用分摊中指定 {name} 即可共同分担账单。',
+  'costs.tabOwedTo': '欠款',
+  'costs.tabPaidTo': '已支付给 {name}',
+  'costs.tabNoLinkedCharge': '已关联的账单跟随分摊 — 请改为在费用中指定此人。',
 };
 export default budget;

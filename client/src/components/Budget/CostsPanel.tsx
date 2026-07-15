@@ -613,8 +613,8 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
       )}
 
       {tabsModal !== false && (
-        <ExpenseTabsModal tripId={tripId} base={base} locale={locale} addItemFor={tabsModal.item ?? null}
-          onClose={() => setTabsModal(false)} />
+        <ExpenseTabsModal tripId={tripId} base={base} locale={locale} people={people} addItemFor={tabsModal.item ?? null}
+          onClose={() => { setTabsModal(false); loadSettlement(); loadBudgetItems(tripId) }} />
       )}
 
       <style>{`

@@ -86,6 +86,26 @@ payments); the link keeps working until you pause (revocable, reversible) or
 delete the tab. Every route is rate-limited per IP and an invalid, paused or
 deleted token answers 404.
 
+### Member-linked tabs (the "single temp user")
+
+A tab can be **linked to a trip member** — usually a **temp guest** created
+right from the tab form (guests are credential-less members, one per person
+per trip, assignable in every split like anyone else). A linked tab stops
+being private bookkeeping and becomes a **shared trip resource**: every
+member sees it, and any budget-editor shares a bill with the person simply by
+assigning them in the expense split (equal, custom or per-line-item — all of
+it flows through).
+
+The public link then shows the person's **live ledger position**: their share
+of every group bill, the netted "you owe X" amounts per creditor — each with
+that member's own payment details — and the settle-ups already made. Manual
+frozen charges are rejected on linked tabs (the ledger is the single source
+of truth), and **recording a payment writes a real settlement**
+(member → recorder), so the Costs screen, the settlement engine and the
+public page always agree. At most one tab per member; unlinked name-only
+tabs keep the frozen-charge behaviour. Personal (only-me) expenses never
+appear on anyone's public link.
+
 **Accounting export**: each tab exports a CSV (Date/Type/Description/Amount/
 Currency with a balance row) and the owner-side JSON endpoints below are a
 stable shape for feeding AU accounting tools (Xero/MYOB CSV import works

@@ -168,6 +168,15 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Đã ghi vào sổ',
   'costs.tabsFootnote': 'Bất kỳ ai có liên kết sổ nợ đều xem được các khoản ghi sổ, các khoản thanh toán và thông tin nhận tiền của bạn.',
   'costs.personalHint': 'Không chia hay quyết toán — chỉ được ghi lại là khoản chi của riêng bạn.',
+  'costs.tabLinkNewGuest': 'Khách tạm mới — tham gia mọi lần chia',
+  'costs.tabLinkMember': 'Liên kết với {name}',
+  'costs.tabLinkNone': 'Chỉ tên (không liên kết thành viên)',
+  'costs.tabLinkHint': 'Sổ nợ liên kết bám theo sổ cái chuyến đi: chia hóa đơn bằng cách chỉ định người này trong phần chia của khoản chi.',
+  'costs.tabLinked': 'Đã liên kết',
+  'costs.tabLiveHint': 'Bám theo sổ cái chuyến đi — chia hóa đơn với {name} bằng cách chỉ định họ trong phần chia của khoản chi.',
+  'costs.tabOwedTo': 'Còn nợ',
+  'costs.tabPaidTo': 'Đã trả cho {name}',
+  'costs.tabNoLinkedCharge': 'Sổ nợ liên kết bám theo phần chia — hãy chỉ định người này trong khoản chi thay vì ở đây.',
 };
 
 export default budget;

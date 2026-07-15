@@ -34,9 +34,9 @@ export class PublicExpenseTabController {
   }
 
   @Get(':token')
-  read(@Param('token') token: string, @Req() req: Request) {
+  async read(@Param('token') token: string, @Req() req: Request) {
     this.limit('tab_read', req, 120);
-    const tab = this.tabs.getPublicTab(token);
+    const tab = await this.tabs.getPublicTab(token);
     if (!tab) throw new HttpException({ error: 'Invalid or expired link' }, 404);
     return tab;
   }

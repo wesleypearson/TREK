@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Buat akun gratis di server ini dengan undangan sekali pakai dan lihat seluruh perjalanan.',
   'publicTab.expired': 'Tautan ini sudah tidak aktif',
   'publicTab.expiredHint': 'Minta tautan baru kepada orang yang mengirimkannya.',
+  'publicTab.youOwe': 'Anda berutang kepada {name}',
+  'publicTab.ofTotal': 'bagian Anda dari {amount}',
+  'publicTab.paidTo': 'Dibayar kepada {name}',
+  'publicTab.liveNote': 'Tagihan ini melacak bagian Anda dari biaya bersama perjalanan secara real-time.',
 };
 export default shared;

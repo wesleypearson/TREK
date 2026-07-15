@@ -1,12 +1,15 @@
 import { useEffect, useState } from 'react'
-import { Plus, Copy, Check, ExternalLink, Trash2, Download, Pause, Play, ChevronDown, ChevronUp, Link2, Receipt } from 'lucide-react'
+import { Plus, Copy, Check, ExternalLink, Trash2, Download, Pause, Play, ChevronDown, ChevronUp, Link2, Receipt, UserPlus } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import { useToast } from '../shared/Toast'
 import { expenseTabsApi, type ExpenseTab } from '../../api/client'
 import { formatMoney } from '../../utils/formatters'
 import { downloadFile } from '../../utils/fileDownload'
 import Modal from '../shared/Modal'
+import CustomSelect from '../shared/CustomSelect'
+import GuestBadge from '../shared/GuestBadge'
 import type { BudgetItem } from '../../types'
+import type { TripMember } from './BudgetPanelMemberChips'
 
 /**
  * Public expense tabs (custom): per-person running balances shared as a
@@ -15,10 +18,11 @@ import type { BudgetItem } from '../../types'
  * Charges freeze the label/amount at share time, so later ledger edits never
  * rewrite what the other person already saw.
  */
-export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onClose }: {
+export default function ExpenseTabsModal({ tripId, base, locale, people = [], addItemFor, onClose }: {
   tripId: number
   base: string
   locale: string
+  people?: TripMember[]
   addItemFor?: BudgetItem | null
   onClose: () => void
 }) {
@@ -30,10 +34,13 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
   const [confirmDeleteId, setConfirmDeleteId] = useState<number | null>(null)
   const [busy, setBusy] = useState(false)
 
-  // create form
+  // create form. Link mode: 'guest' creates a temp guest member (single per
+  // trip, joins every split), 'member:<id>' links an existing member, 'none'
+  // keeps the legacy standalone name-only tab.
   const [showCreate, setShowCreate] = useState(false)
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
+  const [linkMode, setLinkMode] = useState('guest')
 
   // charge-to-tab form (addItemFor mode)
   const [chargeAmount, setChargeAmount] = useState(addItemFor?.total_price ? String(addItemFor.total_price) : '')
@@ -46,7 +53,9 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
 
   const load = () => expenseTabsApi.list(tripId).then(r => {
     setTabs(r.tabs)
-    if (addItemFor && r.tabs.length > 0 && targetTabId == null) setTargetTabId(r.tabs[0].id)
+    // Charge mode targets standalone tabs only — linked ones follow the ledger.
+    const chargeable = r.tabs.filter(tab => !tab.revoked_at && tab.member_user_id == null)
+    if (addItemFor && chargeable.length > 0 && targetTabId == null) setTargetTabId(chargeable[0].id)
   }).catch(() => toast.error(t('common.unknownError')))
 
   useEffect(() => { load() }, [tripId])
@@ -67,15 +76,27 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
     } catch { toast.error(t('common.unknownError')) }
   }
 
+  const linkedMemberId = linkMode.startsWith('member:') ? Number(linkMode.slice(7)) : null
+  const createValid = linkedMemberId != null || firstName.trim().length > 0
+
   const createTab = async () => {
-    if (!firstName.trim() || busy) return
+    if (!createValid || busy) return
     setBusy(true)
     try {
-      const { tab } = await expenseTabsApi.create(tripId, { first_name: firstName.trim(), last_name: lastName.trim(), currency: base })
-      setFirstName(''); setLastName(''); setShowCreate(false)
+      const { tab } = await expenseTabsApi.create(tripId, {
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        currency: base,
+        member_user_id: linkedMemberId,
+        create_guest: linkMode === 'guest',
+      })
+      setFirstName(''); setLastName(''); setLinkMode('guest'); setShowCreate(false)
       await load()
       if (addItemFor) setTargetTabId(tab.id)
-    } catch { toast.error(t('common.unknownError')) } finally { setBusy(false) }
+    } catch (err) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      toast.error(msg || t('common.unknownError'))
+    } finally { setBusy(false) }
   }
 
   const chargeToTab = async () => {
@@ -106,15 +127,29 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
   const iconBtn = 'bg-surface-secondary border border-edge text-content-muted'
   const iconBtnStyle = { display: 'inline-flex', alignItems: 'center', gap: 5, padding: '6px 10px', borderRadius: 9, fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' } as const
 
+  const alreadyLinked = new Set((tabs || []).map(tab => tab.member_user_id).filter(Boolean))
   const createForm = (
     <div className="bg-surface-secondary border border-edge" style={{ borderRadius: 14, padding: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder={t('costs.tabFirstName')} className={inputCls} style={{ ...inputStyle, flex: '1 1 120px' }} />
-        <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder={t('costs.tabLastName')} className={inputCls} style={{ ...inputStyle, flex: '1 1 120px' }} />
-      </div>
+      <CustomSelect value={linkMode} onChange={v => setLinkMode(String(v))} style={{ width: '100%' }}
+        options={[
+          { value: 'guest', label: t('costs.tabLinkNewGuest') },
+          ...people.filter(p => !alreadyLinked.has(p.id)).map(p => ({ value: `member:${p.id}`, label: t('costs.tabLinkMember', { name: p.username }) })),
+          { value: 'none', label: t('costs.tabLinkNone') },
+        ]} />
+      {linkedMemberId == null && (
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <input value={firstName} onChange={e => setFirstName(e.target.value)} placeholder={t('costs.tabFirstName')} className={inputCls} style={{ ...inputStyle, flex: '1 1 120px' }} />
+          <input value={lastName} onChange={e => setLastName(e.target.value)} placeholder={t('costs.tabLastName')} className={inputCls} style={{ ...inputStyle, flex: '1 1 120px' }} />
+        </div>
+      )}
+      {linkMode !== 'none' && (
+        <div className="text-content-faint" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', display: 'flex', alignItems: 'center', gap: 6 }}>
+          <UserPlus size={12} /> {t('costs.tabLinkHint')}
+        </div>
+      )}
       <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
         <button onClick={() => setShowCreate(false)} className="text-content-muted border border-edge" style={{ padding: '7px 14px', borderRadius: 9, background: 'none', fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', cursor: 'pointer', fontFamily: 'inherit' }}>{t('common.cancel')}</button>
-        <button onClick={createTab} disabled={!firstName.trim() || busy} className="bg-[var(--text-primary)] text-[var(--bg-primary)]" style={{ padding: '7px 16px', borderRadius: 9, border: 0, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: !firstName.trim() || busy ? 0.5 : 1 }}>{t('costs.createTab')}</button>
+        <button onClick={createTab} disabled={!createValid || busy} className="bg-[var(--text-primary)] text-[var(--bg-primary)]" style={{ padding: '7px 16px', borderRadius: 9, border: 0, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: !createValid || busy ? 0.5 : 1 }}>{t('costs.createTab')}</button>
       </div>
     </div>
   )
@@ -140,11 +175,13 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
                 <Receipt size={14} className="text-content-muted" /> {t('costs.shareReceiptToo')}
               </label>
             )}
-            {tabs && tabs.length > 0 && (
+            {/* Only standalone tabs take frozen manual charges; linked tabs follow
+                the ledger — you share a bill by assigning the member in the split. */}
+            {tabs && tabs.filter(tab => !tab.revoked_at && tab.member_user_id == null).length > 0 && (
               <div>
                 <label className={labelCls}>{t('costs.tabs')}</label>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {tabs.filter(tab => !tab.revoked_at).map(tab => (
+                  {tabs.filter(tab => !tab.revoked_at && tab.member_user_id == null).map(tab => (
                     <button key={tab.id} onClick={() => setTargetTabId(tab.id)}
                       className={targetTabId === tab.id ? 'bg-[var(--text-primary)] text-[var(--bg-primary)]' : 'bg-surface-card border border-edge text-content'}
                       style={{ padding: '8px 14px', borderRadius: 999, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, border: targetTabId === tab.id ? 0 : undefined, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -154,7 +191,10 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
                 </div>
               </div>
             )}
-            {tabs && tabs.filter(tab => !tab.revoked_at).length === 0 && !showCreate && (
+            {tabs && tabs.some(tab => tab.member_user_id != null) && (
+              <div className="text-content-faint" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))' }}>{t('costs.tabNoLinkedCharge')}</div>
+            )}
+            {tabs && tabs.filter(tab => !tab.revoked_at && tab.member_user_id == null).length === 0 && !showCreate && (
               <div className="text-content-muted" style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))' }}>{t('costs.tabsEmpty')}</div>
             )}
             <div style={{ display: 'flex', gap: 8, justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
@@ -184,12 +224,20 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
         {/* tab cards (browse mode) */}
         {!addItemFor && (tabs || []).map(tab => {
           const open = expanded === tab.id
+          // Linked tabs read from the live group ledger; standalone ones from
+          // their frozen charge list.
+          const balance = tab.live ? tab.live.balance : tab.balance
+          const balCur = tab.live ? tab.live.currency : tab.currency
           return (
             <div key={tab.id} className="bg-surface-card border border-edge" style={{ borderRadius: 14, overflow: 'hidden' }}>
               <div style={{ padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => { setExpanded(open ? null : tab.id); setPayAmount(''); setPayNote(''); setConfirmDeleteId(null) }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span className="text-content" style={{ fontSize: 'calc(14.5px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{tabName(tab)}</span>
+                    {tab.member?.is_guest && <GuestBadge size="xs" />}
+                    {tab.member && !tab.member.is_guest && (
+                      <span className="bg-surface-secondary border border-edge text-content-muted" style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', fontWeight: 700 }}>{t('costs.tabLinked')}</span>
+                    )}
                     {tab.claimed_at && (
                       <span className="bg-[rgba(22,163,74,0.12)] text-[#16a34a]" style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', fontWeight: 700 }}>{t('costs.tabClaimed')}</span>
                     )}
@@ -198,11 +246,11 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
                     )}
                   </div>
                   <div className="text-content-faint" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', marginTop: 2 }}>
-                    {t('costs.tabCharged')} {fmt(tab.charged, tab.currency)} · {t('costs.tabPaid')} {fmt(tab.paid, tab.currency)}
+                    {t('costs.tabCharged')} {fmt(tab.live ? tab.live.charged : tab.charged, balCur)} · {t('costs.tabPaid')} {fmt(tab.live ? tab.live.paid : tab.paid, balCur)}
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                  <div style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))', fontWeight: 700, color: tab.balance > 0.004 ? '#dc2626' : '#16a34a' }}>{fmt(tab.balance, tab.currency)}</div>
+                  <div style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))', fontWeight: 700, color: balance > 0.004 ? '#dc2626' : '#16a34a' }}>{fmt(balance, balCur)}</div>
                 </div>
                 {open ? <ChevronUp size={16} className="text-content-faint" /> : <ChevronDown size={16} className="text-content-faint" />}
               </div>
@@ -234,46 +282,86 @@ export default function ExpenseTabsModal({ tripId, base, locale, addItemFor, onC
                     </button>
                   </div>
 
+                  {tab.live && (
+                    <div className="text-content-faint" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', display: 'flex', alignItems: 'center', gap: 6 }}>
+                      <Link2 size={12} /> {t('costs.tabLiveHint', { name: tabName(tab) })}
+                    </div>
+                  )}
+
+                  {/* who they owe right now (linked tabs) */}
+                  {tab.live && tab.live.owed.length > 0 && (
+                    <div>
+                      <div className={labelCls}>{t('costs.tabOwedTo')}</div>
+                      {tab.live.owed.map(o => (
+                        <div key={o.user_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0' }}>
+                          <span className="text-content" style={{ flex: 1, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{o.name}</span>
+                          <span className="text-[#dc2626]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{fmt(o.amount, tab.live!.currency)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
                   {/* charges */}
                   <div>
-                    <div className={labelCls}>{t('costs.tabItems')} · {tab.items.length}</div>
-                    {tab.items.length === 0 && <div className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))' }}>—</div>}
-                    {tab.items.map(item => (
-                      <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{item.label}</span>
-                          {!!item.share_receipt && <Receipt size={11} className="text-content-faint" style={{ marginLeft: 6, display: 'inline' }} />}
-                          <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(item.expense_date || item.created_at)}</span>
-                        </div>
-                        <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>{fmt(item.amount, item.currency)}</span>
-                        <button onClick={async () => { try { await expenseTabsApi.removeItem(tripId, tab.id, item.id); await load() } catch { toast.error(t('common.unknownError')) } }}
-                          className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 2, display: 'inline-flex' }}>
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    ))}
+                    <div className={labelCls}>{t('costs.tabItems')} · {tab.live ? tab.live.charges.length : tab.items.length}</div>
+                    {(tab.live ? tab.live.charges.length : tab.items.length) === 0 && <div className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))' }}>—</div>}
+                    {tab.live
+                      ? tab.live.charges.map(c => (
+                          <div key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{c.label}</span>
+                              <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(c.expense_date || c.created_at)}</span>
+                            </div>
+                            <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>{fmt(c.share, c.currency)}</span>
+                          </div>
+                        ))
+                      : tab.items.map(item => (
+                          <div key={item.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{item.label}</span>
+                              {!!item.share_receipt && <Receipt size={11} className="text-content-faint" style={{ marginLeft: 6, display: 'inline' }} />}
+                              <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(item.expense_date || item.created_at)}</span>
+                            </div>
+                            <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>{fmt(item.amount, item.currency)}</span>
+                            <button onClick={async () => { try { await expenseTabsApi.removeItem(tripId, tab.id, item.id); await load() } catch { toast.error(t('common.unknownError')) } }}
+                              className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 2, display: 'inline-flex' }}>
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
                   </div>
 
                   {/* payments */}
                   <div>
-                    <div className={labelCls}>{t('costs.tabPayments')} · {tab.payments.length}</div>
-                    {tab.payments.map(p => (
-                      <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))' }}>{p.note || t('costs.tabPayments')}</span>
-                          <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(p.created_at)}</span>
-                        </div>
-                        <span className="text-[#16a34a]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{fmt(p.amount, tab.currency)}</span>
-                        <button onClick={async () => { try { await expenseTabsApi.removePayment(tripId, tab.id, p.id); await load() } catch { toast.error(t('common.unknownError')) } }}
-                          className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 2, display: 'inline-flex' }}>
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    ))}
+                    <div className={labelCls}>{t('costs.tabPayments')} · {tab.live ? tab.live.payments.length : tab.payments.length}</div>
+                    {tab.live
+                      ? tab.live.payments.map(p => (
+                          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))' }}>{t('costs.tabPaidTo', { name: p.to_name })}</span>
+                              <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(p.created_at)}</span>
+                            </div>
+                            <span className="text-[#16a34a]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{fmt(p.amount, p.currency || tab.live!.currency)}</span>
+                          </div>
+                        ))
+                      : tab.payments.map(p => (
+                          <div key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0' }}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))' }}>{p.note || t('costs.tabPayments')}</span>
+                              <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(p.created_at)}</span>
+                            </div>
+                            <span className="text-[#16a34a]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{fmt(p.amount, tab.currency)}</span>
+                            <button onClick={async () => { try { await expenseTabsApi.removePayment(tripId, tab.id, p.id); await load() } catch { toast.error(t('common.unknownError')) } }}
+                              className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 2, display: 'inline-flex' }}>
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        ))}
                     <div style={{ display: 'flex', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
                       <input type="text" inputMode="decimal" placeholder="0.00" value={payAmount} onChange={e => setPayAmount(e.target.value.replace(',', '.'))}
                         className={inputCls} style={{ ...inputStyle, flex: '0 0 90px', fontWeight: 600 }} />
-                      <input value={payNote} onChange={e => setPayNote(e.target.value)} placeholder={t('costs.tabPaymentNote')} className={inputCls} style={{ ...inputStyle, flex: '1 1 140px' }} />
+                      {/* Linked tabs record a real settle-up (no free-text note). */}
+                      {!tab.live && <input value={payNote} onChange={e => setPayNote(e.target.value)} placeholder={t('costs.tabPaymentNote')} className={inputCls} style={{ ...inputStyle, flex: '1 1 140px' }} />}
                       <button onClick={() => recordPayment(tab)} disabled={!(parseFloat(payAmount) > 0) || busy}
                         className="bg-[var(--text-primary)] text-[var(--bg-primary)]"
                         style={{ padding: '8px 14px', borderRadius: 10, border: 0, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: !(parseFloat(payAmount) > 0) || busy ? 0.5 : 1 }}>

@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Create a free account on this server with a one-time invite and see the whole trip.',
   'publicTab.expired': 'This link is no longer active',
   'publicTab.expiredHint': 'Ask the person who sent it for a fresh one.',
+  'publicTab.youOwe': 'You owe {name}',
+  'publicTab.ofTotal': 'your share of {amount}',
+  'publicTab.paidTo': 'Paid {name}',
+  'publicTab.liveNote': 'This tab tracks your share of the trip’s shared bills in real time.',
 };
 export default shared;

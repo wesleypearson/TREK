@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'أنشئ حسابًا مجانيًا على هذا الخادم بدعوة لمرة واحدة وشاهد الرحلة كاملة.',
   'publicTab.expired': 'هذا الرابط لم يعد نشطًا',
   'publicTab.expiredHint': 'اطلب رابطًا جديدًا من الشخص الذي أرسله إليك.',
+  'publicTab.youOwe': 'أنت مدين لـ {name}',
+  'publicTab.ofTotal': 'حصتك من {amount}',
+  'publicTab.paidTo': 'دُفع إلى {name}',
+  'publicTab.liveNote': 'يتتبع هذا الحساب حصتك من الفواتير المشتركة للرحلة في الوقت الفعلي.',
 };
 export default shared;

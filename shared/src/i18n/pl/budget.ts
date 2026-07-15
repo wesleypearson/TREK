@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Dopisano do rachunku',
   'costs.tabsFootnote': 'Każdy, kto ma link do rachunku, widzi jego pozycje, wpłaty oraz twoje dane do płatności.',
   'costs.personalHint': 'Nie jest dzielony ani rozliczany — tylko zapisany jako Twój własny wydatek.',
+  'costs.tabLinkNewGuest': 'Nowy gość tymczasowy — bierze udział w każdym podziale',
+  'costs.tabLinkMember': 'Połącz z {name}',
+  'costs.tabLinkNone': 'Tylko imię (bez połączenia z członkiem)',
+  'costs.tabLinkHint': 'Połączone rachunki podążają za rozliczeniami podróży: podziel się kosztem, przypisując tę osobę w podziale wydatku.',
+  'costs.tabLinked': 'Połączony',
+  'costs.tabLiveHint': 'Podąża za rozliczeniami podróży — dziel koszty z {name}, przypisując tę osobę w podziale wydatku.',
+  'costs.tabOwedTo': 'Ma do zapłaty',
+  'costs.tabPaidTo': 'Zapłacono: {name}',
+  'costs.tabNoLinkedCharge': 'Połączone rachunki podążają za podziałem — zamiast tego przypisz osobę w wydatku.',
 };
 export default budget;

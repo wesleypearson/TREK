@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'ツケに追加しました',
   'costs.tabsFootnote': 'ツケのリンクを知っている人は誰でも、その請求・支払い・あなたの支払い先情報を見ることができます。',
   'costs.personalHint': '割り勘や精算はされません — 自分の支出としてのみ記録されます。',
+  'costs.tabLinkNewGuest': '新しい一時ゲスト — すべての割り勘に参加',
+  'costs.tabLinkMember': '{name}にリンク',
+  'costs.tabLinkNone': '名前のみ（メンバーとのリンクなし）',
+  'costs.tabLinkHint': 'リンクされたツケは旅の精算と連動します。費用の分割にこの人を割り当てると、支払いを共有できます。',
+  'costs.tabLinked': 'リンク済み',
+  'costs.tabLiveHint': '旅の精算と連動 — 費用の分割に{name}を割り当てると、支払いを共有できます。',
+  'costs.tabOwedTo': '未払い額',
+  'costs.tabPaidTo': '{name}に支払い済み',
+  'costs.tabNoLinkedCharge': 'リンクされたツケは分割と連動しています — 代わりに費用でこの人を割り当ててください。',
 };
 export default budget;

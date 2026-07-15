@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': '장부에 추가됨',
   'costs.tabsFootnote': '장부 링크가 있는 사람은 누구나 청구 내역, 입금 내역, 그리고 내 결제 정보를 볼 수 있습니다.',
   'costs.personalHint': '분할이나 정산 없이 나만의 지출로만 기록됩니다.',
+  'costs.tabLinkNewGuest': '새 임시 게스트 — 모든 분할에 참여',
+  'costs.tabLinkMember': '{name}님과 연결',
+  'costs.tabLinkNone': '이름만 (멤버 연결 없음)',
+  'costs.tabLinkHint': '연결된 장부는 여행 정산과 연동됩니다. 비용 분할에서 이 사람을 지정하면 비용을 함께 나눌 수 있습니다.',
+  'costs.tabLinked': '연결됨',
+  'costs.tabLiveHint': '여행 정산과 연동됩니다 — 비용 분할에서 {name}님을 지정하면 비용을 함께 나눌 수 있습니다.',
+  'costs.tabOwedTo': '빚진 금액',
+  'costs.tabPaidTo': '{name}님에게 지불함',
+  'costs.tabNoLinkedCharge': '연결된 장부는 분할과 연동됩니다 — 대신 비용에서 그 사람을 지정하세요.',
 };
 export default budget;

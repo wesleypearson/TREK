@@ -30,26 +30,33 @@ export class TripExpenseTabsController {
   }
 
   @Get()
-  list(@CurrentUser() user: User, @Param('tripId') tripId: string) {
-    this.requireTrip(tripId, user);
-    return { tabs: this.tabs.list(tripId, user.id) };
+  async list(@CurrentUser() user: User, @Param('tripId') tripId: string) {
+    const trip = this.requireTrip(tripId, user) as { currency?: string | null };
+    return { tabs: await this.tabs.listWithLive(tripId, user.id, trip.currency) };
   }
 
   @Post()
   create(
     @CurrentUser() user: User,
     @Param('tripId') tripId: string,
-    @Body() body: { first_name?: string; last_name?: string; currency?: string | null },
+    @Body() body: { first_name?: string; last_name?: string; currency?: string | null; member_user_id?: number | null; create_guest?: boolean },
   ) {
     this.requireEdit(tripId, user);
-    if (!body?.first_name || !String(body.first_name).trim()) {
+    // Linking to an existing member derives the name from their profile; a
+    // standalone tab or a new temp guest needs one typed in.
+    if (body?.member_user_id == null && (!body?.first_name || !String(body.first_name).trim())) {
       throw new HttpException({ error: 'first_name is required' }, 400);
     }
     const tab = this.tabs.create(tripId, user.id, {
-      first_name: String(body.first_name),
+      first_name: body.first_name != null ? String(body.first_name) : '',
       last_name: body.last_name != null ? String(body.last_name) : '',
       currency: body.currency ? String(body.currency).toUpperCase().slice(0, 3) : null,
+      member_user_id: body.member_user_id != null ? Number(body.member_user_id) : null,
+      create_guest: !!body.create_guest,
     });
+    if ('error' in tab) {
+      throw new HttpException({ error: tab.error }, tab.error.includes('already has a tab') ? 409 : 404);
+    }
     return { tab };
   }
 
@@ -83,7 +90,7 @@ export class TripExpenseTabsController {
   }
 
   @Post(':id/payments')
-  addPayment(
+  async addPayment(
     @CurrentUser() user: User,
     @Param('tripId') tripId: string,
     @Param('id') id: string,
@@ -91,7 +98,20 @@ export class TripExpenseTabsController {
   ) {
     this.requireEdit(tripId, user);
     if (body?.amount == null) throw new HttpException({ error: 'amount is required' }, 400);
-    const payment = this.tabs.addPayment(tripId, id, user.id, { amount: Number(body.amount), note: body.note });
+    const amount = Math.round(Number(body.amount) * 100) / 100;
+    if (!Number.isFinite(amount) || amount <= 0) throw new HttpException({ error: 'Amount must be greater than zero' }, 400);
+
+    // Linked tab: money received is a real settle-up (member → recorder), so
+    // the group balances and the public live view move together.
+    const tab = this.tabs.get(tripId, id, user.id);
+    if (!tab) throw new HttpException({ error: 'Tab not found' }, 404);
+    if (tab.member_user_id != null) {
+      const trip = this.requireTrip(tripId, user) as { currency?: string | null };
+      const settlement = await this.tabs.settleLinkedTab(tripId, tab.member_user_id, user.id, amount, tab.currency || trip.currency || null);
+      return { settlement };
+    }
+
+    const payment = this.tabs.addPayment(tripId, id, user.id, { amount, note: body.note });
     if (!payment) throw new HttpException({ error: 'Tab not found' }, 404);
     if ('error' in payment) throw new HttpException({ error: payment.error }, 400);
     return { payment };

@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Felírva a számlára',
   'costs.tabsFootnote': 'Bárki, akinek megvan egy számla linkje, láthatja annak tételeit, befizetéseit és a fizetési adataidat.',
   'costs.personalHint': 'Nincs felosztva és elszámolva — csak a saját kiadásodként kerül rögzítésre.',
+  'costs.tabLinkNewGuest': 'Új ideiglenes vendég — minden felosztásban részt vesz',
+  'costs.tabLinkMember': 'Összekapcsolás vele: {name}',
+  'costs.tabLinkNone': 'Csak név (tag-összekapcsolás nélkül)',
+  'costs.tabLinkHint': 'Az összekapcsolt számlák követik az út elszámolását: oszd meg a költséget úgy, hogy ezt a személyt hozzárendeled a kiadás felosztásához.',
+  'costs.tabLinked': 'Összekapcsolva',
+  'costs.tabLiveHint': 'Követi az út elszámolását — oszd meg a költségeket {name} taggal úgy, hogy hozzárendeled a kiadás felosztásához.',
+  'costs.tabOwedTo': 'Tartozik',
+  'costs.tabPaidTo': 'Fizetve {name} részére',
+  'costs.tabNoLinkedCharge': 'Az összekapcsolt számlák a felosztást követik — inkább a kiadásban rendeld hozzá a személyt.',
 };
 export default budget;

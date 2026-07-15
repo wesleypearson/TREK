@@ -716,3 +716,122 @@ describe('Public expense tabs (TAB)', () => {
     expect(limited!.body.error).toBe('Too many attempts. Please try again later.');
   });
 });
+
+// ---------------------------------------------------------------------------
+// Member-linked tabs (custom): a tab tied to a trip member — typically a temp
+// guest (#1362), the single temp user per trip — becomes a live window onto
+// the group ledger instead of a frozen charge list.
+// ---------------------------------------------------------------------------
+
+describe('Member-linked tabs (TAB)', () => {
+  it('TAB-015: create_guest creates a real guest trip member and links the tab to it', async () => {
+    const res = await createTabAs(owner.id, { first_name: 'Lisa', last_name: 'Nguyen', create_guest: true });
+    expect(res.status).toBe(201);
+    const tab = res.body.tab;
+    expect(tab.member_user_id).toBeTruthy();
+    expect(tab.member).toMatchObject({ user_id: tab.member_user_id, is_guest: true });
+
+    // The guest is a credential-less users row joined into trip_members —
+    // assignable in every split like any member.
+    const guest = testDb.prepare('SELECT is_guest, display_name FROM users WHERE id = ?').get(tab.member_user_id) as { is_guest: number; display_name: string };
+    expect(guest.is_guest).toBe(1);
+    expect(guest.display_name).toBe('Lisa Nguyen');
+    expect(testDb.prepare('SELECT 1 FROM trip_members WHERE trip_id = ? AND user_id = ?').get(tripId, tab.member_user_id)).toBeTruthy();
+  });
+
+  it('TAB-016: one tab per member — duplicates 409, unknown members 404, linking derives the name', async () => {
+    const linked = await createTabAs(owner.id, { member_user_id: member.id });
+    expect(linked.status).toBe(201);
+    expect(linked.body.tab.member_user_id).toBe(member.id);
+    expect(linked.body.tab.first_name.length).toBeGreaterThan(0); // derived from the member profile
+
+    const dup = await createTabAs(member.id, { member_user_id: member.id });
+    expect(dup.status).toBe(409);
+    expect(dup.body.error).toMatch(/already has a tab/i);
+
+    const stranger = await createTabAs(owner.id, { member_user_id: outsider.id });
+    expect(stranger.status).toBe(404);
+  });
+
+  it('TAB-017: linked tabs are a shared trip resource; standalone tabs stay owner-scoped', async () => {
+    const linked = (await createTabAs(owner.id, { first_name: 'Guesty', create_guest: true })).body.tab;
+    const standalone = (await createTabAs(owner.id, { first_name: 'Solo' })).body.tab;
+
+    const theirs = await listTabsAs(member.id);
+    expect(theirs.status).toBe(200);
+    const ids = theirs.body.tabs.map((t: { id: number }) => t.id);
+    expect(ids).toContain(linked.id);        // linked → visible to every member
+    expect(ids).not.toContain(standalone.id); // standalone → creator only
+  });
+
+  it('TAB-018: manual frozen charges are rejected on a linked tab — bills flow through the split', async () => {
+    const tab = (await createTabAs(owner.id, { first_name: 'Guesty', create_guest: true })).body.tab;
+    const res = await addItemAs(owner.id, tab.id, { label: 'Manual', amount: 10 });
+    expect(res.status).toBe(400);
+    expect(res.body.error).toMatch(/expense split/i);
+  });
+
+  it('TAB-019: the public page shows the live ledger position, and payments record real settlements', async () => {
+    const tab = (await createTabAs(owner.id, { first_name: 'Lisa', create_guest: true })).body.tab;
+    const guestId = tab.member_user_id as number;
+
+    // Owner pays 100, split equally with the guest → guest owes owner 50.
+    await createBudgetItemAs(owner.id, {
+      name: 'Boat Day',
+      expense_date: '2026-07-20',
+      payers: [{ user_id: owner.id, amount: 100 }],
+      members: [{ user_id: owner.id, amount: null }, { user_id: guestId, amount: null }],
+    });
+    // A personal expense never leaks into the guest's public view.
+    await createBudgetItemAs(owner.id, { name: 'Secret Spa', total_price: 40, is_private: true });
+
+    // Owner's payment methods surface on the creditor card.
+    await request(app).put('/api/settings').set('Cookie', authCookie(owner.id)).send({ key: 'payment_payid', value: 'wes@pay.id' });
+
+    const pub = await publicGet(tab.token);
+    expect(pub.status).toBe(200);
+    expect(pub.body.live).toBeTruthy();
+    expect(pub.body.live.charges).toHaveLength(1);
+    expect(pub.body.live.charges[0]).toMatchObject({ label: 'Boat Day', share: 50, total: 100 });
+    expect(pub.body.live.owed).toHaveLength(1);
+    expect(pub.body.live.owed[0]).toMatchObject({ user_id: owner.id, amount: 50 });
+    expect(pub.body.live.owed[0].payment_methods.payment_payid).toBe('wes@pay.id');
+    expect(pub.body.live.balance).toBe(50);
+
+    // ANY budget-edit member can record money received — it lands as a real
+    // settlement (guest → recorder) and the live view follows.
+    const pay = await addPaymentAs(member.id, tab.id, { amount: 50 });
+    expect(pay.status).toBe(201);
+    expect(pay.body.settlement).toMatchObject({ from_user_id: guestId, to_user_id: member.id, amount: 50 });
+    expect(testDb.prepare('SELECT COUNT(*) AS c FROM budget_settlements WHERE trip_id = ?').get(tripId)).toMatchObject({ c: 1 });
+
+    const after = await publicGet(tab.token);
+    // 50 owed to owner minus 50 paid to the recording member nets the guest to zero.
+    expect(after.body.live.paid).toBe(50);
+    expect(after.body.live.payments[0]).toMatchObject({ amount: 50 });
+
+    // The owner-side list carries the same live position.
+    const list = await listTabsAs(owner.id);
+    const row = list.body.tabs.find((t: { id: number }) => t.id === tab.id);
+    expect(row.live).toBeTruthy();
+    expect(row.live.charged).toBe(50);
+  });
+
+  it('TAB-020: CSV export of a linked tab reflects the live ledger', async () => {
+    const tab = (await createTabAs(owner.id, { first_name: 'Lisa', create_guest: true })).body.tab;
+    const guestId = tab.member_user_id as number;
+    await createBudgetItemAs(owner.id, {
+      name: 'Dinner',
+      payers: [{ user_id: owner.id, amount: 60 }],
+      members: [{ user_id: owner.id, amount: null }, { user_id: guestId, amount: null }],
+    });
+    await addPaymentAs(owner.id, tab.id, { amount: 10 });
+
+    const res = await request(app).get(`/api/trips/${tripId}/expense-tabs/${tab.id}/export.csv`).set('Cookie', authCookie(member.id));
+    expect(res.status).toBe(200);
+    const csv = res.text;
+    expect(csv).toContain('"Dinner",30.00');
+    expect(csv).toMatch(/Payment,"Paid .*",-10\.00/);
+    expect(csv).toMatch(/Balance,.*20\.00/);
+  });
+});

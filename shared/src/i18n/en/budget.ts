@@ -168,6 +168,15 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Added to the tab',
   'costs.tabsFootnote': 'Anyone with a tab link can see its charges, payments and your payment details.',
   'costs.personalHint': 'Not split or settled — just recorded as your own spend.',
+  'costs.tabLinkNewGuest': 'New temp guest — joins every split',
+  'costs.tabLinkMember': 'Link to {name}',
+  'costs.tabLinkNone': 'Name only (no member link)',
+  'costs.tabLinkHint': 'Linked tabs follow the trip ledger: share a bill by assigning this person in the expense split.',
+  'costs.tabLinked': 'Linked',
+  'costs.tabLiveHint': 'Follows the trip ledger — share bills with {name} by assigning them in the expense split.',
+  'costs.tabOwedTo': 'Owes',
+  'costs.tabPaidTo': 'Paid {name}',
+  'costs.tabNoLinkedCharge': 'Linked tabs follow the split — assign the person in the expense instead.',
 };
 
 export default budget;

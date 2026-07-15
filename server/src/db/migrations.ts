@@ -3731,6 +3731,18 @@ function runMigrations(db: Database.Database): void {
       db.exec('CREATE INDEX IF NOT EXISTS idx_expense_tab_items_tab ON expense_tab_items (tab_id)');
       db.exec('CREATE INDEX IF NOT EXISTS idx_expense_tab_payments_tab ON expense_tab_payments (tab_id)');
     },
+    // Expense tabs linked to trip members (custom): a tab may point at a member —
+    // typically a guest (#1362), the "single temp user across the trip" — and then
+    // becomes a live window onto the group ledger (their split shares, who they
+    // owe, recorded settlements) instead of a frozen per-owner charge list. At
+    // most one tab per member per trip; unlinked tabs keep the legacy behaviour.
+    () => {
+      const cols = (db.prepare('PRAGMA table_info(expense_tabs)').all() as { name: string }[]).map(c => c.name);
+      if (!cols.includes('member_user_id')) {
+        db.exec('ALTER TABLE expense_tabs ADD COLUMN member_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE');
+      }
+      db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_expense_tabs_trip_member ON expense_tabs (trip_id, member_user_id) WHERE member_user_id IS NOT NULL');
+    },
   ];
 
   if (currentVersion < migrations.length) {

@@ -42,5 +42,9 @@ const shared: TranslationStrings = {
   'publicTab.joinHint': 'Vytvořte si na tomto serveru zdarma účet pomocí jednorázové pozvánky a prohlédněte si celou cestu.',
   'publicTab.expired': 'Tento odkaz už není aktivní',
   'publicTab.expiredHint': 'Požádejte osobu, která vám ho poslala, o nový.',
+  'publicTab.youOwe': 'Kolik dlužíte: {name}',
+  'publicTab.ofTotal': 'váš podíl z {amount}',
+  'publicTab.paidTo': 'Zaplaceno: {name}',
+  'publicTab.liveNote': 'Tento účet sleduje váš podíl na společných útratách cesty v reálném čase.',
 };
 export default shared;

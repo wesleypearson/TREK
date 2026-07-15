@@ -168,5 +168,14 @@ const budget: TranslationStrings = {
   'costs.addedToTab': 'Op de rekening gezet',
   'costs.tabsFootnote': 'Iedereen met een rekeninglink kan de posten, betalingen en jouw betaalgegevens zien.',
   'costs.personalHint': 'Wordt niet gesplitst of verrekend — alleen vastgelegd als je eigen uitgave.',
+  'costs.tabLinkNewGuest': 'Nieuwe tijdelijke gast — doet mee in elke verdeling',
+  'costs.tabLinkMember': 'Koppelen aan {name}',
+  'costs.tabLinkNone': 'Alleen naam (geen koppeling met een lid)',
+  'costs.tabLinkHint': 'Gekoppelde rekeningen volgen het reisoverzicht: deel een uitgave door deze persoon toe te wijzen in de verdeling van de uitgave.',
+  'costs.tabLinked': 'Gekoppeld',
+  'costs.tabLiveHint': 'Volgt het reisoverzicht — deel uitgaven met {name} door diegene toe te wijzen in de verdeling van de uitgave.',
+  'costs.tabOwedTo': 'Is schuldig',
+  'costs.tabPaidTo': 'Betaald aan {name}',
+  'costs.tabNoLinkedCharge': 'Gekoppelde rekeningen volgen de verdeling — wijs de persoon in plaats daarvan toe in de uitgave.',
 };
 export default budget;
