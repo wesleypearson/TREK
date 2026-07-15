@@ -166,5 +166,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': '在公開頁面上同時顯示收據',
   'costs.addedToTab': '已記入帳單',
   'costs.tabsFootnote': '任何擁有帳單連結的人都能看到其中的消費、付款以及您的收款方式。',
+  'costs.personalHint': '不分攤、不結算——僅記錄為你自己的支出。',
 };
 export default budget;

@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Condividi lo scontrino sulla pagina pubblica',
   'costs.addedToTab': 'Aggiunto al conto',
   'costs.tabsFootnote': 'Chiunque abbia il link di un conto può vederne gli addebiti, i pagamenti e i tuoi dati di pagamento.',
+  'costs.personalHint': 'Non viene divisa né saldata — registrata solo come tua spesa personale.',
 };
 export default budget;

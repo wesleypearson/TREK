@@ -1153,7 +1153,9 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
   const [scanning, setScanning] = useState(false)
   const scanInputRef = useRef<HTMLInputElement>(null)
 
-  const isTicketMode = splitMode === 'ticket'
+  // A personal expense is never split — ticket mode (and its derived total)
+  // only applies while the expense is a group one.
+  const isTicketMode = splitMode === 'ticket' && !isPrivate
 
   const ticketInfo = useMemo(() => {
     return calculateTicketShares(ticketItems)
@@ -1181,9 +1183,11 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
   
   const ticketValid = ticketItems.length > 0 && ticketItems.every(item => item.name.trim().length > 0 && (parseFloat(item.price) || 0) > 0 && item.participants.size > 0)
   const valid = name.trim().length > 0 && (
-    isTicketMode
-      ? ticketValid
-      : totalNum > 0 && (participants.size === 0 || splitMode === 'equally' || customBalanced)
+    isPrivate
+      ? totalNum > 0 // personal: just a name and an amount — nothing to split
+      : isTicketMode
+        ? ticketValid
+        : totalNum > 0 && (participants.size === 0 || splitMode === 'equally' || customBalanced)
   )
 
   const onTotalChange = (v: string) => {
@@ -1248,6 +1252,9 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
       if (receipt?.merchant && !name.trim()) setName(receipt.merchant)
       if (receipt?.date) setDay(receipt.date)
       if (receipt?.currency) setCurrency(receipt.currency.toUpperCase())
+      // Fill the manual total too — it's what a personal (no-split) expense
+      // uses, and in group ticket mode the field is derived anyway.
+      if (receipt?.total != null && receipt.total > 0) setTotal(String(receipt.total))
       const items = receipt?.items || []
       if (items.length > 0) {
         setSplitMode('ticket')
@@ -1290,27 +1297,33 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
   const save = async () => {
     if (!valid) return
     setSaving(true)
-    const payerList = (payerId > 0 && participants.size > 0) ? [{ user_id: payerId, amount: totalNum }] : []
-    const memberList = [...participants].map(id => ({
-      user_id: id,
-      amount: splitMode === 'custom'
-        ? (parseFloat(customAmounts[id]) || 0)
-        : splitMode === 'ticket'
-        ? (ticketInfo.shares[id] || 0)
-        : null
-    }))
+    // Personal: lodged as the owner's own spend — self-paid, self-owed, no
+    // split, no settlement (the server enforces this shape too).
+    const payerList = isPrivate
+      ? (totalNum > 0 ? [{ user_id: me, amount: totalNum }] : [])
+      : (payerId > 0 && participants.size > 0) ? [{ user_id: payerId, amount: totalNum }] : []
+    const memberList = isPrivate
+      ? [{ user_id: me, amount: null }]
+      : [...participants].map(id => ({
+          user_id: id,
+          amount: splitMode === 'custom'
+            ? (parseFloat(customAmounts[id]) || 0)
+            : splitMode === 'ticket'
+            ? (ticketInfo.shares[id] || 0)
+            : null
+        }))
     const data = {
       name: name.trim(),
       category: cat,
       currency,
       payers: payerList,
       members: memberList,
-      member_ids: [...participants],
+      member_ids: isPrivate ? [me] : [...participants],
       expense_date: day || null,
       total_price: totalNum,
       is_private: isPrivate,
       receipt_file_id: receiptFileId,
-      note: splitMode === 'ticket' ? 'TICKETJSON:' + JSON.stringify({
+      note: isTicketMode ? 'TICKETJSON:' + JSON.stringify({
         items: ticketItems.map(item => ({
           name: item.name,
           price: item.price,
@@ -1407,6 +1420,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
           </div>
         </div>
 
+        {!isPrivate && (
         <div>
           <label className={labelCls}>{t('costs.whoPaid')}</label>
           <CustomSelect value={String(payerId)} onChange={v => setPayerId(Number(v))}
@@ -1416,15 +1430,31 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
             ]}
             style={{ width: '100%' }} />
         </div>
-
-        {canTogglePrivate && (
-          <label className="text-content" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500, alignSelf: 'flex-start' }}>
-            <input type="checkbox" checked={isPrivate} onChange={e => setIsPrivate(e.target.checked)} style={{ cursor: 'pointer' }} />
-            <Lock size={13} className="text-content-faint" />
-            {t('costs.personalExpense')}
-          </label>
         )}
 
+        {canTogglePrivate && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignSelf: 'flex-start' }}>
+            <label className="text-content" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500 }}>
+              <input type="checkbox" checked={isPrivate}
+                onChange={e => {
+                  const on = e.target.checked
+                  // Coming from an itemized split: carry the ticket sum into the
+                  // (re-enabled) manual total so the amount isn't lost.
+                  if (on && splitMode === 'ticket' && !total && ticketInfo.total > 0) setTotal(ticketInfo.total.toFixed(2))
+                  setIsPrivate(on)
+                }} style={{ cursor: 'pointer' }} />
+              <Lock size={13} className="text-content-faint" />
+              {t('costs.personalExpense')}
+            </label>
+            {isPrivate && (
+              <div className="text-content-faint" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', paddingLeft: 21 }}>
+                {t('costs.personalHint')}
+              </div>
+            )}
+          </div>
+        )}
+
+        {!isPrivate && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
             <label className={labelCls}>{t('costs.split') || 'Split'}</label>
@@ -1596,6 +1626,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
             </>
           )}
         </div>
+        )}
       </div>
     </Modal>
   )

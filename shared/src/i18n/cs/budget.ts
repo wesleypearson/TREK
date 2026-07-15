@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Sdílet účtenku na veřejné stránce',
   'costs.addedToTab': 'Přidáno na účet',
   'costs.tabsFootnote': 'Kdokoli s odkazem na účet vidí jeho položky, platby a vaše platební údaje.',
+  'costs.personalHint': 'Nedělí se ani nevyrovnává — jen se zaznamená jako tvůj vlastní výdaj.',
 };
 export default budget;

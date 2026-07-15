@@ -14,6 +14,14 @@ makes it yours alone — other members never see it (the API returns 404, not
 per-person math, and its live-update events reach only your own devices. Only
 the creator can flip an expense between personal and group.
 
+A personal expense is **never split**: the payer and split editors disappear
+from the modal (just a name, amount, category, date and optional receipt) and
+the record is lodged as your own spend — self-paid in full, owed by no one, so
+it never shows as "unfinished" and never touches anyone's balance. This is
+enforced server-side too: whatever a client sends, a personal expense's only
+payer and only member is its owner, and flipping a shared expense to personal
+detaches everyone else that was on it.
+
 ## Line-item splitting (the John/Lisa/Martin rule)
 
 The expense modal's **itemized (ticket) split** assigns each receipt line to

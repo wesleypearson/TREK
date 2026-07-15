@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Dela kvittot på den offentliga sidan',
   'costs.addedToTab': 'Tillagd på notan',
   'costs.tabsFootnote': 'Alla med en notalänk kan se dess poster, betalningar och dina betalningsuppgifter.',
+  'costs.personalHint': 'Delas inte och regleras inte — bokförs bara som din egen utgift.',
 };
 export default budget;

@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Fişi herkese açık sayfada paylaş',
   'costs.addedToTab': 'Hesaba yazıldı',
   'costs.tabsFootnote': 'Hesap bağlantısına sahip olan herkes hesaba yazılanları, ödemeleri ve ödeme bilgilerinizi görebilir.',
+  'costs.personalHint': 'Bölüşülmez ve hesaplaşmaya girmez — yalnızca kendi harcaman olarak kaydedilir.',
 };
 export default budget;

@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'A blokk megosztása a nyilvános oldalon',
   'costs.addedToTab': 'Felírva a számlára',
   'costs.tabsFootnote': 'Bárki, akinek megvan egy számla linkje, láthatja annak tételeit, befizetéseit és a fizetési adataidat.',
+  'costs.personalHint': 'Nincs felosztva és elszámolva — csak a saját kiadásodként kerül rögzítésre.',
 };
 export default budget;

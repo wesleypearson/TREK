@@ -279,6 +279,76 @@ describe('Personal vs group expenses (EXP)', () => {
     expect(entry.items_count).toBe(1);
     expect(entry.total_assigned).toBeCloseTo(100); // not 150
   });
+
+  it('EXP-011: a personal expense is never split — foreign payers/members collapse to the owner', async () => {
+    // Whatever split the client sends, a personal expense is lodged as the
+    // owner's own spend: sole payer (full amount) and sole member.
+    const res = await createItemAs(owner.id, {
+      name: 'Solo Dinner',
+      total_price: 60,
+      is_private: true,
+      payers: [{ user_id: member.id, amount: 60 }],
+      members: [{ user_id: member.id, amount: 30 }, { user_id: owner.id, amount: 30 }],
+    });
+    expect(res.status).toBe(201);
+    const item = res.body.item;
+    expect(item.is_private).toBe(1);
+    expect(item.payers).toEqual([expect.objectContaining({ user_id: owner.id, amount: 60 })]);
+    expect(item.members).toEqual([expect.objectContaining({ user_id: owner.id })]);
+    expect(item.total_price).toBe(60);
+  });
+
+  it('EXP-012: flipping a group expense to personal purges the other participants', async () => {
+    const res = await createItemAs(owner.id, {
+      name: 'Was Shared',
+      payers: [{ user_id: member.id, amount: 90 }],
+      members: [{ user_id: owner.id, amount: null }, { user_id: member.id, amount: null }],
+    });
+    const itemId = res.body.item.id;
+    expect(res.body.item.members).toHaveLength(2);
+
+    const flip = await request(app)
+      .put(`/api/trips/${tripId}/budget/${itemId}`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ is_private: true });
+    expect(flip.status).toBe(200);
+    expect(flip.body.item.is_private).toBe(1);
+    // Member is gone from both sides; the owner self-pays the frozen total.
+    expect(flip.body.item.members).toEqual([expect.objectContaining({ user_id: owner.id })]);
+    expect(flip.body.item.payers).toEqual([expect.objectContaining({ user_id: owner.id, amount: 90 })]);
+  });
+
+  it('EXP-013: the members and payers endpoints cannot attach others to a personal expense', async () => {
+    const res = await createItemAs(owner.id, { name: 'Mine Alone', total_price: 40, is_private: true });
+    const itemId = res.body.item.id;
+
+    const mem = await request(app)
+      .put(`/api/trips/${tripId}/budget/${itemId}/members`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ user_ids: [owner.id, member.id] });
+    expect(mem.status).toBe(200);
+    expect(mem.body.members).toEqual([expect.objectContaining({ user_id: owner.id })]);
+
+    const pay = await request(app)
+      .put(`/api/trips/${tripId}/budget/${itemId}/payers`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ payers: [{ user_id: member.id, amount: 40 }] });
+    expect(pay.status).toBe(200);
+    expect(pay.body.item.payers).toEqual([expect.objectContaining({ user_id: owner.id, amount: 40 })]);
+  });
+
+  it('EXP-014: a personal expense never reads as unfinished nor leaks into settlement', async () => {
+    // Created without any payers at all — the server self-pays it for the owner.
+    const res = await createItemAs(owner.id, { name: 'Own Coffee', total_price: 12.5, is_private: true });
+    expect(res.body.item.payers).toEqual([expect.objectContaining({ user_id: owner.id, amount: 12.5 })]);
+
+    const settle = await request(app)
+      .get(`/api/trips/${tripId}/budget/settlement`)
+      .set('Cookie', authCookie(owner.id));
+    expect(settle.status).toBe(200);
+    expect(settle.body.flows).toEqual([]);
+    expect((settle.body.balances || []).every((b: { balance: number }) => Math.abs(b.balance) < 0.005)).toBe(true);
+  });
 });
 
 describe('Receipt scanning (EXP)', () => {

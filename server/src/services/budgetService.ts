@@ -164,6 +164,29 @@ export async function freezeForeignRate(
   if (r && r > 0) data.exchange_rate = r;
 }
 
+/**
+ * A personal expense is never split (custom): whatever the caller sent, its
+ * only payer and only member is the owner. This keeps the row a pure "my own
+ * spend" record — fully paid by the owner (so it never reads as unfinished),
+ * owed by no one, invisible to settlement. Enforced server-side so no client
+ * can attach other people to an expense they cannot even see.
+ */
+function personalOnlySplit<T extends {
+  total_price?: number;
+  payers?: { user_id: number; amount: number }[];
+  members?: { user_id: number; amount?: number | null }[];
+  member_ids?: number[];
+}>(data: T, ownerId: number, fallbackTotal?: number): T {
+  const payerSum = (data.payers || []).reduce((a, p) => a + (p.amount > 0 ? p.amount : 0), 0);
+  const total = data.total_price !== undefined ? data.total_price : (payerSum > 0 ? payerSum : (fallbackTotal || 0));
+  return {
+    ...data,
+    payers: total > 0 ? [{ user_id: ownerId, amount: total }] : [],
+    members: [{ user_id: ownerId, amount: null }],
+    member_ids: undefined,
+  };
+}
+
 export function createBudgetItem(
   tripId: string | number,
   data: {
@@ -177,6 +200,7 @@ export function createBudgetItem(
   },
   createdBy?: number,
 ) {
+  if (data.is_private && createdBy != null) data = personalOnlySplit(data, createdBy);
   const maxOrder = db.prepare(
     'SELECT MAX(sort_order) as max FROM budget_items WHERE trip_id = ?'
   ).get(tripId) as { max: number | null };
@@ -314,6 +338,16 @@ export function updateBudgetItem(
     db.prepare('UPDATE budget_items SET receipt_file_id = ? WHERE id = ?').run(data.receipt_file_id, id);
   }
 
+  // Personal expenses carry no split — force owner-only payers/members, and
+  // purge anyone attached while the item was still a group expense (the flip
+  // above may just have made it personal).
+  const post = db.prepare('SELECT is_private, created_by, total_price FROM budget_items WHERE id = ?').get(id) as
+    { is_private?: number; created_by?: number | null; total_price?: number };
+  const personalOwner = post.created_by ?? actingUserId;
+  if (post.is_private && personalOwner != null) {
+    data = personalOnlySplit(data, personalOwner, post.total_price);
+  }
+
   // Optional inline payer/member replacement (the edit modal saves all at once).
   if (data.payers !== undefined) {
     writeItemPayers(id, data.payers);
@@ -357,8 +391,14 @@ export function updateBudgetItem(
 // ---------------------------------------------------------------------------
 
 export function setItemPayers(id: string | number, tripId: string | number, payers: { user_id: number; amount: number }[]) {
-  const item = db.prepare('SELECT id FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId);
+  const item = db.prepare('SELECT id, is_private, created_by FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId) as
+    { id: number; is_private?: number; created_by?: number | null } | undefined;
   if (!item) return null;
+  // A personal expense has exactly one payer: its owner (see personalOnlySplit).
+  if (item.is_private && item.created_by != null) {
+    const total = payers.reduce((a, p) => a + (p.amount > 0 ? p.amount : 0), 0);
+    payers = total > 0 ? [{ user_id: item.created_by, amount: total }] : [];
+  }
   writeItemPayers(id, payers);
   const updated = db.prepare('SELECT * FROM budget_items WHERE id = ?').get(id) as BudgetItem;
   updated.members = loadItemMembers(id);
@@ -382,8 +422,11 @@ export function deleteBudgetItem(id: string | number, tripId: string | number, v
 // ---------------------------------------------------------------------------
 
 export function updateMembers(id: string | number, tripId: string | number, userIds: number[]) {
-  const item = db.prepare('SELECT * FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId);
+  const item = db.prepare('SELECT * FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId) as
+    (BudgetItem & { is_private?: number; created_by?: number | null }) | undefined;
   if (!item) return null;
+  // A personal expense has exactly one member: its owner (see personalOnlySplit).
+  if (item.is_private && item.created_by != null) userIds = [item.created_by];
 
   const existingPaid: Record<number, number> = {};
   const existing = db.prepare('SELECT user_id, paid FROM budget_item_members WHERE budget_item_id = ?').all(id) as { user_id: number; paid: number }[];

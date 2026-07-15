@@ -335,6 +335,48 @@ describe('CostsPanel — expenses feature (receipt scan + personal expenses)', (
     expect(posted!.receipt_file_id).toBeNull() // no receipt was scanned/attached
   })
 
+  it('a personal expense hides the split machinery and is lodged as a self-paid record', async () => {
+    let posted: Record<string, unknown> | null = null
+    server.use(
+      http.get('/api/trips/1/budget', () => HttpResponse.json({ items: [] })),
+      http.get('/api/trips/1/budget/settlement', () => HttpResponse.json({ balances: [], flows: [], settlements: [] })),
+      http.post('/api/trips/1/budget', async ({ request }) => {
+        posted = await request.json() as Record<string, unknown>
+        return HttpResponse.json({ item: { ...buildBudgetItem({ trip_id: 1, name: 'My Coffee' }), id: 13 } })
+      }),
+    )
+    // Fixed id so the payload assertion below is deterministic (me = alice = 1).
+    seedStore(useAuthStore, { user: buildUser({ id: 1, username: 'alice' }), isAuthenticated: true })
+    const { default: userEvent } = await import('@testing-library/user-event')
+    const user = userEvent.setup()
+    render(<CostsPanel tripId={1} tripMembers={tripMembers} />)
+
+    await user.click(await screen.findByRole('button', { name: 'Add expense' }))
+    await user.type(await screen.findByPlaceholderText('e.g. Dinner, souvenirs, gas…'), 'My Coffee')
+    await user.type(screen.getAllByPlaceholderText('0.00')[0], '12.5')
+
+    // Group mode shows the payer + split editors…
+    expect(screen.getByText('Who paid?')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Equally' })).toBeInTheDocument()
+
+    // …personal mode removes them entirely and explains why.
+    await user.click(screen.getByRole('checkbox', { name: /Personal expense \(only me\)/i }))
+    expect(screen.queryByText('Who paid?')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Equally' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Ticket' })).not.toBeInTheDocument()
+    expect(screen.getByText(/just recorded as your own spend/i)).toBeInTheDocument()
+
+    const addBtns = screen.getAllByRole('button', { name: 'Add expense' })
+    await user.click(addBtns[addBtns.length - 1]) // footer submit
+    await waitFor(() => expect(posted).toBeTruthy())
+    // Lodged as the owner's own spend: self-paid, self-owed, nothing to split.
+    expect(posted!.is_private).toBe(true)
+    expect(posted!.payers).toEqual([{ user_id: 1, amount: 12.5 }])
+    expect(posted!.members).toEqual([{ user_id: 1, amount: null }])
+    expect(posted!.member_ids).toEqual([1])
+    expect(posted!.note).toBeNull()
+  })
+
   it('scans a receipt and prefills ticket items with empty participants', async () => {
     let posted: Record<string, unknown> | null = null
     server.use(

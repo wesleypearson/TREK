@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Partager le reçu sur la page publique',
   'costs.addedToTab': "Ajouté à l'ardoise",
   'costs.tabsFootnote': "Toute personne disposant d'un lien d'ardoise peut voir ses dépenses, ses paiements et vos informations de paiement.",
+  'costs.personalHint': 'Ni partagée ni réglée — simplement enregistrée comme votre propre dépense.',
 };
 export default budget;
