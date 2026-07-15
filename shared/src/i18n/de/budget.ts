@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Beleg auf der öffentlichen Seite teilen',
   'costs.addedToTab': 'Auf den Deckel gesetzt',
   'costs.tabsFootnote': 'Jeder mit einem Deckel-Link kann dessen Posten, Zahlungen und deine Zahlungsinformationen sehen.',
+  'costs.personalHint': 'Wird nicht geteilt oder verrechnet — nur als deine eigene Ausgabe erfasst.',
 };
 export default budget;

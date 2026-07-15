@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': '公開ページにレシートも表示する',
   'costs.addedToTab': 'ツケに追加しました',
   'costs.tabsFootnote': 'ツケのリンクを知っている人は誰でも、その請求・支払い・あなたの支払い先情報を見ることができます。',
+  'costs.personalHint': '割り勘や精算はされません — 自分の支出としてのみ記録されます。',
 };
 export default budget;

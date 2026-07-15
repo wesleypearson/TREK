@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Bagikan struk di halaman publik',
   'costs.addedToTab': 'Ditambahkan ke tagihan',
   'costs.tabsFootnote': 'Siapa pun yang memiliki tautan tagihan dapat melihat biayanya, pembayarannya, dan detail pembayaran Anda.',
+  'costs.personalHint': 'Tidak dibagi atau diselesaikan — hanya dicatat sebagai pengeluaran pribadimu.',
 };
 export default budget;

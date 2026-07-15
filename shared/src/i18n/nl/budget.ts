@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'De bon op de openbare pagina delen',
   'costs.addedToTab': 'Op de rekening gezet',
   'costs.tabsFootnote': 'Iedereen met een rekeninglink kan de posten, betalingen en jouw betaalgegevens zien.',
+  'costs.personalHint': 'Wordt niet gesplitst of verrekend — alleen vastgelegd als je eigen uitgave.',
 };
 export default budget;

@@ -167,6 +167,7 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Share the receipt on the public page',
   'costs.addedToTab': 'Added to the tab',
   'costs.tabsFootnote': 'Anyone with a tab link can see its charges, payments and your payment details.',
+  'costs.personalHint': 'Not split or settled — just recorded as your own spend.',
 };
 
 export default budget;

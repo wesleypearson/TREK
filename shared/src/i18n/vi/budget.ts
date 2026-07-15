@@ -167,6 +167,7 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Hiển thị hóa đơn trên trang công khai',
   'costs.addedToTab': 'Đã ghi vào sổ',
   'costs.tabsFootnote': 'Bất kỳ ai có liên kết sổ nợ đều xem được các khoản ghi sổ, các khoản thanh toán và thông tin nhận tiền của bạn.',
+  'costs.personalHint': 'Không chia hay quyết toán — chỉ được ghi lại là khoản chi của riêng bạn.',
 };
 
 export default budget;

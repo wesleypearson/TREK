@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Показувати чек на публічній сторінці',
   'costs.addedToTab': 'Записано на рахунок',
   'costs.tabsFootnote': 'Будь-хто з посиланням на рахунок бачить його нарахування, платежі та ваші платіжні реквізити.',
+  'costs.personalHint': 'Не ділиться і не бере участі в розрахунках — просто записується як ваша особиста витрата.',
 };
 export default budget;

@@ -166,5 +166,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': '在公开页面上同时展示小票',
   'costs.addedToTab': '已记入账单',
   'costs.tabsFootnote': '任何拥有账单链接的人都能看到其中的消费、付款以及您的收款方式。',
+  'costs.personalHint': '不分摊、不结算——仅记录为你自己的支出。',
 };
 export default budget;

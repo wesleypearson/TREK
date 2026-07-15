@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'عرض الإيصال على الصفحة العامة',
   'costs.addedToTab': 'أُضيف إلى الحساب',
   'costs.tabsFootnote': 'يمكن لأي شخص لديه رابط الحساب رؤية بنوده ودفعاته وبيانات الدفع الخاصة بك.',
+  'costs.personalHint': 'لا يُقسَّم ولا يُسوَّى — يُسجَّل فقط كمصروفك الخاص.',
 };
 export default budget;

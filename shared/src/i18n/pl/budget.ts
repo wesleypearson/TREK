@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Udostępnij paragon na publicznej stronie',
   'costs.addedToTab': 'Dopisano do rachunku',
   'costs.tabsFootnote': 'Każdy, kto ma link do rachunku, widzi jego pozycje, wpłaty oraz twoje dane do płatności.',
+  'costs.personalHint': 'Nie jest dzielony ani rozliczany — tylko zapisany jako Twój własny wydatek.',
 };
 export default budget;

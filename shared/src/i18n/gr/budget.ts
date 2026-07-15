@@ -168,5 +168,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Κοινοποίηση της απόδειξης στη δημόσια σελίδα',
   'costs.addedToTab': 'Προστέθηκε στον λογαριασμό',
   'costs.tabsFootnote': 'Όποιος έχει τον σύνδεσμο ενός λογαριασμού βλέπει τις χρεώσεις, τις πληρωμές και τα στοιχεία πληρωμής σας.',
+  'costs.personalHint': 'Δεν μοιράζεται ούτε διακανονίζεται — καταγράφεται μόνο ως δική σου δαπάνη.',
 };
 export default budget;

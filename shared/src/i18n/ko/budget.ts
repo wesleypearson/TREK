@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': '공개 페이지에 영수증도 공유',
   'costs.addedToTab': '장부에 추가됨',
   'costs.tabsFootnote': '장부 링크가 있는 사람은 누구나 청구 내역, 입금 내역, 그리고 내 결제 정보를 볼 수 있습니다.',
+  'costs.personalHint': '분할이나 정산 없이 나만의 지출로만 기록됩니다.',
 };
 export default budget;

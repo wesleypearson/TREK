@@ -167,5 +167,6 @@ const budget: TranslationStrings = {
   'costs.shareReceiptToo': 'Compartir el recibo en la página pública',
   'costs.addedToTab': 'Añadido a la cuenta',
   'costs.tabsFootnote': 'Cualquiera con el enlace de una cuenta puede ver sus cargos, sus pagos y tus datos de pago.',
+  'costs.personalHint': 'No se divide ni se liquida — solo se registra como tu propio gasto.',
 };
 export default budget;
