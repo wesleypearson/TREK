@@ -232,18 +232,7 @@ export default function AdminUserModals({ admin, t }: AdminUserModalsProps): Rea
                 {(updateInfo?.is_docker === false ? t('admin.update.nonDockerText') : t('admin.update.dockerText')).replace('{version}', `v${updateInfo?.latest ?? ''}`)}
               </p>
 
-              {updateInfo?.is_docker === false ? (
-                <a
-                  href="https://github.com/mauriceboe/TREK/wiki/Updating"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{ marginTop: 14, padding: '12px 14px', borderRadius: 10, fontSize: 'calc(13px * var(--fs-scale-body, 1))', lineHeight: 1.5, display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
-                  className="bg-gray-50 dark:bg-gray-900 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-800"
-                >
-                  <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                  <span className="font-semibold underline">{t('admin.update.wikiLink')}</span>
-                </a>
-              ) : (
+              {updateInfo?.is_docker !== false && (
                 <div style={{ marginTop: 14, padding: '12px 14px', borderRadius: 10, fontSize: 'calc(12px * var(--fs-scale-body, 1))', lineHeight: 1.8, fontFamily: 'monospace', whiteSpace: 'pre-wrap', wordBreak: 'break-all' }}
                   className="bg-gray-900 dark:bg-gray-950 text-gray-100 border border-gray-700"
                 >

@@ -178,5 +178,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Οφείλει',
   'costs.tabPaidTo': 'Πληρωμή προς {name}',
   'costs.tabNoLinkedCharge': 'Οι συνδεδεμένοι λογαριασμοί ακολουθούν την κατανομή — ορίστε το άτομο στο έξοδο αντί για εδώ.',
+  'costs.payDetailsMissing': 'Όσοι πληρώνουν δεν βλέπουν ακόμη πώς να σας πληρώσουν — προσθέστε τα στοιχεία πληρωμής σας.',
+  'costs.payDetailsAdd': 'Προσθήκη στοιχείων πληρωμής',
 };
 export default budget;

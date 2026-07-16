@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Долг',
   'costs.tabPaidTo': 'Оплачено: {name}',
   'costs.tabNoLinkedCharge': 'Привязанные счета следуют за разделением — вместо этого назначьте человека в расходе.',
+  'costs.payDetailsMissing': 'Плательщики пока не видят, как вам заплатить — добавьте свои платёжные данные.',
+  'costs.payDetailsAdd': 'Добавить платёжные данные',
 };
 export default budget;

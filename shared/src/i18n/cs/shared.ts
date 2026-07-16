@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'váš podíl z {amount}',
   'publicTab.paidTo': 'Zaplaceno: {name}',
   'publicTab.liveNote': 'Tento účet sleduje váš podíl na společných útratách cesty v reálném čase.',
+  'publicTab.noMethods': '{name} zatím nepřidal(a) platební údaje — zeptejte se přímo na nejlepší způsob platby.',
+  'publicTab.credit': 'Založeno za skupinu',
 };
 export default shared;

@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Doit',
   'costs.tabPaidTo': 'Payé à {name}',
   'costs.tabNoLinkedCharge': 'Les ardoises liées suivent le partage — incluez plutôt la personne dans la dépense.',
+  'costs.payDetailsMissing': 'Les payeurs ne savent pas encore comment vous payer — ajoutez vos coordonnées de paiement.',
+  'costs.payDetailsAdd': 'Ajouter des coordonnées de paiement',
 };
 export default budget;

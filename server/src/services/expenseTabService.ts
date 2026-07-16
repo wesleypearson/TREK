@@ -105,6 +105,8 @@ export function createTab(
   let lastName = (data.last_name || '').trim().slice(0, 80);
 
   if (data.member_user_id != null) {
+    // A tab is for money someone owes YOU — never yourself.
+    if (data.member_user_id === ownerUserId) return { error: 'You cannot create a tab for yourself' } as const;
     // Link to an existing trip member (guest or real account).
     const member = db.prepare(`
       SELECT u.id, COALESCE(u.display_name, u.username) AS name FROM users u
@@ -118,11 +120,6 @@ export function createTab(
     const parts = member.name.trim().split(/\s+/);
     firstName = firstName || parts[0] || member.name;
     lastName = lastName || parts.slice(1).join(' ');
-  } else if (data.create_guest) {
-    // "Single temp user across the trip": creating the tab creates the guest,
-    // who is then assignable in every split like any member (#1362).
-    const { member } = createGuest(tripId, `${firstName} ${lastName}`.trim(), ownerUserId);
-    memberUserId = member.id;
   }
 
   if (memberUserId != null) {
@@ -130,16 +127,35 @@ export function createTab(
     if (existing) return { error: 'This member already has a tab' } as const;
   }
 
-  // One-use, non-expiring registration invite bound to this trip: the visitor
-  // can create an account from the tab page and land in the trip. Scoped
-  // deliberately — a budget_edit member can only ever invite into THIS trip.
-  const joinToken = crypto.randomBytes(16).toString('hex');
-  db.prepare('INSERT INTO invite_tokens (token, max_uses, expires_at, created_by, trip_id) VALUES (?, 1, NULL, ?, ?)').run(joinToken, ownerUserId, tripId);
-  const result = db.prepare(
-    'INSERT INTO expense_tabs (trip_id, owner_user_id, token, first_name, last_name, join_token, currency, member_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-  ).run(tripId, ownerUserId, newToken(), firstName, lastName, joinToken, data.currency || null, memberUserId);
-  const tab = db.prepare('SELECT * FROM expense_tabs WHERE id = ?').get(result.lastInsertRowid) as ExpenseTab;
-  return { ...tab, ...tabTotals(tab.id), items: [], payments: [], member: memberInfo(memberUserId) };
+  // Everything below runs atomically: two members racing to link the same
+  // person hit the partial unique index and the loser's guest/invite rows roll
+  // back with the failed tab insert instead of leaking.
+  try {
+    const created = db.transaction(() => {
+      if (memberUserId == null && data.create_guest) {
+        // "Single temp user across the trip": creating the tab creates the
+        // guest, who is then assignable in every split like any member (#1362).
+        const { member } = createGuest(tripId, `${firstName} ${lastName}`.trim(), ownerUserId);
+        memberUserId = member.id;
+      }
+      // One-use, non-expiring registration invite bound to this trip: the
+      // visitor can create an account from the tab page and land in the trip.
+      // Scoped deliberately — budget_edit can only ever invite into THIS trip.
+      const joinToken = crypto.randomBytes(16).toString('hex');
+      db.prepare('INSERT INTO invite_tokens (token, max_uses, expires_at, created_by, trip_id) VALUES (?, 1, NULL, ?, ?)').run(joinToken, ownerUserId, tripId);
+      const result = db.prepare(
+        'INSERT INTO expense_tabs (trip_id, owner_user_id, token, first_name, last_name, join_token, currency, member_user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
+      ).run(tripId, ownerUserId, newToken(), firstName, lastName, joinToken, data.currency || null, memberUserId);
+      return result.lastInsertRowid as number;
+    })();
+    const tab = db.prepare('SELECT * FROM expense_tabs WHERE id = ?').get(created) as ExpenseTab;
+    return { ...tab, ...tabTotals(tab.id), items: [], payments: [], member: memberInfo(memberUserId) };
+  } catch (err) {
+    if (String((err as Error)?.message || '').includes('UNIQUE constraint failed')) {
+      return { error: 'This member already has a tab' } as const;
+    }
+    throw err;
+  }
 }
 
 export function setTabRevoked(tripId: string | number, tabId: string | number, ownerUserId: number, revoked: boolean): boolean {
@@ -260,17 +276,31 @@ export function memberLivePosition(
   opts: { rates?: Record<string, number> | null; tripCurrency?: string } = {},
 ) {
   const tripCurrency = (opts.tripCurrency || 'EUR').toUpperCase();
-  const settlement = calculateSettlement(tripId, { base: tripCurrency, rates: opts.rates ?? null, tripCurrency });
+  const rates = opts.rates ?? null;
+  const settlement = calculateSettlement(tripId, { base: tripCurrency, rates, tripCurrency });
+  const r2 = (n: number) => Math.round(n * 100) / 100;
+
+  // Mirrors calculateSettlement's currency handling: prefer the FX rate frozen
+  // at entry time, fall back to live rates, else identity — so every number on
+  // the public page is a single trip-currency figure (a mixed-currency trip
+  // must never sum euros and dollars as if they were the same unit).
+  const toTrip = (amount: number, itemCurrency: string | null | undefined, itemRate?: number | null): number => {
+    const cur = (itemCurrency || tripCurrency).toUpperCase();
+    if (cur === tripCurrency) return amount;
+    if (itemRate != null && itemRate > 0 && itemRate !== 1) return amount / itemRate;
+    if (rates && rates[cur] > 0 && rates[tripCurrency] > 0) return (amount / rates[cur]) * rates[tripCurrency];
+    return amount;
+  };
 
   // Per-bill share list. Mirrors the settlement's member-share rule: an explicit
   // custom amount when one is set on the item, else an equal split of the total.
   const rows = db.prepare(`
-    SELECT bi.id, bi.name, bi.expense_date, bi.total_price, bi.currency, bi.created_at, bm.amount AS member_amount
+    SELECT bi.id, bi.name, bi.expense_date, bi.total_price, bi.currency, bi.exchange_rate, bi.created_at, bm.amount AS member_amount
     FROM budget_items bi
     JOIN budget_item_members bm ON bm.budget_item_id = bi.id AND bm.user_id = ?
     WHERE bi.trip_id = ? AND bi.is_private = 0
     ORDER BY COALESCE(bi.expense_date, substr(bi.created_at, 1, 10)) DESC, bi.id DESC
-  `).all(memberUserId, tripId) as { id: number; name: string; expense_date: string | null; total_price: number; currency: string | null; created_at: string; member_amount: number | null }[];
+  `).all(memberUserId, tripId) as { id: number; name: string; expense_date: string | null; total_price: number; currency: string | null; exchange_rate: number | null; created_at: string; member_amount: number | null }[];
 
   const charges = rows.map(r => {
     let share = r.member_amount;
@@ -282,13 +312,23 @@ export function memberLivePosition(
     return {
       id: r.id,
       label: r.name,
-      total: r.total_price,
-      share: Math.round(share * 100) / 100,
-      currency: r.currency,
+      total: r2(toTrip(r.total_price, r.currency, r.exchange_rate)),
+      share: r2(toTrip(share, r.currency, r.exchange_rate)),
+      currency: tripCurrency,
       expense_date: r.expense_date,
       created_at: r.created_at,
     };
   }).filter(c => c.share > 0);
+
+  // What the member has FRONTED for the group (they were a payer): shown as a
+  // credit so charged − paid − credit reconciles with the netted balance.
+  const creditRaw = db.prepare(`
+    SELECT bp.amount, bi.currency, bi.exchange_rate
+    FROM budget_item_payers bp
+    JOIN budget_items bi ON bi.id = bp.budget_item_id
+    WHERE bi.trip_id = ? AND bi.is_private = 0 AND bp.user_id = ? AND bp.amount > 0
+  `).all(tripId, memberUserId) as { amount: number; currency: string | null; exchange_rate: number | null }[];
+  const credit = r2(creditRaw.reduce((a, p) => a + toTrip(p.amount, p.currency, p.exchange_rate), 0));
 
   const owed = settlement.flows
     .filter(f => f.from.user_id === memberUserId)
@@ -299,16 +339,24 @@ export function memberLivePosition(
       payment_methods: paymentMethodsOf(f.to.user_id),
     }));
 
+  // Settle-ups the member made, converted like calculateSettlement's
+  // settleToTrip: frozen rate first, live fallback.
   const payments = listSettlements(tripId)
     .filter(s => s.from_user_id === memberUserId)
-    .map(s => ({ id: s.id, to_name: s.to_username, amount: s.amount, currency: s.currency, created_at: s.created_at }));
+    .map(s => ({
+      id: s.id,
+      to_name: s.to_username,
+      amount: r2(toTrip(s.amount, s.currency, s.exchange_rate)),
+      currency: tripCurrency,
+      created_at: s.created_at,
+    }));
 
-  const r2 = (n: number) => Math.round(n * 100) / 100;
   return {
     currency: tripCurrency,
     charges,
     owed,
     payments,
+    credit,
     balance: r2(owed.reduce((a, o) => a + o.amount, 0)),
     charged: r2(charges.reduce((a, c) => a + c.share, 0)),
     paid: r2(payments.reduce((a, p) => a + p.amount, 0)),

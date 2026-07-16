@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Is schuldig',
   'costs.tabPaidTo': 'Betaald aan {name}',
   'costs.tabNoLinkedCharge': 'Gekoppelde rekeningen volgen de verdeling — wijs de persoon in plaats daarvan toe in de uitgave.',
+  'costs.payDetailsMissing': 'Betalers zien nog niet hoe ze je kunnen betalen — voeg je betaalgegevens toe.',
+  'costs.payDetailsAdd': 'Betaalgegevens toevoegen',
 };
 export default budget;

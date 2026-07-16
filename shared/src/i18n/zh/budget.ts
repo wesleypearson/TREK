@@ -176,5 +176,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': '欠款',
   'costs.tabPaidTo': '已支付给 {name}',
   'costs.tabNoLinkedCharge': '已关联的账单跟随分摊 — 请改为在费用中指定此人。',
+  'costs.payDetailsMissing': '付款人还看不到如何向你付款 — 请添加你的收款信息。',
+  'costs.payDetailsAdd': '添加收款信息',
 };
 export default budget;

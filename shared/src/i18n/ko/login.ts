@@ -20,7 +20,7 @@ const login: TranslationStrings = {
   'login.features.filesDesc': '문서 업로드 및 관리',
   'login.features.routes': '스마트 경로',
   'login.features.routesDesc': '자동 최적화 및 Google Maps 내보내기',
-  'login.selfHosted': '자체 호스팅 · 오픈 소스 · 내 데이터는 내 것',
+  'login.selfHosted': '자체 호스팅 · 내 데이터는 내 것',
   'login.title': '로그인',
   'login.subtitle': '다시 오신 것을 환영합니다',
   'login.signingIn': '로그인 중…',
@@ -86,6 +86,5 @@ const login: TranslationStrings = {
   'login.insecureCookie.title': "Login won't stick over HTTP",
   'login.insecureCookie.body':
     'You’re connecting over plain HTTP, so your browser drops Travla’s secure session cookie — the next request fails with "Access token required". Fix: use HTTPS, or for a home-lab set COOKIE_SECURE=false.',
-  'login.insecureCookie.link': 'Open the Troubleshooting guide',
 };
 export default login;

@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'bagian Anda dari {amount}',
   'publicTab.paidTo': 'Dibayar kepada {name}',
   'publicTab.liveNote': 'Tagihan ini melacak bagian Anda dari biaya bersama perjalanan secara real-time.',
+  'publicTab.noMethods': '{name} belum menambahkan detail pembayaran — tanyakan langsung cara terbaik untuk membayar.',
+  'publicTab.credit': 'Ditalangi untuk grup',
 };
 export default shared;

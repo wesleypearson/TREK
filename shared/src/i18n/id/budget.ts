@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Berutang',
   'costs.tabPaidTo': 'Dibayar kepada {name}',
   'costs.tabNoLinkedCharge': 'Tagihan tertaut mengikuti pembagian — sebagai gantinya, tetapkan orang tersebut di pengeluaran.',
+  'costs.payDetailsMissing': 'Pembayar belum dapat melihat cara membayar Anda — tambahkan detail pembayaran Anda.',
+  'costs.payDetailsAdd': 'Tambahkan detail pembayaran',
 };
 export default budget;

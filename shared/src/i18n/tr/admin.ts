@@ -542,7 +542,7 @@ const admin: TranslationStrings = {
   'admin.oauthSessions.revokeSuccess': 'Oturum iptal edildi',
   'admin.oauthSessions.revokeError': 'Oturum iptal edilemedi',
   'admin.oauthSessions.loadError': 'OAuth oturumları yüklenemedi',
-  'admin.tabs.github': 'GitHub',
+  'admin.tabs.github': 'Güncellemeler',
   'admin.audit.subtitle':
     'Güvenlik açısından hassas olaylar ve yönetim olayları (yedeklemeler, kullanıcılar, MFA, ayarlar).',
   'admin.audit.empty': 'Henüz denetim girişi yok.',
@@ -556,7 +556,7 @@ const admin: TranslationStrings = {
   'admin.audit.col.ip': 'IP',
   'admin.audit.col.details': 'Detaylar',
   'admin.github.title': 'Sürüm Geçmişi',
-  'admin.github.subtitle': "{repo}'dan en son güncellemeler",
+  'admin.github.subtitle': 'En son güncellemeler',
   'admin.github.latest': 'En sonuncu',
   'admin.github.prerelease': 'Ön sürüm',
   'admin.github.showDetails': 'Ayrıntıları göster',
@@ -564,11 +564,9 @@ const admin: TranslationStrings = {
   'admin.github.loadMore': 'Daha fazlasını yükle',
   'admin.github.loading': 'Yükleniyor...',
   'admin.github.error': 'Sürümler yüklenemedi',
-  'admin.github.by': 'ile',
-  'admin.github.support': "Travla'yı geliştirmeye devam etmeme yardımcı oluyor",
   'admin.update.available': 'Güncelleme mevcut',
   'admin.update.text': 'Travla {versiyon} mevcut. {current} çalıştırıyorsunuz.',
-  'admin.update.button': "GitHub'da görüntüle",
+  'admin.update.button': 'Sürüm notlarını görüntüle',
   'admin.update.install': 'Güncellemeyi Yükle',
   'admin.update.confirmTitle': 'Güncelleme Yüklensin mi?',
   'admin.update.confirmText':
@@ -587,7 +585,6 @@ const admin: TranslationStrings = {
     "Travla örneğiniz Docker'da çalışır. {version} sürümüne güncellemek için sunucunuzda aşağıdaki komutları çalıştırın:",
   'admin.update.nonDockerText':
     'Bu Travla örneği Docker üzerinde çalışmıyor. {version} sürümüne güncellemek için kullandığınız kurulum veya güncelleme yöntemini yeniden çalıştırın — örneğin Proxmox Community Scripts kullanıyorsanız güncellemeyi LXC konsolundan çalıştırın:',
-  'admin.update.wikiLink': 'Güncelleme kılavuzunu aç',
   'admin.update.reloadHint': 'Lütfen birkaç saniye içinde sayfayı yeniden yükleyin.',
   'admin.tabs.permissions': 'İzinler',
   'admin.addons.catalog.journey.name': 'Seyahat',

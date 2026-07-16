@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': '{amount}のうちのあなたの負担分',
   'publicTab.paidTo': '{name}さんに支払い済み',
   'publicTab.liveNote': 'このツケは、旅の割り勘費用のあなたの負担分をリアルタイムで反映します。',
+  'publicTab.noMethods': '{name} はまだ支払い情報を追加していません — 最適な支払い方法を直接確認してください。',
+  'publicTab.credit': 'グループの立て替え',
 };
 export default shared;

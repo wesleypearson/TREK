@@ -167,6 +167,8 @@ describe('PublicTabPage', () => {
       expect(screen.getByText('You owe Wesley')).toBeInTheDocument();
       expect(screen.getByText('You owe John')).toBeInTheDocument();
       expect(screen.getByText('wes@pay.id')).toBeInTheDocument();
+      // John has nothing configured → the card says so instead of going blank.
+      expect(screen.getByText(/John hasn’t added payment details/)).toBeInTheDocument();
       // Charge shows the member's share and references the bill total.
       expect(screen.getByText('Sunset Cruise')).toBeInTheDocument();
       expect(screen.getByText(/your share of .*120/i)).toBeInTheDocument();

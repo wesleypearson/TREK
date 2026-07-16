@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': '{amount} 중 내 몫',
   'publicTab.paidTo': '{name}님에게 지불함',
   'publicTab.liveNote': '이 장부는 여행의 공동 비용 중 내 몫을 실시간으로 반영합니다.',
+  'publicTab.noMethods': '{name} 님이 아직 결제 정보를 추가하지 않았습니다 — 가장 좋은 결제 방법을 직접 물어보세요.',
+  'publicTab.credit': '그룹 대신 선지불',
 };
 export default shared;

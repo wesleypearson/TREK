@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Deve',
   'costs.tabPaidTo': 'Pago a {name}',
   'costs.tabNoLinkedCharge': 'Comandas vinculadas seguem a divisão — em vez disso, inclua a pessoa na despesa.',
+  'costs.payDetailsMissing': 'Os pagadores ainda não sabem como pagar você — adicione seus dados de pagamento.',
+  'costs.payDetailsAdd': 'Adicionar dados de pagamento',
 };
 export default budget;

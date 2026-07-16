@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Borcu',
   'costs.tabPaidTo': '{name} adlı kişiye ödendi',
   'costs.tabNoLinkedCharge': 'Bağlı hesaplar bölüşümü takip eder — bunun yerine kişiyi masrafa ekleyin.',
+  'costs.payDetailsMissing': 'Ödeme yapacaklar size nasıl ödeme yapacaklarını henüz göremiyor — ödeme bilgilerinizi ekleyin.',
+  'costs.payDetailsAdd': 'Ödeme bilgilerini ekle',
 };
 export default budget;

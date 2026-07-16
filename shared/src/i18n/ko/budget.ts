@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': '빚진 금액',
   'costs.tabPaidTo': '{name}님에게 지불함',
   'costs.tabNoLinkedCharge': '연결된 장부는 분할과 연동됩니다 — 대신 비용에서 그 사람을 지정하세요.',
+  'costs.payDetailsMissing': '지급하는 사람이 아직 결제 방법을 볼 수 없습니다 — 결제 정보를 추가하세요.',
+  'costs.payDetailsAdd': '결제 정보 추가',
 };
 export default budget;

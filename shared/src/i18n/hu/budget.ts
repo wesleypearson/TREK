@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Tartozik',
   'costs.tabPaidTo': 'Fizetve {name} részére',
   'costs.tabNoLinkedCharge': 'Az összekapcsolt számlák a felosztást követik — inkább a kiadásban rendeld hozzá a személyt.',
+  'costs.payDetailsMissing': 'A fizetők még nem látják, hogyan fizethetnek neked — add meg a fizetési adataidat.',
+  'costs.payDetailsAdd': 'Fizetési adatok hozzáadása',
 };
 export default budget;

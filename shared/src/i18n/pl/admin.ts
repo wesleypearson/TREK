@@ -494,7 +494,7 @@ const admin: TranslationStrings = {
   'admin.oauthSessions.revokeSuccess': 'Sesja unieważniona',
   'admin.oauthSessions.revokeError': 'Nie udało się unieważnić sesji',
   'admin.oauthSessions.loadError': 'Nie udało się załadować sesji OAuth',
-  'admin.tabs.github': 'GitHub',
+  'admin.tabs.github': 'Aktualizacje',
   'admin.audit.subtitle':
     'Zdarzenia związane z bezpieczeństwem i administracją (kopie zapasowe, użytkownicy, MFA, ustawienia).',
   'admin.audit.empty': 'Brak zapisów w historii aktywności.',
@@ -508,7 +508,7 @@ const admin: TranslationStrings = {
   'admin.audit.col.ip': 'IP',
   'admin.audit.col.details': 'Szczegóły',
   'admin.github.title': 'Historia wydań',
-  'admin.github.subtitle': 'Najnowsze aktualizacje z {repo}',
+  'admin.github.subtitle': 'Najnowsze aktualizacje',
   'admin.github.latest': 'Najnowsze',
   'admin.github.prerelease': 'Wersja testowa',
   'admin.github.showDetails': 'Pokaż szczegóły',
@@ -516,11 +516,9 @@ const admin: TranslationStrings = {
   'admin.github.loadMore': 'Załaduj więcej',
   'admin.github.loading': 'Ładowanie...',
   'admin.github.error': 'Nie udało się załadować wydań',
-  'admin.github.by': 'przez',
-  'admin.github.support': 'Pomóż mi rozwijać Travla',
   'admin.update.available': 'Dostępna aktualizacja',
   'admin.update.text': 'Dostępna jest wersja Travla {version}. Używasz {current}.',
-  'admin.update.button': 'Zobacz na GitHubie',
+  'admin.update.button': 'Zobacz informacje o wersji',
   'admin.update.install': 'Zainstaluj aktualizację',
   'admin.update.confirmTitle': 'Zainstalować aktualizację?',
   'admin.update.confirmText':
@@ -539,7 +537,6 @@ const admin: TranslationStrings = {
     'Twoja instancja Travla działa w Dockerze. Aby zaktualizować do {version}, uruchom następujące polecenia na swoim serwerze:',
   'admin.update.nonDockerText':
     'Ta instancja Travla nie działa w Dockerze. Aby zaktualizować do {version}, uruchom ponownie metodę instalacji lub aktualizacji, której użyłeś — na przykład w Proxmox Community Scripts uruchom aktualizację z konsoli LXC:',
-  'admin.update.wikiLink': 'Otwórz przewodnik aktualizacji',
   'admin.update.reloadHint': 'Proszę odświeżyć stronę za kilka sekund.',
   'admin.notifications.title': 'Powiadomienia',
   'admin.notifications.hint': 'Wybierz jeden kanał powiadomień.',

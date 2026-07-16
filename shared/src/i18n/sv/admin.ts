@@ -553,7 +553,7 @@ const admin: TranslationStrings = {
   'admin.oauthSessions.revokeSuccess': 'Session återkallad',
   'admin.oauthSessions.revokeError': 'Kunde inte återkalla session',
   'admin.oauthSessions.loadError': 'Kunde inte ladda OAuth sessions',
-  'admin.tabs.github': 'GitHub',
+  'admin.tabs.github': 'Uppdateringar',
   'admin.audit.subtitle':
     'Säkerhetsrelaterade händelser och administrativa händelser (säkerhetskopieringar, användare, MFA, inställningar).',
   'admin.audit.empty': 'Inga revisionsposter ännu.',
@@ -567,7 +567,7 @@ const admin: TranslationStrings = {
   'admin.audit.col.ip': 'IP',
   'admin.audit.col.details': 'Detaljer',
   'admin.github.title': 'Versionshistorik',
-  'admin.github.subtitle': 'Senaste uppdateringarna från {repo}',
+  'admin.github.subtitle': 'Senaste uppdateringarna',
   'admin.github.latest': 'Senaste',
   'admin.github.prerelease': 'Förhandsutgåva',
   'admin.github.showDetails': 'Visa detaljer',
@@ -575,11 +575,9 @@ const admin: TranslationStrings = {
   'admin.github.loadMore': 'Ladda fler',
   'admin.github.loading': 'Laddar...',
   'admin.github.error': 'Det gick inte att ladda utgåvorna',
-  'admin.github.by': 'av',
-  'admin.github.support': 'Hjälper mig att fortsätta bygga Travla',
   'admin.update.available': 'Uppdatering tillgänglig',
   'admin.update.text': 'Travla {version} finns tillgängligt. Du kör {current}.',
-  'admin.update.button': 'Visa på GitHub',
+  'admin.update.button': 'Visa versionsinformation',
   'admin.update.install': 'Installera uppdatering',
   'admin.update.confirmTitle': 'Ska uppdateringen installeras?',
   'admin.update.confirmText':
@@ -598,7 +596,6 @@ const admin: TranslationStrings = {
     'Din Travla-instans körs i Docker. För att uppdatera till {version} kör du följande kommandon på din server:',
   'admin.update.nonDockerText':
     'Denna Travla-instans körs inte i Docker. För att uppdatera till {version}, kör installations- eller uppdateringsmetod du använde på nytt — till exempel, i Proxmox Community Scripts kör du uppdateringen från LXC-konsolen:',
-  'admin.update.wikiLink': 'Öppna uppdateringsguiden',
   'admin.update.reloadHint': 'Vänligen uppdatera sidan om några sekunder.',
   'admin.tabs.permissions': 'Behörigheter',
   'admin.addons.catalog.journey.name': 'Journey',

@@ -177,6 +177,8 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Owes',
   'costs.tabPaidTo': 'Paid {name}',
   'costs.tabNoLinkedCharge': 'Linked tabs follow the split — assign the person in the expense instead.',
+  'costs.payDetailsMissing': 'Payers can’t see how to pay you yet — add your payment details.',
+  'costs.payDetailsAdd': 'Add payment details',
 };
 
 export default budget;

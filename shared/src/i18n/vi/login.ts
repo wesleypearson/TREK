@@ -20,7 +20,7 @@ const login: TranslationStrings = {
   'login.features.filesDesc': 'Tải lên và quản lý tài liệu',
   'login.features.routes': 'Tuyến đường thông minh',
   'login.features.routesDesc': 'Tự động tối ưu hóa & xuất Google Maps',
-  'login.selfHosted': 'Tự lưu trữ · Mã nguồn mở · Dữ liệu của bạn vẫn là của bạn',
+  'login.selfHosted': 'Tự lưu trữ · Dữ liệu của bạn vẫn là của bạn',
   'login.title': 'Đăng nhập',
   'login.subtitle': 'Chào mừng trở lại',
   'login.signingIn': 'Đang đăng nhập…',
@@ -88,6 +88,5 @@ const login: TranslationStrings = {
   'login.insecureCookie.title': 'Đăng nhập không được giữ qua HTTP',
   'login.insecureCookie.body':
     'Bạn đang kết nối qua HTTP thuần, nên trình duyệt loại bỏ cookie phiên bảo mật của Travla — yêu cầu tiếp theo sẽ thất bại với "Access token required". Cách khắc phục: dùng HTTPS, hoặc với máy chủ tại nhà hãy đặt COOKIE_SECURE=false.',
-  'login.insecureCookie.link': 'Mở hướng dẫn khắc phục sự cố',
 };
 export default login;

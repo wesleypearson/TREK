@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': '未払い額',
   'costs.tabPaidTo': '{name}に支払い済み',
   'costs.tabNoLinkedCharge': 'リンクされたツケは分割と連動しています — 代わりに費用でこの人を割り当ててください。',
+  'costs.payDetailsMissing': '支払う側にはまだ支払い方法が表示されません — 支払い情報を追加してください。',
+  'costs.payDetailsAdd': '支払い情報を追加',
 };
 export default budget;

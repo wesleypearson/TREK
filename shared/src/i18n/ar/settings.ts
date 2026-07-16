@@ -191,21 +191,8 @@ const settings: TranslationStrings = {
   'settings.oauth.badge.machine': 'آلي',
   'settings.account': 'الحساب',
   'settings.about': 'حول',
-  'settings.about.reportBug': 'الإبلاغ عن خطأ',
-  'settings.about.reportBugHint': 'وجدت مشكلة؟ أخبرنا',
-  'settings.about.featureRequest': 'اقتراح ميزة',
-  'settings.about.featureRequestHint': 'اقترح ميزة جديدة',
-  'settings.about.wikiHint': 'التوثيق والأدلة',
-  'settings.about.supporters.badge': 'الداعمون الشهريون',
-  'settings.about.supporters.title': 'رفاق رحلة Travla',
-  'settings.about.supporters.subtitle':
-    'بينما تخطّط لمسارك التالي، يساعد هؤلاء الأشخاص في التخطيط لمستقبل Travla. تذهب مساهمتهم الشهرية مباشرةً إلى التطوير والساعات الفعلية المبذولة — حتى يظلّ Travla مفتوح المصدر.',
-  'settings.about.supporters.since': 'داعم منذ {date}',
-  'settings.about.supporters.tierEmpty': 'كن الأول',
   'settings.about.description':
     'Travla هو مخطط سفر مستضاف ذاتيًا يساعدك على تنظيم رحلاتك من أول فكرة حتى آخر ذكرى. تخطيط يومي، ميزانية، قوائم تعبئة، صور والمزيد — كل شيء في مكان واحد، على خادمك الخاص.',
-  'settings.about.madeWith': 'صُنع بـ',
-  'settings.about.madeBy': 'بواسطة موريس ومجتمع مفتوح المصدر متنامٍ.',
   'settings.username': 'اسم المستخدم',
   'settings.email': 'البريد الإلكتروني',
   'settings.role': 'الدور',
@@ -283,11 +270,6 @@ const settings: TranslationStrings = {
   'settings.ntfyUrl.topicPlaceholder': 'my-trek-alerts', // en-fallback
   'settings.ntfyUrl.serverPlaceholder': 'https://ntfy.sh', // en-fallback
   'settings.oauth.modal.redirectUrisPlaceholder': 'https://your-app.com/callback\nhttps://your-app.com/auth', // en-fallback
-  'settings.about.supporter.tier.noReturnTicket': 'No Return Ticket', // en-fallback
-  'settings.about.supporter.tier.lostLuggageVip': 'Lost Luggage VIP', // en-fallback
-  'settings.about.supporter.tier.businessClassDreamer': 'Business Class Dreamer', // en-fallback
-  'settings.about.supporter.tier.budgetTraveller': 'Budget Traveller', // en-fallback
-  'settings.about.supporter.tier.hostelBunkmate': 'Hostel Bunkmate', // en-fallback
   'settings.currency': 'Currency',
   'settings.currencyHint': 'All amounts in Costs are converted to and shown in this currency.',
   'settings.passkey.title': 'مفاتيح المرور',

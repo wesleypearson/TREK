@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'المستحق عليه',
   'costs.tabPaidTo': 'دُفع إلى {name}',
   'costs.tabNoLinkedCharge': 'الحسابات المربوطة تتبع التقسيم — عيّن الشخص في المصروف بدلًا من ذلك.',
+  'costs.payDetailsMissing': 'لا يستطيع الدافعون بعد معرفة كيفية الدفع لك — أضف تفاصيل الدفع الخاصة بك.',
+  'costs.payDetailsAdd': 'إضافة تفاصيل الدفع',
 };
 export default budget;

@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Är skyldig',
   'costs.tabPaidTo': 'Betalat till {name}',
   'costs.tabNoLinkedCharge': 'Kopplade notor följer delningen — lägg till personen i utgiften i stället.',
+  'costs.payDetailsMissing': 'Betalare kan ännu inte se hur de ska betala dig — lägg till dina betalningsuppgifter.',
+  'costs.payDetailsAdd': 'Lägg till betalningsuppgifter',
 };
 export default budget;

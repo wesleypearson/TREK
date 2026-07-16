@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'a te részed ebből: {amount}',
   'publicTab.paidTo': 'Fizetve {name} részére',
   'publicTab.liveNote': 'Ez a számla valós időben követi a részedet az út közös költségeiből.',
+  'publicTab.noMethods': '{name} még nem adott meg fizetési adatokat — kérdezd meg tőle közvetlenül a legjobb fizetési módot.',
+  'publicTab.credit': 'Megelőlegezve a csoportnak',
 };
 export default shared;

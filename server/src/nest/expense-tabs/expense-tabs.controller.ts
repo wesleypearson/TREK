@@ -55,7 +55,8 @@ export class TripExpenseTabsController {
       create_guest: !!body.create_guest,
     });
     if ('error' in tab) {
-      throw new HttpException({ error: tab.error }, tab.error.includes('already has a tab') ? 409 : 404);
+      const status = tab.error.includes('already has a tab') ? 409 : tab.error.includes('not found') ? 404 : 400;
+      throw new HttpException({ error: tab.error }, status);
     }
     return { tab };
   }
@@ -101,14 +102,14 @@ export class TripExpenseTabsController {
     const amount = Math.round(Number(body.amount) * 100) / 100;
     if (!Number.isFinite(amount) || amount <= 0) throw new HttpException({ error: 'Amount must be greater than zero' }, 400);
 
-    // Linked tab: money received is a real settle-up (member → recorder), so
-    // the group balances and the public live view move together.
+    // Linked tab: money received becomes real settle-ups credited to the
+    // people actually owed, so group balances and the public view agree.
     const tab = this.tabs.get(tripId, id, user.id);
     if (!tab) throw new HttpException({ error: 'Tab not found' }, 404);
     if (tab.member_user_id != null) {
       const trip = this.requireTrip(tripId, user) as { currency?: string | null };
-      const settlement = await this.tabs.settleLinkedTab(tripId, tab.member_user_id, user.id, amount, tab.currency || trip.currency || null);
-      return { settlement };
+      const settlements = await this.tabs.settleLinkedTab(tripId, tab.member_user_id, user.id, amount, tab.currency || trip.currency || null);
+      return { settlements };
     }
 
     const payment = this.tabs.addPayment(tripId, id, user.id, { amount, note: body.note });
@@ -126,6 +127,22 @@ export class TripExpenseTabsController {
     return { success: true };
   }
 
+  /**
+   * Linked tabs are trip-shared for reads and payments, but pausing or
+   * deleting a link someone else handed out is destructive — only the tab's
+   * creator (or the trip owner) may do it.
+   */
+  private requireTabControl(tripId: string, id: string, user: User) {
+    const trip = this.requireTrip(tripId, user) as { user_id?: number };
+    this.requireEdit(tripId, user);
+    const tab = this.tabs.get(tripId, id, user.id);
+    if (!tab) throw new HttpException({ error: 'Tab not found' }, 404);
+    if (tab.member_user_id != null && tab.owner_user_id !== user.id && trip.user_id !== user.id) {
+      throw new HttpException({ error: 'Only the tab creator can do this' }, 403);
+    }
+    return tab;
+  }
+
   /** Pause (or resume) the public link without losing the tab's history. */
   @Post(':id/revoke')
   @HttpCode(200)
@@ -135,7 +152,7 @@ export class TripExpenseTabsController {
     @Param('id') id: string,
     @Body() body: { revoked?: boolean },
   ) {
-    this.requireEdit(tripId, user);
+    this.requireTabControl(tripId, id, user);
     if (!this.tabs.setRevoked(tripId, id, user.id, body?.revoked !== false)) {
       throw new HttpException({ error: 'Tab not found' }, 404);
     }
@@ -144,7 +161,7 @@ export class TripExpenseTabsController {
 
   @Delete(':id')
   remove(@CurrentUser() user: User, @Param('tripId') tripId: string, @Param('id') id: string) {
-    this.requireEdit(tripId, user);
+    this.requireTabControl(tripId, id, user);
     if (!this.tabs.remove(tripId, id, user.id)) {
       throw new HttpException({ error: 'Tab not found' }, 404);
     }

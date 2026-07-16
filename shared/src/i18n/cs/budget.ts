@@ -177,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Dluží',
   'costs.tabPaidTo': 'Zaplaceno: {name}',
   'costs.tabNoLinkedCharge': 'Propojené účty sledují dělení — přiřaďte osobu raději ve výdaji.',
+  'costs.payDetailsMissing': 'Plátci zatím nevidí, jak vám zaplatit — přidejte své platební údaje.',
+  'costs.payDetailsAdd': 'Přidat platební údaje',
 };
 export default budget;

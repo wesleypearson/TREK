@@ -20,7 +20,7 @@ const login: TranslationStrings = {
   'login.features.filesDesc': '上传和管理文档',
   'login.features.routes': '智能路线',
   'login.features.routesDesc': '自动优化和导出到 Google Maps',
-  'login.selfHosted': '自托管 · 开源 · 数据由你掌控',
+  'login.selfHosted': '自托管 · 数据由你掌控',
   'login.title': '登录',
   'login.subtitle': '欢迎回来',
   'login.signingIn': '登录中…',
@@ -85,6 +85,5 @@ const login: TranslationStrings = {
   'login.insecureCookie.title': 'HTTP 下无法保持登录',
   'login.insecureCookie.body':
     '你正在通过普通 HTTP 连接，浏览器会丢弃 Travla 的安全会话 Cookie，导致下一次请求报错“Access token required”。修复方式：改用 HTTPS；如果是家庭实验室环境，可设置 COOKIE_SECURE=false。',
-  'login.insecureCookie.link': '打开故障排查指南',
 };
 export default login;

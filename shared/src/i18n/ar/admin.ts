@@ -512,7 +512,7 @@ const admin: TranslationStrings = {
   'admin.audit.col.ip': 'عنوان IP',
   'admin.audit.col.details': 'التفاصيل',
   'admin.github.title': 'سجل الإصدارات',
-  'admin.github.subtitle': 'آخر التحديثات من {repo}',
+  'admin.github.subtitle': 'آخر التحديثات',
   'admin.github.latest': 'الأحدث',
   'admin.github.prerelease': 'إصدار تجريبي',
   'admin.github.showDetails': 'إظهار التفاصيل',
@@ -520,11 +520,9 @@ const admin: TranslationStrings = {
   'admin.github.loadMore': 'تحميل المزيد',
   'admin.github.loading': 'جارٍ التحميل...',
   'admin.github.error': 'فشل تحميل الإصدارات',
-  'admin.github.by': 'بواسطة',
-  'admin.github.support': 'يساعدني في تطوير Travla',
   'admin.update.available': 'يتوفر تحديث',
   'admin.update.text': 'Travla {version} متوفر. أنت تستخدم {current}.',
-  'admin.update.button': 'عرض على GitHub',
+  'admin.update.button': 'عرض ملاحظات الإصدار',
   'admin.update.install': 'تثبيت التحديث',
   'admin.update.confirmTitle': 'تثبيت التحديث؟',
   'admin.update.confirmText': 'سيتم تحديث Travla من {current} إلى {version}. سيُعاد تشغيل الخادم تلقائيًا بعد ذلك.',
@@ -541,7 +539,6 @@ const admin: TranslationStrings = {
   'admin.update.dockerText': 'يعمل Travla الخاص بك في Docker. للتحديث إلى {version}، نفّذ الأوامر التالية على الخادم:',
   'admin.update.nonDockerText':
     'لا يعمل Travla هذا في Docker. للتحديث إلى {version}، أعد تشغيل طريقة التثبيت أو التحديث التي استخدمتها — على سبيل المثال، في Proxmox Community Scripts نفّذ التحديث من وحدة تحكم LXC:',
-  'admin.update.wikiLink': 'فتح دليل التحديث',
   'admin.update.reloadHint': 'يرجى إعادة تحميل الصفحة بعد بضع ثوانٍ.',
   'admin.tabs.permissions': 'الصلاحيات',
   'admin.notifications.webhook': 'Webhook', // en-fallback
@@ -564,7 +561,7 @@ const admin: TranslationStrings = {
     'Password login settings are controlled by the OIDC_ONLY environment variable and cannot be changed here.', // en-fallback
   'admin.lockoutWarning': 'At least one login method must remain enabled', // en-fallback
   'admin.addons.catalog.mcp.name': 'MCP', // en-fallback
-  'admin.tabs.github': 'GitHub', // en-fallback
+  'admin.tabs.github': 'التحديثات',
   'admin.addons.catalog.journey.name': 'Journey', // en-fallback
   'admin.addons.catalog.journey.description':
     'Trip tracking & travel journal with check-ins, photos, and daily stories', // en-fallback

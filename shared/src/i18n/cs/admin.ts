@@ -488,9 +488,9 @@ const admin: TranslationStrings = {
   'admin.oauthSessions.revokeSuccess': 'Relace zrušena',
   'admin.oauthSessions.revokeError': 'Nepodařilo se zrušit relaci',
   'admin.oauthSessions.loadError': 'Nepodařilo se načíst OAuth relace',
-  'admin.tabs.github': 'GitHub',
+  'admin.tabs.github': 'Aktualizace',
   'admin.github.title': 'Historie verzí',
-  'admin.github.subtitle': 'Nejnovější aktualizace z {repo}',
+  'admin.github.subtitle': 'Nejnovější aktualizace',
   'admin.github.latest': 'Nejnovější',
   'admin.github.prerelease': 'Předběžná verze',
   'admin.github.showDetails': 'Zobrazit podrobnosti',
@@ -498,8 +498,6 @@ const admin: TranslationStrings = {
   'admin.github.loadMore': 'Načíst další',
   'admin.github.loading': 'Načítání...',
   'admin.github.error': 'Nepodařilo se načíst verze',
-  'admin.github.by': 'od',
-  'admin.github.support': 'Pomáhá udržovat vývoj Travla',
   'admin.weather.title': 'Data o počasí',
   'admin.weather.badge': 'Od 24. března 2026',
   'admin.weather.description':
@@ -513,7 +511,7 @@ const admin: TranslationStrings = {
   'admin.weather.locationHint': 'Počasí se určuje podle prvního místa se souřadnicemi v daném dni.',
   'admin.update.available': 'Dostupná aktualizace',
   'admin.update.text': 'Travla {version} je k dispozici. Aktuálně používáte verzi {current}.',
-  'admin.update.button': 'Zobrazit na GitHubu',
+  'admin.update.button': 'Zobrazit poznámky k verzi',
   'admin.update.install': 'Instalovat aktualizaci',
   'admin.update.confirmTitle': 'Instalovat aktualizaci?',
   'admin.update.confirmText':
@@ -531,7 +529,6 @@ const admin: TranslationStrings = {
     'Váš Travla běží v Dockeru. Pro aktualizaci na verzi {version} spusťte na svém serveru tyto příkazy:',
   'admin.update.nonDockerText':
     'Tato instance Travla neběží v Dockeru. Pro aktualizaci na verzi {version} znovu spusťte instalační nebo aktualizační metodu, kterou jste použili — například u Proxmox Community Scripts spusťte aktualizaci z konzole LXC:',
-  'admin.update.wikiLink': 'Otevřít průvodce aktualizací',
   'admin.update.reloadHint': 'Prosím obnovte stránku za několik sekund.',
   'admin.tabs.permissions': 'Oprávnění',
   'admin.notifications.emailPanel.title': 'Email (SMTP)',

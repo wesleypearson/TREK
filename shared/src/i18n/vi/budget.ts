@@ -177,6 +177,8 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'Còn nợ',
   'costs.tabPaidTo': 'Đã trả cho {name}',
   'costs.tabNoLinkedCharge': 'Sổ nợ liên kết bám theo phần chia — hãy chỉ định người này trong khoản chi thay vì ở đây.',
+  'costs.payDetailsMissing': 'Người trả tiền chưa thấy cách thanh toán cho bạn — hãy thêm thông tin thanh toán của bạn.',
+  'costs.payDetailsAdd': 'Thêm thông tin thanh toán',
 };
 
 export default budget;

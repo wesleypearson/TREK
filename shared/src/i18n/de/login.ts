@@ -20,7 +20,7 @@ const login: TranslationStrings = {
   'login.features.filesDesc': 'Dateien hochladen & verwalten',
   'login.features.routes': 'Routenoptimierung',
   'login.features.routesDesc': 'Auto-Optimierung & Google Maps Export',
-  'login.selfHosted': 'Self-hosted · Open Source · Deine Daten bleiben bei dir',
+  'login.selfHosted': 'Self-hosted · Deine Daten bleiben bei dir',
   'login.title': 'Anmelden',
   'login.subtitle': 'Willkommen zurück',
   'login.signingIn': 'Anmelden…',
@@ -89,6 +89,5 @@ const login: TranslationStrings = {
   'login.insecureCookie.title': 'Login hält über HTTP nicht',
   'login.insecureCookie.body':
     'Du verbindest dich über reines HTTP, daher verwirft dein Browser Travlas sicheren Session-Cookie — die nächste Anfrage scheitert mit „Access token required". Lösung: HTTPS nutzen, oder für ein Heim-Setup COOKIE_SECURE=false setzen.',
-  'login.insecureCookie.link': 'Zur Troubleshooting-Anleitung',
 };
 export default login;

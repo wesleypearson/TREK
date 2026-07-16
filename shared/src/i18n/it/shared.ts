@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'la tua parte di {amount}',
   'publicTab.paidTo': 'Pagato a {name}',
   'publicTab.liveNote': 'Questo conto segue in tempo reale la tua parte delle spese condivise del viaggio.',
+  'publicTab.noMethods': '{name} non ha ancora aggiunto i dati di pagamento — chiedigli direttamente il modo migliore per pagare.',
+  'publicTab.credit': 'Anticipato per il gruppo',
 };
 export default shared;

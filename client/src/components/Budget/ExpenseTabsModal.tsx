@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
-import { Plus, Copy, Check, ExternalLink, Trash2, Download, Pause, Play, ChevronDown, ChevronUp, Link2, Receipt, UserPlus } from 'lucide-react'
+import { Plus, Copy, Check, ExternalLink, Trash2, Download, Pause, Play, ChevronDown, ChevronUp, Link2, Receipt, UserPlus, AlertTriangle } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import { useToast } from '../shared/Toast'
-import { expenseTabsApi, type ExpenseTab } from '../../api/client'
+import { expenseTabsApi, settingsApi, type ExpenseTab } from '../../api/client'
 import { formatMoney } from '../../utils/formatters'
 import { downloadFile } from '../../utils/fileDownload'
 import Modal from '../shared/Modal'
 import CustomSelect from '../shared/CustomSelect'
 import GuestBadge from '../shared/GuestBadge'
+import PaymentDetailsForm, { hasPaymentDetails } from '../Settings/PaymentDetailsForm'
 import type { BudgetItem } from '../../types'
 import type { TripMember } from './BudgetPanelMemberChips'
 
@@ -18,11 +19,12 @@ import type { TripMember } from './BudgetPanelMemberChips'
  * Charges freeze the label/amount at share time, so later ledger edits never
  * rewrite what the other person already saw.
  */
-export default function ExpenseTabsModal({ tripId, base, locale, people = [], addItemFor, onClose }: {
+export default function ExpenseTabsModal({ tripId, base, locale, people = [], me, addItemFor, onClose }: {
   tripId: number
   base: string
   locale: string
   people?: TripMember[]
+  me?: number
   addItemFor?: BudgetItem | null
   onClose: () => void
 }) {
@@ -51,6 +53,17 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], ad
   const [payAmount, setPayAmount] = useState('')
   const [payNote, setPayNote] = useState('')
 
+  // "How do people pay you?" — if the sharer has no payment details on their
+  // profile, prompt right here (and pop the form after the first tab is
+  // created) instead of letting them share a link payers can't act on.
+  const [payDetailsConfigured, setPayDetailsConfigured] = useState<boolean | null>(null)
+  const [payDetailsOpen, setPayDetailsOpen] = useState(false)
+  useEffect(() => {
+    settingsApi.get()
+      .then((d: { settings?: Record<string, unknown> }) => setPayDetailsConfigured(hasPaymentDetails(d?.settings)))
+      .catch(() => setPayDetailsConfigured(null))
+  }, [])
+
   const load = () => expenseTabsApi.list(tripId).then(r => {
     setTabs(r.tabs)
     // Charge mode targets standalone tabs only — linked ones follow the ledger.
@@ -59,6 +72,17 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], ad
   }).catch(() => toast.error(t('common.unknownError')))
 
   useEffect(() => { load() }, [tripId])
+
+  // Linked tabs mirror the live ledger, which OTHER members change too —
+  // refresh periodically and when the window regains focus so the balances
+  // in an open modal don't go stale in a group session.
+  useEffect(() => {
+    const interval = setInterval(load, 20000)
+    const onFocus = () => load()
+    window.addEventListener('focus', onFocus)
+    return () => { clearInterval(interval); window.removeEventListener('focus', onFocus) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tripId])
 
   const fmt = (v: number, c?: string | null) => formatMoney(v, (c || base).toUpperCase(), locale)
   const fmtDate = (d?: string | null) => {
@@ -93,6 +117,8 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], ad
       setFirstName(''); setLastName(''); setLinkMode('guest'); setShowCreate(false)
       await load()
       if (addItemFor) setTargetTabId(tab.id)
+      // First share without payment details on file → pop the form now.
+      if (payDetailsConfigured === false) setPayDetailsOpen(true)
     } catch (err) {
       const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
       toast.error(msg || t('common.unknownError'))
@@ -133,7 +159,8 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], ad
       <CustomSelect value={linkMode} onChange={v => setLinkMode(String(v))} style={{ width: '100%' }}
         options={[
           { value: 'guest', label: t('costs.tabLinkNewGuest') },
-          ...people.filter(p => !alreadyLinked.has(p.id)).map(p => ({ value: `member:${p.id}`, label: t('costs.tabLinkMember', { name: p.username }) })),
+          // A tab tracks money owed TO you — exclude yourself and anyone already linked.
+          ...people.filter(p => !alreadyLinked.has(p.id) && p.id !== me).map(p => ({ value: `member:${p.id}`, label: t('costs.tabLinkMember', { name: p.username }) })),
           { value: 'none', label: t('costs.tabLinkNone') },
         ]} />
       {linkedMemberId == null && (
@@ -158,6 +185,18 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], ad
     <Modal isOpen onClose={onClose} title={addItemFor ? t('costs.addToTabTitle', { name: addItemFor.name }) : t('costs.tabsTitle')} size="lg">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
         <p className="text-content-muted" style={{ margin: 0, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}>{t('costs.tabsHint')}</p>
+
+        {/* No payment details on file → payers can't act on the link. */}
+        {payDetailsConfigured === false && (
+          <div className="bg-[rgba(217,119,6,0.1)] border border-[rgba(217,119,6,0.35)]" style={{ borderRadius: 12, padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <AlertTriangle size={15} className="text-[#d97706]" style={{ flexShrink: 0 }} />
+            <span className="text-content" style={{ flex: 1, minWidth: 160, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))' }}>{t('costs.payDetailsMissing')}</span>
+            <button onClick={() => setPayDetailsOpen(true)}
+              className="bg-[#d97706] text-white" style={{ padding: '6px 12px', borderRadius: 9, border: 0, fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit' }}>
+              {t('costs.payDetailsAdd')}
+            </button>
+          </div>
+        )}
 
         {/* charge-to-tab mode */}
         {addItemFor && (
@@ -382,6 +421,14 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], ad
           </div>
         )}
       </div>
+
+      {/* Nested prompt: set your payment details without leaving the flow. */}
+      {payDetailsOpen && (
+        <Modal isOpen onClose={() => setPayDetailsOpen(false)} title={t('settings.paymentDetails')} size="md">
+          <p className="text-content-muted" style={{ marginTop: 0, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}>{t('settings.paymentDetailsHint')}</p>
+          <PaymentDetailsForm onSaved={configured => { setPayDetailsConfigured(configured); setPayDetailsOpen(false) }} />
+        </Modal>
+      )}
     </Modal>
   )
 }

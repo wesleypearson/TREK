@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'حصتك من {amount}',
   'publicTab.paidTo': 'دُفع إلى {name}',
   'publicTab.liveNote': 'يتتبع هذا الحساب حصتك من الفواتير المشتركة للرحلة في الوقت الفعلي.',
+  'publicTab.noMethods': 'لم يُضِف {name} تفاصيل الدفع بعد — اسأله مباشرة عن أفضل طريقة للدفع.',
+  'publicTab.credit': 'مدفوع مقدمًا عن المجموعة',
 };
 export default shared;

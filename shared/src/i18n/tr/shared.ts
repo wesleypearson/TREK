@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': '{amount} içindeki payınız',
   'publicTab.paidTo': '{name} adlı kişiye ödendi',
   'publicTab.liveNote': 'Bu hesap, gezinin ortak masraflarındaki payınızı gerçek zamanlı takip eder.',
+  'publicTab.noMethods': '{name} henüz ödeme bilgisi eklemedi — en iyi ödeme yolunu doğrudan kendisine sorun.',
+  'publicTab.credit': 'Grup için önden ödendi',
 };
 export default shared;
