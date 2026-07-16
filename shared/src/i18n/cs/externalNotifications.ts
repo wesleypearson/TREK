@@ -4,7 +4,6 @@ const cs: NotificationLocale = {
   email: {
     footer: 'Toto jsi obdržel/a, protože máš povoleny upozornění v Travla.',
     manage: 'Spravovat předvolby v nastavení',
-    madeWith: 'Made with',
     openTrek: 'Otevřít Travla',
   },
   events: {

@@ -204,7 +204,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': '閲覧のみ · 公開日記',
   'journey.public.tagline': '旅の記録＆探索キット',
   'journey.public.sharedVia': '共有元',
-  'journey.public.madeWith': '作成：',
   'journey.pdf.journeyBook': '日記ブック',
   'journey.pdf.madeWith': 'Made with Travla',
   'journey.pdf.day': '日目',

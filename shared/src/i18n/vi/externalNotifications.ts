@@ -4,7 +4,6 @@ const en: NotificationLocale = {
   email: {
     footer: 'Bạn nhận được thông báo này vì bạn đã bật thông báo trong Travla.',
     manage: 'Quản lý tùy chọn trong Cài đặt',
-    madeWith: 'Được làm bằng',
     openTrek: 'Mở Travla',
   },
   events: {

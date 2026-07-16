@@ -4,7 +4,6 @@ const ja: NotificationLocale = {
   email: {
     footer: 'Travlaで通知を有効にしているため、このメールが届きました。',
     manage: '設定で通知設定を管理',
-    madeWith: 'Made with',
     openTrek: 'Travlaを開く',
   },
   events: {

@@ -210,7 +210,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Μόνο ανάγνωση · Δημόσιο Ταξίδι',
   'journey.public.tagline': 'Your trips. Your plan. Your server.',
   'journey.public.sharedVia': 'Κοινοποιήθηκε μέσω',
-  'journey.public.madeWith': 'Φτιαγμένο με',
   'journey.pdf.journeyBook': 'Βιβλίο Ταξιδιού',
   'journey.pdf.madeWith': 'Φτιαγμένο με Travla',
   'journey.pdf.day': 'Ημέρα',

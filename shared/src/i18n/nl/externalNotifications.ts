@@ -4,7 +4,6 @@ const nl: NotificationLocale = {
   email: {
     footer: 'Je ontvangt dit omdat je meldingen hebt ingeschakeld in Travla.',
     manage: 'Voorkeuren beheren',
-    madeWith: 'Made with',
     openTrek: 'Travla openen',
   },
   events: {

@@ -204,7 +204,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Salt okunur · Herkese açık Journey',
   'journey.public.tagline': 'Seyahat Kaynak ve Keşif Kiti',
   'journey.public.sharedVia': 'Şununla paylaşıldı:',
-  'journey.public.madeWith': 'İle yapıldı',
   'journey.pdf.journeyBook': 'Journey Kitabı',
   'journey.pdf.madeWith': 'Travla ile Yapıldı',
   'journey.pdf.day': 'Gün',

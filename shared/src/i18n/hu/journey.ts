@@ -203,7 +203,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Csak olvasható · Nyilvános útinapló',
   'journey.public.tagline': 'Utazástervező és felfedező eszköz',
   'journey.public.sharedVia': 'Megosztva a következőn keresztül:',
-  'journey.public.madeWith': 'Készítve a következővel:',
   'journey.pdf.journeyBook': 'Útinaplókönyv',
   'journey.pdf.madeWith': 'Készítve a Travla segítségével',
   'journey.pdf.day': 'Nap',

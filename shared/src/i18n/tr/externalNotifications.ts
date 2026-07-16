@@ -4,7 +4,6 @@ const tr: NotificationLocale = {
   email: {
     footer: "Travla'da bildirimleri etkinleştirdiğiniz için bunu aldınız.",
     manage: 'Ayarlarda tercihleri yönetin',
-    madeWith: 'Made with',
     openTrek: "Travla'yı aç",
   },
   events: {

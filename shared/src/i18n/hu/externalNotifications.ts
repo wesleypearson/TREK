@@ -4,7 +4,6 @@ const hu: NotificationLocale = {
   email: {
     footer: 'Ezt az értesítést azért kaptad, mert engedélyezted az értesítéseket a Travlában.',
     manage: 'Beállítások kezelése',
-    madeWith: 'Made with',
     openTrek: 'Travla megnyitása',
   },
   events: {

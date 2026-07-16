@@ -203,7 +203,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Только для чтения · Публичное путешествие',
   'journey.public.tagline': 'Инструмент планирования и исследования путешествий',
   'journey.public.sharedVia': 'Опубликовано через',
-  'journey.public.madeWith': 'Сделано с помощью',
   'journey.pdf.journeyBook': 'Книга путешествия',
   'journey.pdf.madeWith': 'Сделано с помощью Travla',
   'journey.pdf.day': 'День',
