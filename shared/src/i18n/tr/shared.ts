@@ -33,7 +33,8 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Diğer',
   'publicTab.copy': 'Kopyala',
   'publicTab.claimTitle': '{owner} adlı kişiye siz olduğunuzu bildirin',
-  'publicTab.claimHint': 'Bu hesabın görüldü olarak işaretlenmesi için adınızı ve soyadınızı onaylayın. Yalnızca adınız saklanır.',
+  'publicTab.claimHint':
+    'Bu hesabın görüldü olarak işaretlenmesi için adınızı ve soyadınızı onaylayın. Yalnızca adınız saklanır.',
   'publicTab.firstName': 'Ad',
   'publicTab.lastName': 'Soyad',
   'publicTab.claimSubmit': 'Onayla',
@@ -46,5 +47,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': '{amount} içindeki payınız',
   'publicTab.paidTo': '{name} adlı kişiye ödendi',
   'publicTab.liveNote': 'Bu hesap, gezinin ortak masraflarındaki payınızı gerçek zamanlı takip eder.',
+  'publicTab.noMethods': '{name} henüz ödeme bilgisi eklemedi — en iyi ödeme yolunu doğrudan kendisine sorun.',
+  'publicTab.credit': 'Grup için önden ödendi',
 };
 export default shared;

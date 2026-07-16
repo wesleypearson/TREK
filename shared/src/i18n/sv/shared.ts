@@ -46,5 +46,8 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'din andel av {amount}',
   'publicTab.paidTo': 'Betalat till {name}',
   'publicTab.liveNote': 'Den här notan följer din andel av resans delade räkningar i realtid.',
+  'publicTab.noMethods':
+    '{name} har inte lagt till några betalningsuppgifter ännu — fråga direkt om bästa sättet att betala.',
+  'publicTab.credit': 'Utlägg för gruppen',
 };
 export default shared;

@@ -51,16 +51,42 @@ export class ExpenseTabsService {
   }
 
   /**
-   * Money received against a LINKED tab is a real settle-up transfer (member →
-   * receiver), so the whole trip's balances move together. Mirrors the budget
+   * Money received against a LINKED tab is a real settle-up transfer, so the
+   * whole trip's balances move together. Crucially the credit goes to the
+   * people the member actually OWES (the same netted creditors the public
+   * page told them to pay), largest debt first — NOT to whoever happened to
+   * tap "Record payment". Any excess beyond what's owed falls back to the
+   * recorder, who physically received the money. Mirrors the budget
    * controller's settlement path incl. the frozen FX rate (#1445) + broadcast.
    */
-  async settleLinkedTab(tripId: string, memberUserId: number, receiverUserId: number, amount: number, currency?: string | null) {
-    const data = { from_user_id: memberUserId, to_user_id: receiverUserId, amount, currency };
-    await budget.freezeForeignRate(tripId, data);
-    const settlement = budget.createSettlement(tripId, data, receiverUserId);
-    broadcast(tripId, 'budget:settlement-created', { settlement }, undefined);
-    return settlement;
+  async settleLinkedTab(tripId: string, memberUserId: number, recorderUserId: number, amount: number, currency?: string | null) {
+    const tripCurrency = (currency || 'AUD').toUpperCase();
+    let rates: Record<string, number> | null = null;
+    try {
+      const { getRates } = await import('../../services/exchangeRateService');
+      rates = await getRates(tripCurrency);
+    } catch { /* FX outage degrades gracefully */ }
+    const live = svc.memberLivePosition(tripId, memberUserId, { rates, tripCurrency });
+
+    const allocations: { to: number; amount: number }[] = [];
+    let remaining = Math.round(amount * 100) / 100;
+    for (const o of [...live.owed].sort((a, b) => b.amount - a.amount)) {
+      if (remaining <= 0.004) break;
+      const part = Math.min(remaining, o.amount);
+      allocations.push({ to: o.user_id, amount: Math.round(part * 100) / 100 });
+      remaining = Math.round((remaining - part) * 100) / 100;
+    }
+    if (remaining > 0.004) allocations.push({ to: recorderUserId, amount: remaining });
+
+    const settlements = [];
+    for (const a of allocations) {
+      const data = { from_user_id: memberUserId, to_user_id: a.to, amount: a.amount, currency: tripCurrency };
+      await budget.freezeForeignRate(tripId, data);
+      const settlement = budget.createSettlement(tripId, data, recorderUserId);
+      if (settlement) settlements.push(settlement);
+      broadcast(tripId, 'budget:settlement-created', { settlement }, undefined);
+    }
+    return settlements;
   }
 
   setRevoked(tripId: string, tabId: string, ownerUserId: number, revoked: boolean) {

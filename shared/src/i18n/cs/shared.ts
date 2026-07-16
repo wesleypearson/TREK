@@ -33,18 +33,22 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Jiné',
   'publicTab.copy': 'Kopírovat',
   'publicTab.claimTitle': 'Dejte osobě {owner} vědět, že jste to vy',
-  'publicTab.claimHint': 'Potvrďte své jméno a příjmení, aby se účet označil jako zobrazený. Ukládá se pouze vaše jméno.',
+  'publicTab.claimHint':
+    'Potvrďte své jméno a příjmení, aby se účet označil jako zobrazený. Ukládá se pouze vaše jméno.',
   'publicTab.firstName': 'Jméno',
   'publicTab.lastName': 'Příjmení',
   'publicTab.claimSubmit': 'Potvrdit',
   'publicTab.claimedThanks': 'Díky, {name} — tento účet je označen jako zobrazený.',
   'publicTab.joinCta': 'Připojte se k cestě v aplikaci Travla',
-  'publicTab.joinHint': 'Vytvořte si na tomto serveru zdarma účet pomocí jednorázové pozvánky a prohlédněte si celou cestu.',
+  'publicTab.joinHint':
+    'Vytvořte si na tomto serveru zdarma účet pomocí jednorázové pozvánky a prohlédněte si celou cestu.',
   'publicTab.expired': 'Tento odkaz už není aktivní',
   'publicTab.expiredHint': 'Požádejte osobu, která vám ho poslala, o nový.',
   'publicTab.youOwe': 'Kolik dlužíte: {name}',
   'publicTab.ofTotal': 'váš podíl z {amount}',
   'publicTab.paidTo': 'Zaplaceno: {name}',
   'publicTab.liveNote': 'Tento účet sleduje váš podíl na společných útratách cesty v reálném čase.',
+  'publicTab.noMethods': '{name} zatím nepřidal(a) platební údaje — zeptejte se přímo na nejlepší způsob platby.',
+  'publicTab.credit': 'Založeno za skupinu',
 };
 export default shared;

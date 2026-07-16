@@ -138,7 +138,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': '查看小票',
   'costs.tabs': '账单',
   'costs.tabsTitle': '公开消费账单',
-  'costs.tabsHint': '分享一个链接，让对方清楚看到欠您多少钱 — 无需注册账号。新消费会继续累加到同一份账单，直到对方付清。',
+  'costs.tabsHint':
+    '分享一个链接，让对方清楚看到欠您多少钱 — 无需注册账号。新消费会继续累加到同一份账单，直到对方付清。',
   'costs.tabsEmpty': '还没有账单。为每位欠您钱的人各建一份吧。',
   'costs.newTab': '新建账单',
   'costs.tabFirstName': '名字',
@@ -176,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': '欠款',
   'costs.tabPaidTo': '已支付给 {name}',
   'costs.tabNoLinkedCharge': '已关联的账单跟随分摊 — 请改为在费用中指定此人。',
+  'costs.payDetailsMissing': '付款人还看不到如何向你付款 — 请添加你的收款信息。',
+  'costs.payDetailsAdd': '添加收款信息',
 };
 export default budget;

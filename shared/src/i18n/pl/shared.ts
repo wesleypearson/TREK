@@ -33,7 +33,8 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Inne',
   'publicTab.copy': 'Kopiuj',
   'publicTab.claimTitle': 'Daj {owner} znać, że to ty',
-  'publicTab.claimHint': 'Potwierdź swoje imię i nazwisko, aby rachunek został oznaczony jako wyświetlony. Zapisywane jest tylko twoje imię i nazwisko.',
+  'publicTab.claimHint':
+    'Potwierdź swoje imię i nazwisko, aby rachunek został oznaczony jako wyświetlony. Zapisywane jest tylko twoje imię i nazwisko.',
   'publicTab.firstName': 'Imię',
   'publicTab.lastName': 'Nazwisko',
   'publicTab.claimSubmit': 'Potwierdź',
@@ -46,5 +47,8 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'twoja część z {amount}',
   'publicTab.paidTo': 'Zapłacono: {name}',
   'publicTab.liveNote': 'Ten rachunek na bieżąco śledzi twoją część wspólnych wydatków podróży.',
+  'publicTab.noMethods':
+    '{name} nie dodał(a) jeszcze danych do płatności — zapytaj bezpośrednio o najlepszy sposób zapłaty.',
+  'publicTab.credit': 'Wyłożone za grupę',
 };
 export default shared;

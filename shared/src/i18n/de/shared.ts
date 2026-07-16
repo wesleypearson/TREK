@@ -33,18 +33,23 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Sonstiges',
   'publicTab.copy': 'Kopieren',
   'publicTab.claimTitle': 'Sag {owner}, dass du es bist',
-  'publicTab.claimHint': 'Bestätige deinen Vor- und Nachnamen, damit dieser Deckel als gesehen markiert wird. Es wird nur dein Name gespeichert.',
+  'publicTab.claimHint':
+    'Bestätige deinen Vor- und Nachnamen, damit dieser Deckel als gesehen markiert wird. Es wird nur dein Name gespeichert.',
   'publicTab.firstName': 'Vorname',
   'publicTab.lastName': 'Nachname',
   'publicTab.claimSubmit': 'Bestätigen',
   'publicTab.claimedThanks': 'Danke, {name} — dieser Deckel ist jetzt als gesehen markiert.',
   'publicTab.joinCta': 'Der Reise auf Travla beitreten',
-  'publicTab.joinHint': 'Erstelle mit einer einmaligen Einladung ein kostenloses Konto auf diesem Server und sieh dir die ganze Reise an.',
+  'publicTab.joinHint':
+    'Erstelle mit einer einmaligen Einladung ein kostenloses Konto auf diesem Server und sieh dir die ganze Reise an.',
   'publicTab.expired': 'Dieser Link ist nicht mehr aktiv',
   'publicTab.expiredHint': 'Bitte die Person, die ihn dir geschickt hat, um einen neuen.',
   'publicTab.youOwe': 'Du schuldest {name}',
   'publicTab.ofTotal': 'dein Anteil von {amount}',
   'publicTab.paidTo': 'An {name} gezahlt',
   'publicTab.liveNote': 'Dieser Deckel zeigt deinen Anteil an den gemeinsamen Rechnungen der Reise in Echtzeit.',
+  'publicTab.noMethods':
+    '{name} hat noch keine Zahlungsdetails hinterlegt — frag am besten direkt nach dem bevorzugten Zahlungsweg.',
+  'publicTab.credit': 'Für die Gruppe ausgelegt',
 };
 export default shared;

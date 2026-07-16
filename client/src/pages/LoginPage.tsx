@@ -451,10 +451,6 @@ export default function LoginPage(): React.ReactElement {
                 <div style={{ padding: '12px 14px', background: '#fffbeb', border: '1px solid #fde68a', borderRadius: 10, fontSize: 'calc(13px * var(--fs-scale-body, 1))', color: '#92400e' }}>
                   <div style={{ fontWeight: 700, marginBottom: 4 }}>{t('login.insecureCookie.title')}</div>
                   <div style={{ lineHeight: 1.55 }}>{t('login.insecureCookie.body')}</div>
-                  <a href="https://github.com/mauriceboe/TREK/wiki/Troubleshooting" target="_blank" rel="noopener noreferrer"
-                    style={{ display: 'inline-block', marginTop: 6, fontWeight: 600, color: '#b45309', textDecoration: 'underline' }}>
-                    {t('login.insecureCookie.link')} ↗
-                  </a>
                 </div>
               )}
 

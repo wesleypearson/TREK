@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'عرض الإيصال',
   'costs.tabs': 'الحسابات',
   'costs.tabsTitle': 'حسابات المصاريف العامة',
-  'costs.tabsHint': 'شارك رابطًا يُظهر لشخص ما بالضبط كم يدين لك — دون الحاجة إلى حساب مستخدم. تُضاف النفقات الجديدة إلى نفس الحساب الجاري حتى يسدّد.',
+  'costs.tabsHint':
+    'شارك رابطًا يُظهر لشخص ما بالضبط كم يدين لك — دون الحاجة إلى حساب مستخدم. تُضاف النفقات الجديدة إلى نفس الحساب الجاري حتى يسدّد.',
   'costs.tabsEmpty': 'لا توجد حسابات بعد. أنشئ حسابًا لكل شخص يدين لك.',
   'costs.newTab': 'حساب جديد',
   'costs.tabFirstName': 'الاسم الأول',
@@ -177,5 +178,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': 'المستحق عليه',
   'costs.tabPaidTo': 'دُفع إلى {name}',
   'costs.tabNoLinkedCharge': 'الحسابات المربوطة تتبع التقسيم — عيّن الشخص في المصروف بدلًا من ذلك.',
+  'costs.payDetailsMissing': 'لا يستطيع الدافعون بعد معرفة كيفية الدفع لك — أضف تفاصيل الدفع الخاصة بك.',
+  'costs.payDetailsAdd': 'إضافة تفاصيل الدفع',
 };
 export default budget;

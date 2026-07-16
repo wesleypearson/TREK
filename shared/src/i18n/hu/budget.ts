@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Blokk megtekintése',
   'costs.tabs': 'Számlák',
   'costs.tabsTitle': 'Nyilvános számlák',
-  'costs.tabsHint': 'Ossz meg egy linket, amely pontosan megmutatja valakinek, mennyivel tartozik neked — fiók nélkül is működik. Az új tételek ugyanarra a számlára kerülnek, amíg nem fizet.',
+  'costs.tabsHint':
+    'Ossz meg egy linket, amely pontosan megmutatja valakinek, mennyivel tartozik neked — fiók nélkül is működik. Az új tételek ugyanarra a számlára kerülnek, amíg nem fizet.',
   'costs.tabsEmpty': 'Még nincs számla. Hozz létre egyet mindenkinek, aki tartozik neked.',
   'costs.newTab': 'Új számla',
   'costs.tabFirstName': 'Keresztnév',
@@ -166,16 +167,22 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Felírandó összeg',
   'costs.shareReceiptToo': 'A blokk megosztása a nyilvános oldalon',
   'costs.addedToTab': 'Felírva a számlára',
-  'costs.tabsFootnote': 'Bárki, akinek megvan egy számla linkje, láthatja annak tételeit, befizetéseit és a fizetési adataidat.',
+  'costs.tabsFootnote':
+    'Bárki, akinek megvan egy számla linkje, láthatja annak tételeit, befizetéseit és a fizetési adataidat.',
   'costs.personalHint': 'Nincs felosztva és elszámolva — csak a saját kiadásodként kerül rögzítésre.',
   'costs.tabLinkNewGuest': 'Új ideiglenes vendég — minden felosztásban részt vesz',
   'costs.tabLinkMember': 'Összekapcsolás vele: {name}',
   'costs.tabLinkNone': 'Csak név (tag-összekapcsolás nélkül)',
-  'costs.tabLinkHint': 'Az összekapcsolt számlák követik az út elszámolását: oszd meg a költséget úgy, hogy ezt a személyt hozzárendeled a kiadás felosztásához.',
+  'costs.tabLinkHint':
+    'Az összekapcsolt számlák követik az út elszámolását: oszd meg a költséget úgy, hogy ezt a személyt hozzárendeled a kiadás felosztásához.',
   'costs.tabLinked': 'Összekapcsolva',
-  'costs.tabLiveHint': 'Követi az út elszámolását — oszd meg a költségeket {name} taggal úgy, hogy hozzárendeled a kiadás felosztásához.',
+  'costs.tabLiveHint':
+    'Követi az út elszámolását — oszd meg a költségeket {name} taggal úgy, hogy hozzárendeled a kiadás felosztásához.',
   'costs.tabOwedTo': 'Tartozik',
   'costs.tabPaidTo': 'Fizetve {name} részére',
-  'costs.tabNoLinkedCharge': 'Az összekapcsolt számlák a felosztást követik — inkább a kiadásban rendeld hozzá a személyt.',
+  'costs.tabNoLinkedCharge':
+    'Az összekapcsolt számlák a felosztást követik — inkább a kiadásban rendeld hozzá a személyt.',
+  'costs.payDetailsMissing': 'A fizetők még nem látják, hogyan fizethetnek neked — add meg a fizetési adataidat.',
+  'costs.payDetailsAdd': 'Fizetési adatok hozzáadása',
 };
 export default budget;

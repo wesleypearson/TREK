@@ -33,18 +33,23 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Egyéb',
   'publicTab.copy': 'Másolás',
   'publicTab.claimTitle': 'Jelezd {owner} felé, hogy te vagy az',
-  'publicTab.claimHint': 'Erősítsd meg a kereszt- és vezetéknevedet, hogy a számla megtekintettként legyen megjelölve. Csak a nevedet tároljuk.',
+  'publicTab.claimHint':
+    'Erősítsd meg a kereszt- és vezetéknevedet, hogy a számla megtekintettként legyen megjelölve. Csak a nevedet tároljuk.',
   'publicTab.firstName': 'Keresztnév',
   'publicTab.lastName': 'Vezetéknév',
   'publicTab.claimSubmit': 'Megerősítés',
   'publicTab.claimedThanks': 'Köszönjük, {name} — a számla megtekintettként lett megjelölve.',
   'publicTab.joinCta': 'Csatlakozz az úthoz a Travlán',
-  'publicTab.joinHint': 'Hozz létre ingyenes fiókot ezen a szerveren egy egyszer használatos meghívóval, és nézd meg a teljes utat.',
+  'publicTab.joinHint':
+    'Hozz létre ingyenes fiókot ezen a szerveren egy egyszer használatos meghívóval, és nézd meg a teljes utat.',
   'publicTab.expired': 'Ez a link már nem aktív',
   'publicTab.expiredHint': 'Kérj újat attól, aki küldte.',
   'publicTab.youOwe': 'Tartozásod {name} felé',
   'publicTab.ofTotal': 'a te részed ebből: {amount}',
   'publicTab.paidTo': 'Fizetve {name} részére',
   'publicTab.liveNote': 'Ez a számla valós időben követi a részedet az út közös költségeiből.',
+  'publicTab.noMethods':
+    '{name} még nem adott meg fizetési adatokat — kérdezd meg tőle közvetlenül a legjobb fizetési módot.',
+  'publicTab.credit': 'Megelőlegezve a csoportnak',
 };
 export default shared;

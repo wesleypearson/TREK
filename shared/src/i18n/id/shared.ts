@@ -33,7 +33,8 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Lainnya',
   'publicTab.copy': 'Salin',
   'publicTab.claimTitle': 'Beri tahu {owner} bahwa ini Anda',
-  'publicTab.claimHint': 'Konfirmasi nama depan dan belakang Anda agar tagihan ini ditandai sudah dilihat. Hanya nama Anda yang disimpan.',
+  'publicTab.claimHint':
+    'Konfirmasi nama depan dan belakang Anda agar tagihan ini ditandai sudah dilihat. Hanya nama Anda yang disimpan.',
   'publicTab.firstName': 'Nama depan',
   'publicTab.lastName': 'Nama belakang',
   'publicTab.claimSubmit': 'Konfirmasi',
@@ -46,5 +47,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': 'bagian Anda dari {amount}',
   'publicTab.paidTo': 'Dibayar kepada {name}',
   'publicTab.liveNote': 'Tagihan ini melacak bagian Anda dari biaya bersama perjalanan secara real-time.',
+  'publicTab.noMethods': '{name} belum menambahkan detail pembayaran — tanyakan langsung cara terbaik untuk membayar.',
+  'publicTab.credit': 'Ditalangi untuk grup',
 };
 export default shared;

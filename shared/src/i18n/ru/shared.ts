@@ -33,18 +33,22 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Другое',
   'publicTab.copy': 'Копировать',
   'publicTab.claimTitle': 'Дайте {owner} знать, что это вы',
-  'publicTab.claimHint': 'Подтвердите имя и фамилию, чтобы счёт был отмечен как просмотренный. Сохраняется только ваше имя.',
+  'publicTab.claimHint':
+    'Подтвердите имя и фамилию, чтобы счёт был отмечен как просмотренный. Сохраняется только ваше имя.',
   'publicTab.firstName': 'Имя',
   'publicTab.lastName': 'Фамилия',
   'publicTab.claimSubmit': 'Подтвердить',
   'publicTab.claimedThanks': 'Спасибо, {name} — счёт отмечен как просмотренный.',
   'publicTab.joinCta': 'Присоединиться к поездке в Travla',
-  'publicTab.joinHint': 'Создайте бесплатный аккаунт на этом сервере по одноразовому приглашению и смотрите всю поездку.',
+  'publicTab.joinHint':
+    'Создайте бесплатный аккаунт на этом сервере по одноразовому приглашению и смотрите всю поездку.',
   'publicTab.expired': 'Эта ссылка больше не активна',
   'publicTab.expiredHint': 'Попросите новую у того, кто её прислал.',
   'publicTab.youOwe': 'Ваш долг перед {name}',
   'publicTab.ofTotal': 'ваша доля от {amount}',
   'publicTab.paidTo': 'Оплачено: {name}',
   'publicTab.liveNote': 'Этот счёт в реальном времени отражает вашу долю в общих тратах поездки.',
+  'publicTab.noMethods': '{name} ещё не добавил(а) платёжные данные — уточните напрямую, как лучше заплатить.',
+  'publicTab.credit': 'Оплачено за группу',
 };
 export default shared;

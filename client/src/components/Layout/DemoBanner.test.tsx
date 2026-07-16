@@ -91,11 +91,10 @@ describe('DemoBanner', () => {
   });
 
   // FE-COMP-DEMOBANNER-012
-  it('self-host link points to GitHub', () => {
+  it('does not render a self-host GitHub link', () => {
     render(<DemoBanner />);
-    const link = screen.getByText('self-host it').closest('a')!;
-    expect(link).toHaveAttribute('href', 'https://github.com/mauriceboe/TREK');
-    expect(link).toHaveAttribute('target', '_blank');
+    expect(screen.queryByText('self-host it')).toBeNull();
+    expect(document.querySelector('a[href*="github.com"]')).toBeNull();
   });
 
   // Timer update test

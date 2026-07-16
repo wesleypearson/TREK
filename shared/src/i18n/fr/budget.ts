@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Voir le reçu',
   'costs.tabs': 'Ardoises',
   'costs.tabsTitle': 'Ardoises publiques',
-  'costs.tabsHint': "Partagez un lien qui montre à quelqu'un exactement ce qu'il vous doit — sans compte requis. Les nouvelles dépenses s'ajoutent à la même ardoise jusqu'au remboursement.",
+  'costs.tabsHint':
+    "Partagez un lien qui montre à quelqu'un exactement ce qu'il vous doit — sans compte requis. Les nouvelles dépenses s'ajoutent à la même ardoise jusqu'au remboursement.",
   'costs.tabsEmpty': "Aucune ardoise pour l'instant. Créez-en une pour chaque personne qui vous doit de l'argent.",
   'costs.newTab': 'Nouvelle ardoise',
   'costs.tabFirstName': 'Prénom',
@@ -166,16 +167,22 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Montant à ajouter',
   'costs.shareReceiptToo': 'Partager le reçu sur la page publique',
   'costs.addedToTab': "Ajouté à l'ardoise",
-  'costs.tabsFootnote': "Toute personne disposant d'un lien d'ardoise peut voir ses dépenses, ses paiements et vos informations de paiement.",
+  'costs.tabsFootnote':
+    "Toute personne disposant d'un lien d'ardoise peut voir ses dépenses, ses paiements et vos informations de paiement.",
   'costs.personalHint': 'Ni partagée ni réglée — simplement enregistrée comme votre propre dépense.',
   'costs.tabLinkNewGuest': 'Nouvel invité temporaire — inclus dans chaque partage',
   'costs.tabLinkMember': 'Lier à {name}',
   'costs.tabLinkNone': 'Nom seulement (sans lien avec un membre)',
-  'costs.tabLinkHint': 'Les ardoises liées suivent les comptes du voyage : partagez une note en incluant cette personne dans le partage de la dépense.',
+  'costs.tabLinkHint':
+    'Les ardoises liées suivent les comptes du voyage : partagez une note en incluant cette personne dans le partage de la dépense.',
   'costs.tabLinked': 'Liée',
-  'costs.tabLiveHint': 'Suit les comptes du voyage — partagez des notes avec {name} en incluant cette personne dans le partage de la dépense.',
+  'costs.tabLiveHint':
+    'Suit les comptes du voyage — partagez des notes avec {name} en incluant cette personne dans le partage de la dépense.',
   'costs.tabOwedTo': 'Doit',
   'costs.tabPaidTo': 'Payé à {name}',
   'costs.tabNoLinkedCharge': 'Les ardoises liées suivent le partage — incluez plutôt la personne dans la dépense.',
+  'costs.payDetailsMissing':
+    'Les payeurs ne savent pas encore comment vous payer — ajoutez vos coordonnées de paiement.',
+  'costs.payDetailsAdd': 'Ajouter des coordonnées de paiement',
 };
 export default budget;

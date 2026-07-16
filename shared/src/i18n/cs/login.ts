@@ -20,7 +20,7 @@ const login: TranslationStrings = {
   'login.features.filesDesc': 'Nahrávejte a spravujte dokumenty',
   'login.features.routes': 'Chytré trasy',
   'login.features.routesDesc': 'Automatická optimalizace a export do Google Maps',
-  'login.selfHosted': 'Self-hosted · Open Source · Vaše data zůstávají u vás',
+  'login.selfHosted': 'Self-hosted · Vaše data zůstávají u vás',
   'login.title': 'Přihlásit se',
   'login.subtitle': 'Vítejte zpět',
   'login.signingIn': 'Přihlašování…',
@@ -87,6 +87,5 @@ const login: TranslationStrings = {
   'login.insecureCookie.title': "Login won't stick over HTTP",
   'login.insecureCookie.body':
     'You’re connecting over plain HTTP, so your browser drops Travla’s secure session cookie — the next request fails with "Access token required". Fix: use HTTPS, or for a home-lab set COOKIE_SECURE=false.',
-  'login.insecureCookie.link': 'Open the Troubleshooting guide',
 };
 export default login;

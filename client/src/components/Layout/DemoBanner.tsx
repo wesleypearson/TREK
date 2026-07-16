@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Info, Github, Shield, Key, Users, Database, Upload, Clock, Puzzle, CalendarDays, Globe, ArrowRightLeft, Map, Briefcase, ListChecks, Wallet, FileText, Plane } from 'lucide-react'
+import { Info, Shield, Key, Users, Database, Upload, Clock, Puzzle, CalendarDays, Globe, ArrowRightLeft, Map, Briefcase, ListChecks, Wallet, FileText, Plane } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 
 interface DemoTexts {
@@ -16,8 +16,6 @@ interface DemoTexts {
   addons: [string, string][]
   whatIs: string
   whatIsDesc: string
-  selfHost: string
-  selfHostLink: string
   close: string
 }
 
@@ -50,8 +48,6 @@ const texts: Record<string, DemoTexts> = {
     ],
     whatIs: 'Was ist Travla?',
     whatIsDesc: 'Ein selbst-gehosteter Reiseplaner mit Echtzeit-Kollaboration, interaktiver Karte, OIDC Login und Dark Mode.',
-    selfHost: 'Open Source — ',
-    selfHostLink: 'selbst hosten',
     close: 'Verstanden',
   },
   en: {
@@ -82,8 +78,6 @@ const texts: Record<string, DemoTexts> = {
     ],
     whatIs: 'What is Travla?',
     whatIsDesc: 'A self-hosted travel planner with real-time collaboration, interactive maps, OIDC login and dark mode.',
-    selfHost: 'Open source — ',
-    selfHostLink: 'self-host it',
     close: 'Got it',
   },
   es: {
@@ -114,8 +108,6 @@ const texts: Record<string, DemoTexts> = {
     ],
     whatIs: '¿Qué es Travla?',
     whatIsDesc: 'Un planificador de viajes autohospedado con colaboración en tiempo real, mapas interactivos, inicio de sesión OIDC y modo oscuro.',
-    selfHost: 'Código abierto — ',
-    selfHostLink: 'alójalo tú mismo',
     close: 'Entendido',
   },
   zh: {
@@ -146,8 +138,6 @@ const texts: Record<string, DemoTexts> = {
     ],
     whatIs: '什么是 Travla？',
     whatIsDesc: '一个支持实时协作、交互式地图、OIDC 登录和深色模式的自托管旅行规划器。',
-    selfHost: '开源项目 - ',
-    selfHostLink: '自行部署',
     close: '知道了',
   },
   'zh-TW': {
@@ -178,8 +168,6 @@ const texts: Record<string, DemoTexts> = {
     ],
     whatIs: 'Travla 是什麼？',
     whatIsDesc: '一個支援即時協作、互動式地圖、OIDC 登入和深色模式的自架旅行規劃器。',
-    selfHost: '開源專案 - ',
-    selfHostLink: '自行架設',
     close: '知道了',
   },
   ar: {
@@ -210,8 +198,6 @@ const texts: Record<string, DemoTexts> = {
     ],
     whatIs: 'ما هو Travla؟',
     whatIsDesc: 'مخطط رحلات مستضاف ذاتيًا مع تعاون لحظي وخرائط تفاعلية وتسجيل دخول OIDC ووضع داكن.',
-    selfHost: 'مفتوح المصدر — ',
-    selfHostLink: 'استضفه بنفسك',
     close: 'فهمت',
   },
   id: {
@@ -242,8 +228,6 @@ const texts: Record<string, DemoTexts> = {
     ],
     whatIs: 'Apa itu Travla?',
     whatIsDesc: 'Perencana perjalanan yang di-host sendiri dengan kolaborasi real-time, peta interaktif, login OIDC, dan mode gelap.',
-    selfHost: 'Buka sumber — ',
-    selfHostLink: 'host mandiri',
     close: 'Mengerti',
   },
 }
@@ -373,18 +357,10 @@ export default function DemoBanner(): React.ReactElement | null {
         {/* Footer */}
         <div style={{
           padding: '14px 0 20px', borderTop: '1px solid #e5e7eb',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
           position: 'sticky', bottom: 0, background: 'white',
           marginTop: 'auto',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 'calc(11px * var(--fs-scale-caption, 1))', color: '#9ca3af' }}>
-            <Github size={13} />
-            <span>{t.selfHost}</span>
-            <a href="https://github.com/mauriceboe/TREK" target="_blank" rel="noopener noreferrer"
-              style={{ color: '#111827', fontWeight: 600, textDecoration: 'none' }}>
-              {t.selfHostLink}
-            </a>
-          </div>
           <button onClick={() => setDismissed(true)} style={{
             background: '#111827', color: 'white', border: 'none',
             borderRadius: 10, padding: '8px 20px', fontSize: 'calc(12px * var(--fs-scale-body, 1))',

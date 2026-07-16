@@ -410,6 +410,11 @@ export function addMember(tripId: string | number, identifier: string, tripOwner
 
 export function removeMember(tripId: string | number, targetUserId: number) {
   db.prepare('DELETE FROM trip_members WHERE trip_id = ? AND user_id = ?').run(tripId, targetUserId);
+  // A public expense tab linked to this member (custom) must not keep serving
+  // a live ledger position for someone who left the trip — pause its link.
+  // The tab creator can still see the history and delete it.
+  db.prepare('UPDATE expense_tabs SET revoked_at = COALESCE(revoked_at, ?) WHERE trip_id = ? AND member_user_id = ?')
+    .run(new Date().toISOString(), tripId, targetUserId);
 }
 
 export interface TransferOwnershipResult {

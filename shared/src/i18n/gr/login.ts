@@ -21,7 +21,7 @@ const login: TranslationStrings = {
   'login.features.filesDesc': 'Μεταφόρτωση & διαχείριση εγγράφων',
   'login.features.routes': 'Έξυπνες Διαδρομές',
   'login.features.routesDesc': 'Αυτόματη βελτιστοποίηση & εξαγωγή στο Google Maps',
-  'login.selfHosted': 'Self-hosted \u00B7 Open Source \u00B7 Τα δεδομένα σας παραμένουν δικά σας',
+  'login.selfHosted': 'Self-hosted · Τα δεδομένα σας παραμένουν δικά σας',
   'login.title': 'Σύνδεση',
   'login.subtitle': 'Καλώς ήρθατε πίσω',
   'login.signingIn': 'Σύνδεση…',
@@ -91,6 +91,5 @@ const login: TranslationStrings = {
   'login.insecureCookie.title': "Login won't stick over HTTP",
   'login.insecureCookie.body':
     'You’re connecting over plain HTTP, so your browser drops Travla’s secure session cookie — the next request fails with "Access token required". Fix: use HTTPS, or for a home-lab set COOKIE_SECURE=false.',
-  'login.insecureCookie.link': 'Open the Troubleshooting guide',
 };
 export default login;

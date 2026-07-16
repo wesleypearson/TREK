@@ -205,14 +205,17 @@ const admin: TranslationStrings = {
   'admin.plugins.viewErrors': 'عرض سجل الأخطاء',
   'admin.plugins.errorLog': 'سجل الأخطاء',
   'admin.plugins.allowedHosts': 'المضيفون المسموح بهم',
-  'admin.plugins.allowedHosts.hint': 'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). أضف المضيفين الذين يمكنها الوصول إليهم — ولن تصل إلى غيرهم.',
+  'admin.plugins.allowedHosts.hint':
+    'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). أضف المضيفين الذين يمكنها الوصول إليهم — ولن تصل إلى غيرهم.',
   'admin.plugins.allowedHosts.none': 'لم تتم إضافة أي مضيف بعد.',
-  'admin.plugins.allowedHosts.unsupported': 'لا تستخدم هذه الإضافة مضيفين يحددهم المشغّل. مضيفوها المسموح بهم ثابتون في ملف التعريف.',
+  'admin.plugins.allowedHosts.unsupported':
+    'لا تستخدم هذه الإضافة مضيفين يحددهم المشغّل. مضيفوها المسموح بهم ثابتون في ملف التعريف.',
   'admin.plugins.allowedHosts.restartNote': 'الحفظ يعيد تشغيل الإضافة لتأخذ القائمة الجديدة.',
   'admin.plugins.allowedHosts.add': 'إضافة مضيف مسموح به',
   'admin.plugins.allowedHosts.count': '{n} مضيف مسموح به',
   'admin.plugins.operatorEgressPill': '+ مضيفون تضيفهم',
-  'admin.plugins.operatorEgressHint': 'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). بعد التثبيت أضف المضيفين من ⋯ ← المضيفون المسموح بهم. ولن تصل إلى غيرهم.',
+  'admin.plugins.operatorEgressHint':
+    'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). بعد التثبيت أضف المضيفين من ⋯ ← المضيفون المسموح بهم. ولن تصل إلى غيرهم.',
   'admin.plugins.noErrors': 'لا توجد أخطاء مسجّلة.',
   'admin.plugins.uninstalled': 'تمت إزالة الإضافة',
   'admin.plugins.uninstallTitle': 'إزالة الإضافة؟',
@@ -512,7 +515,7 @@ const admin: TranslationStrings = {
   'admin.audit.col.ip': 'عنوان IP',
   'admin.audit.col.details': 'التفاصيل',
   'admin.github.title': 'سجل الإصدارات',
-  'admin.github.subtitle': 'آخر التحديثات من {repo}',
+  'admin.github.subtitle': 'آخر التحديثات',
   'admin.github.latest': 'الأحدث',
   'admin.github.prerelease': 'إصدار تجريبي',
   'admin.github.showDetails': 'إظهار التفاصيل',
@@ -520,11 +523,9 @@ const admin: TranslationStrings = {
   'admin.github.loadMore': 'تحميل المزيد',
   'admin.github.loading': 'جارٍ التحميل...',
   'admin.github.error': 'فشل تحميل الإصدارات',
-  'admin.github.by': 'بواسطة',
-  'admin.github.support': 'يساعدني في تطوير Travla',
   'admin.update.available': 'يتوفر تحديث',
   'admin.update.text': 'Travla {version} متوفر. أنت تستخدم {current}.',
-  'admin.update.button': 'عرض على GitHub',
+  'admin.update.button': 'عرض ملاحظات الإصدار',
   'admin.update.install': 'تثبيت التحديث',
   'admin.update.confirmTitle': 'تثبيت التحديث؟',
   'admin.update.confirmText': 'سيتم تحديث Travla من {current} إلى {version}. سيُعاد تشغيل الخادم تلقائيًا بعد ذلك.',
@@ -541,7 +542,6 @@ const admin: TranslationStrings = {
   'admin.update.dockerText': 'يعمل Travla الخاص بك في Docker. للتحديث إلى {version}، نفّذ الأوامر التالية على الخادم:',
   'admin.update.nonDockerText':
     'لا يعمل Travla هذا في Docker. للتحديث إلى {version}، أعد تشغيل طريقة التثبيت أو التحديث التي استخدمتها — على سبيل المثال، في Proxmox Community Scripts نفّذ التحديث من وحدة تحكم LXC:',
-  'admin.update.wikiLink': 'فتح دليل التحديث',
   'admin.update.reloadHint': 'يرجى إعادة تحميل الصفحة بعد بضع ثوانٍ.',
   'admin.tabs.permissions': 'الصلاحيات',
   'admin.notifications.webhook': 'Webhook', // en-fallback
@@ -564,7 +564,7 @@ const admin: TranslationStrings = {
     'Password login settings are controlled by the OIDC_ONLY environment variable and cannot be changed here.', // en-fallback
   'admin.lockoutWarning': 'At least one login method must remain enabled', // en-fallback
   'admin.addons.catalog.mcp.name': 'MCP', // en-fallback
-  'admin.tabs.github': 'GitHub', // en-fallback
+  'admin.tabs.github': 'التحديثات',
   'admin.addons.catalog.journey.name': 'Journey', // en-fallback
   'admin.addons.catalog.journey.description':
     'Trip tracking & travel journal with check-ins, photos, and daily stories', // en-fallback

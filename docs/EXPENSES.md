@@ -98,13 +98,23 @@ it flows through).
 
 The public link then shows the person's **live ledger position**: their share
 of every group bill, the netted "you owe X" amounts per creditor — each with
-that member's own payment details — and the settle-ups already made. Manual
-frozen charges are rejected on linked tabs (the ledger is the single source
-of truth), and **recording a payment writes a real settlement**
-(member → recorder), so the Costs screen, the settlement engine and the
-public page always agree. At most one tab per member; unlinked name-only
-tabs keep the frozen-charge behaviour. Personal (only-me) expenses never
-appear on anyone's public link.
+that member's own payment details — plus anything they **fronted** for the
+group and the settle-ups already made (all converted into the trip currency,
+including mixed-currency trips). Manual frozen charges are rejected on linked
+tabs (the ledger is the single source of truth), and **recording a payment
+writes real settlements credited to the people actually owed** (largest debt
+first; any excess goes to the recorder who physically holds the money) — so
+the Costs screen, the settlement engine and the public page always agree, no
+matter which member taps "Record payment". At most one tab per member (races
+collapse safely), never one for yourself; pausing or deleting a linked tab is
+reserved for its creator or the trip owner; leaving the trip pauses the
+member's link automatically. Unlinked name-only tabs keep the frozen-charge
+behaviour. Personal (only-me) expenses never appear on anyone's public link.
+
+If you haven't added payment details yet, the Tabs screen warns you and pops
+the payment-details form right there (it's the same data as Settings →
+Account → Payment details); the public page tells payers explicitly when a
+creditor has no details on file.
 
 **Accounting export**: each tab exports a CSV (Date/Type/Description/Amount/
 Currency with a balance row) and the owner-side JSON endpoints below are a

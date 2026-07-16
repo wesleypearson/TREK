@@ -1,5 +1,5 @@
 // FE-ADMIN-GH-001 to FE-ADMIN-GH-016
-import { render, screen, waitFor, fireEvent } from '../../../tests/helpers/render';
+import { render, screen, waitFor } from '../../../tests/helpers/render';
 import userEvent from '@testing-library/user-event';
 import { http, HttpResponse } from 'msw';
 import { server } from '../../../tests/helpers/msw/server';
@@ -40,30 +40,27 @@ afterEach(() => {
 });
 
 describe('GitHubPanel', () => {
-  it('FE-ADMIN-GH-001: community link cards always render, donation cards do not', async () => {
+  it('FE-ADMIN-GH-001: no community or donation cards render', async () => {
     render(<GitHubPanel />);
     await waitFor(() =>
       expect(screen.queryByRole('status')).not.toBeInTheDocument(),
     );
     expect(screen.queryByText('Ko-fi')).not.toBeInTheDocument();
     expect(screen.queryByText('Buy Me a Coffee')).not.toBeInTheDocument();
-    expect(screen.getByText('Discord')).toBeInTheDocument();
-    expect(screen.getByText('Report a Bug')).toBeInTheDocument();
-    expect(screen.getByText('Feature Request')).toBeInTheDocument();
-    expect(screen.getByText('Wiki')).toBeInTheDocument();
+    expect(screen.queryByText('Discord')).not.toBeInTheDocument();
+    expect(screen.queryByText('Report a Bug')).not.toBeInTheDocument();
+    expect(screen.queryByText('Feature Request')).not.toBeInTheDocument();
+    expect(screen.queryByText('Wiki')).not.toBeInTheDocument();
   });
 
-  it('FE-ADMIN-GH-002: all community links have correct href and target=_blank', async () => {
+  it('FE-ADMIN-GH-002: no upstream community/repo links render', async () => {
     render(<GitHubPanel />);
     await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
 
     expect(document.querySelector('a[href*="ko-fi.com"]')).toBeNull();
     expect(document.querySelector('a[href*="buymeacoffee.com"]')).toBeNull();
-
-    const discord = screen.getByText('Discord').closest('a')!;
-    expect(discord).toHaveAttribute('href', 'https://discord.gg/NhZBDSd4qW');
-    expect(discord).toHaveAttribute('target', '_blank');
-    expect(discord).toHaveAttribute('rel', 'noopener noreferrer');
+    expect(document.querySelector('a[href*="discord.gg"]')).toBeNull();
+    expect(document.querySelector('a[href*="github.com"]')).toBeNull();
   });
 
   it('FE-ADMIN-GH-003: loading spinner shown while fetching releases', () => {
@@ -100,9 +97,8 @@ describe('GitHubPanel', () => {
     render(<GitHubPanel />);
     await screen.findByText('v1.0.0');
     expect(screen.getByText('v1.1.0')).toBeInTheDocument();
-    // Author label
-    const authorLabels = screen.getAllByText(/mauriceboe/);
-    expect(authorLabels.length).toBeGreaterThan(0);
+    // Upstream author is not shown
+    expect(screen.queryByText(/mauriceboe/)).not.toBeInTheDocument();
     // Some date should be visible (non-empty)
     const dateEls = document.querySelectorAll('[class*="text-"]');
     const dateTexts = Array.from(dateEls).map(el => el.textContent).filter(t => t && t.match(/\d{4}/));
@@ -263,28 +259,18 @@ describe('GitHubPanel', () => {
     expect(anchor).toHaveAttribute('href', '#');
   });
 
-  it('FE-ADMIN-GH-016: community card hover effects fire without error', async () => {
+  it('FE-ADMIN-GH-016: release history header renders without upstream repo reference', async () => {
+    const r = buildRelease({ id: 50, tag_name: 'v2.2.0' });
+    server.use(
+      http.get('/api/admin/github-releases', () => HttpResponse.json([r])),
+    );
     render(<GitHubPanel />);
-    await waitFor(() => expect(screen.queryByText('Loading...')).not.toBeInTheDocument());
+    await screen.findByText('v2.2.0');
 
-    const discordLink = screen.getByText('Discord').closest('a')!;
-    fireEvent.mouseEnter(discordLink);
-    fireEvent.mouseLeave(discordLink);
-
-    const bugLink = screen.getByText('Report a Bug').closest('a')!;
-    fireEvent.mouseEnter(bugLink);
-    fireEvent.mouseLeave(bugLink);
-
-    const featureLink = screen.getByText('Feature Request').closest('a')!;
-    fireEvent.mouseEnter(featureLink);
-    fireEvent.mouseLeave(featureLink);
-
-    const wikiLink = screen.getByText('Wiki').closest('a')!;
-    fireEvent.mouseEnter(wikiLink);
-    fireEvent.mouseLeave(wikiLink);
-
-    // All links still visible
-    expect(screen.getByText('Discord')).toBeInTheDocument();
+    expect(screen.getByText('Release History')).toBeInTheDocument();
+    expect(screen.getByText('Latest updates')).toBeInTheDocument();
+    expect(screen.queryByText(/mauriceboe/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/TREK/)).not.toBeInTheDocument();
   });
 
   it('FE-ADMIN-GH-012: clicking "Load more" appends next page', async () => {

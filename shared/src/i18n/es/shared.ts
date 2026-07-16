@@ -33,18 +33,22 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Otro',
   'publicTab.copy': 'Copiar',
   'publicTab.claimTitle': 'Dile a {owner} que eres tú',
-  'publicTab.claimHint': 'Confirma tu nombre y apellido para que esta cuenta quede marcada como vista. Solo se guarda tu nombre.',
+  'publicTab.claimHint':
+    'Confirma tu nombre y apellido para que esta cuenta quede marcada como vista. Solo se guarda tu nombre.',
   'publicTab.firstName': 'Nombre',
   'publicTab.lastName': 'Apellido',
   'publicTab.claimSubmit': 'Confirmar',
   'publicTab.claimedThanks': 'Gracias, {name} — esta cuenta queda marcada como vista.',
   'publicTab.joinCta': 'Únete al viaje en Travla',
-  'publicTab.joinHint': 'Crea una cuenta gratuita en este servidor con una invitación de un solo uso y descubre el viaje completo.',
+  'publicTab.joinHint':
+    'Crea una cuenta gratuita en este servidor con una invitación de un solo uso y descubre el viaje completo.',
   'publicTab.expired': 'Este enlace ya no está activo',
   'publicTab.expiredHint': 'Pídele uno nuevo a la persona que te lo envió.',
   'publicTab.youOwe': 'Le debes a {name}',
   'publicTab.ofTotal': 'tu parte de {amount}',
   'publicTab.paidTo': 'Pagado a {name}',
   'publicTab.liveNote': 'Esta cuenta refleja en tiempo real tu parte de los gastos compartidos del viaje.',
+  'publicTab.noMethods': '{name} aún no ha añadido datos de pago — pregúntale directamente la mejor forma de pagar.',
+  'publicTab.credit': 'Adelantado para el grupo',
 };
 export default shared;

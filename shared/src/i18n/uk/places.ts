@@ -72,7 +72,7 @@ const places: TranslationStrings = {
   'places.formNotes': 'Нотатки',
   'places.formNotesPlaceholder': 'Особисті нотатки...',
   'places.formPrivate': 'Приватне місце (видиме лише мені)',
-  'places.formPrivateHint': 'Це місце не з\'явиться у спільних списках і на карті групи. Пізніше це можна змінити.',
+  'places.formPrivateHint': "Це місце не з'явиться у спільних списках і на карті групи. Пізніше це можна змінити.",
   'places.formReservation': 'Бронювання',
   'places.reservationNotesPlaceholder': 'Нотатки про бронювання, номер підтвердження...',
   'places.mapsSearchPlaceholder': 'Пошук місць...',

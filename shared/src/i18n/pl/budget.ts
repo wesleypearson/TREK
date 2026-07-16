@@ -139,8 +139,10 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Zobacz paragon',
   'costs.tabs': 'Rachunki',
   'costs.tabsTitle': 'Publiczne rachunki',
-  'costs.tabsHint': 'Udostępnij link, który pokaże danej osobie dokładnie, ile jest ci winna — bez zakładania konta. Nowe pozycje dopisują się do tego samego rachunku, dopóki nie zapłaci.',
-  'costs.tabsEmpty': 'Nie ma jeszcze żadnych rachunków. Utwórz po jednym dla każdej osoby, która jest ci winna pieniądze.',
+  'costs.tabsHint':
+    'Udostępnij link, który pokaże danej osobie dokładnie, ile jest ci winna — bez zakładania konta. Nowe pozycje dopisują się do tego samego rachunku, dopóki nie zapłaci.',
+  'costs.tabsEmpty':
+    'Nie ma jeszcze żadnych rachunków. Utwórz po jednym dla każdej osoby, która jest ci winna pieniądze.',
   'costs.newTab': 'Nowy rachunek',
   'costs.tabFirstName': 'Imię',
   'costs.tabLastName': 'Nazwisko',
@@ -171,11 +173,15 @@ const budget: TranslationStrings = {
   'costs.tabLinkNewGuest': 'Nowy gość tymczasowy — bierze udział w każdym podziale',
   'costs.tabLinkMember': 'Połącz z {name}',
   'costs.tabLinkNone': 'Tylko imię (bez połączenia z członkiem)',
-  'costs.tabLinkHint': 'Połączone rachunki podążają za rozliczeniami podróży: podziel się kosztem, przypisując tę osobę w podziale wydatku.',
+  'costs.tabLinkHint':
+    'Połączone rachunki podążają za rozliczeniami podróży: podziel się kosztem, przypisując tę osobę w podziale wydatku.',
   'costs.tabLinked': 'Połączony',
-  'costs.tabLiveHint': 'Podąża za rozliczeniami podróży — dziel koszty z {name}, przypisując tę osobę w podziale wydatku.',
+  'costs.tabLiveHint':
+    'Podąża za rozliczeniami podróży — dziel koszty z {name}, przypisując tę osobę w podziale wydatku.',
   'costs.tabOwedTo': 'Ma do zapłaty',
   'costs.tabPaidTo': 'Zapłacono: {name}',
   'costs.tabNoLinkedCharge': 'Połączone rachunki podążają za podziałem — zamiast tego przypisz osobę w wydatku.',
+  'costs.payDetailsMissing': 'Płacący nie widzą jeszcze, jak ci zapłacić — dodaj swoje dane do płatności.',
+  'costs.payDetailsAdd': 'Dodaj dane do płatności',
 };
 export default budget;

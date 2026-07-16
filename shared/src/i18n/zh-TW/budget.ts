@@ -138,7 +138,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': '查看收據',
   'costs.tabs': '帳單',
   'costs.tabsTitle': '公開消費帳單',
-  'costs.tabsHint': '分享一個連結，讓對方清楚看到欠您多少錢 — 無需註冊帳號。新消費會持續累加到同一份帳單，直到對方付清。',
+  'costs.tabsHint':
+    '分享一個連結，讓對方清楚看到欠您多少錢 — 無需註冊帳號。新消費會持續累加到同一份帳單，直到對方付清。',
   'costs.tabsEmpty': '還沒有帳單。為每位欠您錢的人各建一份吧。',
   'costs.newTab': '新增帳單',
   'costs.tabFirstName': '名字',
@@ -176,5 +177,7 @@ const budget: TranslationStrings = {
   'costs.tabOwedTo': '欠款',
   'costs.tabPaidTo': '已支付給 {name}',
   'costs.tabNoLinkedCharge': '已連結的帳單跟隨分攤 — 請改為在費用中指定此人。',
+  'costs.payDetailsMissing': '付款人還看不到如何付款給你 — 請新增你的收款資訊。',
+  'costs.payDetailsAdd': '新增收款資訊',
 };
 export default budget;

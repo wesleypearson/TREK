@@ -86,9 +86,12 @@ export default function PublicTabPage() {
             {heroFmt(Math.max(balance, 0))}
           </div>
           {!owing && <div className="text-[#16a34a]" style={{ marginTop: 4, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{t('publicTab.settled')}</div>}
-          <div className="text-[#9ca3af]" style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 12, fontSize: 'calc(12px * var(--fs-scale-body, 1))' }}>
+          <div className="text-[#9ca3af]" style={{ display: 'flex', justifyContent: 'center', gap: 18, marginTop: 12, fontSize: 'calc(12px * var(--fs-scale-body, 1))', flexWrap: 'wrap' }}>
             <span>{t('publicTab.totalCharged')} · <b className="text-[#374151]">{heroFmt(live ? live.charged : data.charged)}</b></span>
             <span>{t('publicTab.totalPaid')} · <b className="text-[#374151]">{heroFmt(live ? live.paid : data.paid)}</b></span>
+            {live && (live.credit || 0) > 0.004 && (
+              <span>{t('publicTab.credit')} · <b className="text-[#16a34a]">{heroFmt(live.credit!)}</b></span>
+            )}
           </div>
           {live && <div className="text-[#9ca3af]" style={{ marginTop: 10, fontSize: 'calc(11px * var(--fs-scale-caption, 1))', lineHeight: 1.4 }}>{t('publicTab.liveNote')}</div>}
         </div>
@@ -143,10 +146,24 @@ export default function PublicTabPage() {
                     </button>
                   </div>
                 ))}
+                {entries.length === 0 && (
+                  <div className="text-[#6b7280] bg-[#f9fafb] border border-[#f3f4f6]" style={{ borderRadius: 12, padding: '10px 12px', fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}>
+                    {t('publicTab.noMethods', { name: o.name })}
+                  </div>
+                )}
               </div>
             </div>
           )
         })}
+
+        {/* Standalone tab, owner without details on file: say so instead of
+            leaving the payer with an amount and no way to act on it. */}
+        {!live && owing && paymentEntries.length === 0 && (
+          <div className="bg-white" style={{ borderRadius: 16, padding: '16px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+            <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700, marginBottom: 4 }}>{t('publicTab.payWith', { owner: data.owner_name })}</div>
+            <div className="text-[#6b7280]" style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}>{t('publicTab.noMethods', { name: data.owner_name })}</div>
+          </div>
+        )}
 
         {/* How to pay (standalone tabs: the tab owner's details) */}
         {!live && owing && paymentEntries.length > 0 && (

@@ -745,7 +745,7 @@ describe('Member-linked tabs (TAB)', () => {
     expect(linked.body.tab.member_user_id).toBe(member.id);
     expect(linked.body.tab.first_name.length).toBeGreaterThan(0); // derived from the member profile
 
-    const dup = await createTabAs(member.id, { member_user_id: member.id });
+    const dup = await createTabAs(owner.id, { member_user_id: member.id });
     expect(dup.status).toBe(409);
     expect(dup.body.error).toMatch(/already has a tab/i);
 
@@ -798,16 +798,19 @@ describe('Member-linked tabs (TAB)', () => {
     expect(pub.body.live.owed[0].payment_methods.payment_payid).toBe('wes@pay.id');
     expect(pub.body.live.balance).toBe(50);
 
-    // ANY budget-edit member can record money received — it lands as a real
-    // settlement (guest → recorder) and the live view follows.
+    // ANY budget-edit member can record money received — but the settlement is
+    // credited to the person actually OWED (the owner, whose payment details
+    // the guest was shown), NOT to whoever tapped "Record payment".
     const pay = await addPaymentAs(member.id, tab.id, { amount: 50 });
     expect(pay.status).toBe(201);
-    expect(pay.body.settlement).toMatchObject({ from_user_id: guestId, to_user_id: member.id, amount: 50 });
+    expect(pay.body.settlements).toHaveLength(1);
+    expect(pay.body.settlements[0]).toMatchObject({ from_user_id: guestId, to_user_id: owner.id, amount: 50 });
     expect(testDb.prepare('SELECT COUNT(*) AS c FROM budget_settlements WHERE trip_id = ?').get(tripId)).toMatchObject({ c: 1 });
 
     const after = await publicGet(tab.token);
-    // 50 owed to owner minus 50 paid to the recording member nets the guest to zero.
+    // The guest paid the owner exactly what was owed — everyone is square.
     expect(after.body.live.paid).toBe(50);
+    expect(after.body.live.balance).toBe(0);
     expect(after.body.live.payments[0]).toMatchObject({ amount: 50 });
 
     // The owner-side list carries the same live position.
@@ -833,5 +836,69 @@ describe('Member-linked tabs (TAB)', () => {
     expect(csv).toContain('"Dinner",30.00');
     expect(csv).toMatch(/Payment,"Paid .*",-10\.00/);
     expect(csv).toMatch(/Balance,.*20\.00/);
+  });
+
+  it('TAB-021: only the tab creator (or trip owner) can revoke or delete a linked tab', async () => {
+    const tab = (await createTabAs(member.id, { first_name: 'Guesty', create_guest: true })).body.tab;
+
+    // The owner of the TRIP may act on it; a mere other member may not.
+    const second = createUser(testDb).user;
+    addTripMember(testDb, tripId, second.id);
+    expect((await revokeAs(second.id, tab.id)).status).toBe(403);
+    expect((await request(app).delete(`/api/trips/${tripId}/expense-tabs/${tab.id}`).set('Cookie', authCookie(second.id))).status).toBe(403);
+
+    // But everyone with budget_edit can still record payments (shared resource).
+    expect((await revokeAs(member.id, tab.id)).status).toBe(200);   // creator
+    expect((await revokeAs(member.id, tab.id, { revoked: false })).status).toBe(200);
+    expect((await revokeAs(owner.id, tab.id)).status).toBe(200);    // trip owner override
+  });
+
+  it('TAB-022: a linked tab cannot be created for yourself, and races collapse to 409', async () => {
+    const self = await createTabAs(owner.id, { member_user_id: owner.id });
+    expect(self.status).toBe(400);
+    expect(self.body.error).toMatch(/yourself/i);
+
+    // Simulate the lost race: bypass the app-level pre-check by inserting the
+    // rival row directly, then hit the unique index through the API.
+    const first = await createTabAs(owner.id, { member_user_id: member.id });
+    expect(first.status).toBe(201);
+    const dup = await createTabAs(owner.id, { member_user_id: member.id });
+    expect(dup.status).toBe(409);
+    // No orphaned invite tokens beyond the surviving tab's own.
+    const invites = testDb.prepare('SELECT COUNT(*) AS c FROM invite_tokens WHERE trip_id = ?').get(tripId) as { c: number };
+    expect(invites.c).toBe(1);
+  });
+
+  it('TAB-023: mixed-currency trips convert every live number into the trip currency', async () => {
+    const tab = (await createTabAs(owner.id, { first_name: 'Lisa', create_guest: true })).body.tab;
+    const guestId = tab.member_user_id as number;
+    // $100 bill frozen at 2 USD per unit of trip currency → 50 in trip money;
+    // split equally with the guest → guest share $50 → 25 trip-currency.
+    await createBudgetItemAs(owner.id, {
+      name: 'NYC Dinner',
+      currency: 'USD',
+      exchange_rate: 2,
+      payers: [{ user_id: owner.id, amount: 100 }],
+      members: [{ user_id: owner.id, amount: null }, { user_id: guestId, amount: null }],
+    });
+
+    const pub = await publicGet(tab.token);
+    const live = pub.body.live;
+    expect(live.charges[0]).toMatchObject({ share: 25, total: 50 });
+    expect(live.charged).toBe(25);
+    expect(live.balance).toBe(25);
+    expect(live.owed[0].amount).toBeCloseTo(25, 2);
+  });
+
+  it('TAB-024: removing the linked member from the trip pauses their public link', async () => {
+    const tab = (await createTabAs(owner.id, { first_name: 'Guesty', create_guest: true })).body.tab;
+    expect((await publicGet(tab.token)).status).toBe(200);
+
+    const removal = await request(app)
+      .delete(`/api/trips/${tripId}/members/${tab.member_user_id}`)
+      .set('Cookie', authCookie(owner.id));
+    expect([200, 204]).toContain(removal.status);
+
+    expect((await publicGet(tab.token)).status).toBe(404);
   });
 });

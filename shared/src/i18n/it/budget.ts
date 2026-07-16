@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Vedi scontrino',
   'costs.tabs': 'Conti',
   'costs.tabsTitle': 'Conti spese pubblici',
-  'costs.tabsHint': 'Condividi un link che mostra a qualcuno esattamente quanto ti deve — senza bisogno di un account. I nuovi addebiti si aggiungono allo stesso conto finché non paga.',
+  'costs.tabsHint':
+    'Condividi un link che mostra a qualcuno esattamente quanto ti deve — senza bisogno di un account. I nuovi addebiti si aggiungono allo stesso conto finché non paga.',
   'costs.tabsEmpty': 'Ancora nessun conto. Creane uno per ogni persona che ti deve dei soldi.',
   'costs.newTab': 'Nuovo conto',
   'costs.tabFirstName': 'Nome',
@@ -166,16 +167,21 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Importo da addebitare',
   'costs.shareReceiptToo': 'Condividi lo scontrino sulla pagina pubblica',
   'costs.addedToTab': 'Aggiunto al conto',
-  'costs.tabsFootnote': 'Chiunque abbia il link di un conto può vederne gli addebiti, i pagamenti e i tuoi dati di pagamento.',
+  'costs.tabsFootnote':
+    'Chiunque abbia il link di un conto può vederne gli addebiti, i pagamenti e i tuoi dati di pagamento.',
   'costs.personalHint': 'Non viene divisa né saldata — registrata solo come tua spesa personale.',
   'costs.tabLinkNewGuest': 'Nuovo ospite temporaneo — incluso in ogni divisione',
   'costs.tabLinkMember': 'Collega a {name}',
   'costs.tabLinkNone': 'Solo il nome (senza collegamento a un membro)',
-  'costs.tabLinkHint': 'I conti collegati seguono il registro del viaggio: condividi una spesa includendo questa persona nella divisione della spesa.',
+  'costs.tabLinkHint':
+    'I conti collegati seguono il registro del viaggio: condividi una spesa includendo questa persona nella divisione della spesa.',
   'costs.tabLinked': 'Collegato',
-  'costs.tabLiveHint': 'Segue il registro del viaggio — condividi le spese con {name} includendo questa persona nella divisione della spesa.',
+  'costs.tabLiveHint':
+    'Segue il registro del viaggio — condividi le spese con {name} includendo questa persona nella divisione della spesa.',
   'costs.tabOwedTo': 'Deve',
   'costs.tabPaidTo': 'Pagato a {name}',
   'costs.tabNoLinkedCharge': 'I conti collegati seguono la divisione — includi invece la persona nella spesa.',
+  'costs.payDetailsMissing': 'Chi paga non sa ancora come pagarti — aggiungi i tuoi dati di pagamento.',
+  'costs.payDetailsAdd': 'Aggiungi dati di pagamento',
 };
 export default budget;

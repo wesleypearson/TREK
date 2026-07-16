@@ -859,6 +859,8 @@ export interface TabLivePosition {
   charges: { id: number; label: string; total: number; share: number; currency?: string | null; expense_date?: string | null; created_at?: string }[]
   owed: { user_id: number; name: string; amount: number; payment_methods: Partial<Record<'payment_bank' | 'payment_payid' | 'payment_venmo' | 'payment_other', string>> }[]
   payments: { id: number; to_name: string; amount: number; currency?: string | null; created_at: string }[]
+  /** What the member fronted for the group as a payer — shown so the numbers reconcile. */
+  credit?: number
   balance: number
   charged: number
   paid: number
@@ -907,7 +909,9 @@ export const expenseTabsApi = {
   create: (tripId: number | string, data: { first_name: string; last_name?: string; currency?: string | null; member_user_id?: number | null; create_guest?: boolean }): Promise<{ tab: ExpenseTab }> => apiClient.post(`/trips/${tripId}/expense-tabs`, data).then(r => r.data),
   addItem: (tripId: number | string, tabId: number, data: { budget_item_id?: number | null; label?: string; amount: number; share_receipt?: boolean }): Promise<{ item: ExpenseTabItem }> => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/items`, data).then(r => r.data),
   removeItem: (tripId: number | string, tabId: number, itemId: number) => apiClient.delete(`/trips/${tripId}/expense-tabs/${tabId}/items/${itemId}`).then(r => r.data),
-  addPayment: (tripId: number | string, tabId: number, data: { amount: number; note?: string | null }): Promise<{ payment: ExpenseTabPayment }> => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/payments`, data).then(r => r.data),
+  // Standalone tabs answer { payment }; linked tabs answer { settlements }
+  // (the money is credited to the actual creditors as real settle-ups).
+  addPayment: (tripId: number | string, tabId: number, data: { amount: number; note?: string | null }): Promise<{ payment?: ExpenseTabPayment; settlements?: unknown[] }> => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/payments`, data).then(r => r.data),
   removePayment: (tripId: number | string, tabId: number, paymentId: number) => apiClient.delete(`/trips/${tripId}/expense-tabs/${tabId}/payments/${paymentId}`).then(r => r.data),
   setRevoked: (tripId: number | string, tabId: number, revoked: boolean) => apiClient.post(`/trips/${tripId}/expense-tabs/${tabId}/revoke`, { revoked }).then(r => r.data),
   delete: (tripId: number | string, tabId: number) => apiClient.delete(`/trips/${tripId}/expense-tabs/${tabId}`).then(r => r.data),

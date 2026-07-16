@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Zobrazit účtenku',
   'costs.tabs': 'Účty',
   'costs.tabsTitle': 'Veřejné účty',
-  'costs.tabsHint': 'Nasdílejte odkaz, který někomu přesně ukáže, kolik vám dluží — bez registrace. Nové položky se přičítají na stejný účet, dokud nezaplatí.',
+  'costs.tabsHint':
+    'Nasdílejte odkaz, který někomu přesně ukáže, kolik vám dluží — bez registrace. Nové položky se přičítají na stejný účet, dokud nezaplatí.',
   'costs.tabsEmpty': 'Zatím žádné účty. Vytvořte jeden pro každého, kdo vám dluží.',
   'costs.newTab': 'Nový účet',
   'costs.tabFirstName': 'Jméno',
@@ -171,11 +172,14 @@ const budget: TranslationStrings = {
   'costs.tabLinkNewGuest': 'Nový dočasný host — účastní se každého dělení',
   'costs.tabLinkMember': 'Propojit s {name}',
   'costs.tabLinkNone': 'Pouze jméno (bez propojení se členem)',
-  'costs.tabLinkHint': 'Propojené účty sledují vyúčtování cesty: rozdělte útratu tak, že tuto osobu přiřadíte v dělení výdaje.',
+  'costs.tabLinkHint':
+    'Propojené účty sledují vyúčtování cesty: rozdělte útratu tak, že tuto osobu přiřadíte v dělení výdaje.',
   'costs.tabLinked': 'Propojený',
   'costs.tabLiveHint': 'Sleduje vyúčtování cesty — rozdělte útraty s {name} tak, že osobu přiřadíte v dělení výdaje.',
   'costs.tabOwedTo': 'Dluží',
   'costs.tabPaidTo': 'Zaplaceno: {name}',
   'costs.tabNoLinkedCharge': 'Propojené účty sledují dělení — přiřaďte osobu raději ve výdaji.',
+  'costs.payDetailsMissing': 'Plátci zatím nevidí, jak vám zaplatit — přidejte své platební údaje.',
+  'costs.payDetailsAdd': 'Přidat platební údaje',
 };
 export default budget;

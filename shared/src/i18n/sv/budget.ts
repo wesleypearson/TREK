@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Visa kvitto',
   'costs.tabs': 'Notor',
   'costs.tabsTitle': 'Offentliga notor',
-  'costs.tabsHint': 'Dela en länk som visar exakt vad någon är skyldig dig — inget konto behövs. Nya poster läggs till på samma nota tills den är betald.',
+  'costs.tabsHint':
+    'Dela en länk som visar exakt vad någon är skyldig dig — inget konto behövs. Nya poster läggs till på samma nota tills den är betald.',
   'costs.tabsEmpty': 'Inga notor än. Skapa en för varje person som är skyldig dig pengar.',
   'costs.newTab': 'Ny nota',
   'costs.tabFirstName': 'Förnamn',
@@ -171,11 +172,15 @@ const budget: TranslationStrings = {
   'costs.tabLinkNewGuest': 'Ny tillfällig gäst — är med i varje delning',
   'costs.tabLinkMember': 'Koppla till {name}',
   'costs.tabLinkNone': 'Endast namn (ingen koppling till medlem)',
-  'costs.tabLinkHint': 'Kopplade notor följer resans räkenskaper: dela en räkning genom att lägga till personen i utgiftens delning.',
+  'costs.tabLinkHint':
+    'Kopplade notor följer resans räkenskaper: dela en räkning genom att lägga till personen i utgiftens delning.',
   'costs.tabLinked': 'Kopplad',
-  'costs.tabLiveHint': 'Följer resans räkenskaper — dela räkningar med {name} genom att lägga till personen i utgiftens delning.',
+  'costs.tabLiveHint':
+    'Följer resans räkenskaper — dela räkningar med {name} genom att lägga till personen i utgiftens delning.',
   'costs.tabOwedTo': 'Är skyldig',
   'costs.tabPaidTo': 'Betalat till {name}',
   'costs.tabNoLinkedCharge': 'Kopplade notor följer delningen — lägg till personen i utgiften i stället.',
+  'costs.payDetailsMissing': 'Betalare kan ännu inte se hur de ska betala dig — lägg till dina betalningsuppgifter.',
+  'costs.payDetailsAdd': 'Lägg till betalningsuppgifter',
 };
 export default budget;

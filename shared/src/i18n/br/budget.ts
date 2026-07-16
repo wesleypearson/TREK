@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Ver recibo',
   'costs.tabs': 'Comandas',
   'costs.tabsTitle': 'Comandas públicas de despesas',
-  'costs.tabsHint': 'Compartilhe um link que mostra para a pessoa exatamente quanto ela te deve — sem precisar de conta. Novos lançamentos continuam somando na mesma comanda até ela pagar.',
+  'costs.tabsHint':
+    'Compartilhe um link que mostra para a pessoa exatamente quanto ela te deve — sem precisar de conta. Novos lançamentos continuam somando na mesma comanda até ela pagar.',
   'costs.tabsEmpty': 'Nenhuma comanda ainda. Crie uma para cada pessoa que te deve.',
   'costs.newTab': 'Nova comanda',
   'costs.tabFirstName': 'Nome',
@@ -166,16 +167,21 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Valor a lançar',
   'costs.shareReceiptToo': 'Compartilhar o recibo na página pública',
   'costs.addedToTab': 'Adicionado à comanda',
-  'costs.tabsFootnote': 'Qualquer pessoa com o link de uma comanda pode ver os lançamentos, os pagamentos e seus dados de pagamento.',
+  'costs.tabsFootnote':
+    'Qualquer pessoa com o link de uma comanda pode ver os lançamentos, os pagamentos e seus dados de pagamento.',
   'costs.personalHint': 'Não é dividida nem acertada — apenas registrada como sua própria despesa.',
   'costs.tabLinkNewGuest': 'Novo convidado temporário — entra em todas as divisões',
   'costs.tabLinkMember': 'Vincular a {name}',
   'costs.tabLinkNone': 'Apenas o nome (sem vínculo com membro)',
-  'costs.tabLinkHint': 'Comandas vinculadas seguem o registro da viagem: para dividir uma conta, inclua essa pessoa na divisão da despesa.',
+  'costs.tabLinkHint':
+    'Comandas vinculadas seguem o registro da viagem: para dividir uma conta, inclua essa pessoa na divisão da despesa.',
   'costs.tabLinked': 'Vinculada',
-  'costs.tabLiveHint': 'Segue o registro da viagem — divida contas com {name} incluindo a pessoa na divisão da despesa.',
+  'costs.tabLiveHint':
+    'Segue o registro da viagem — divida contas com {name} incluindo a pessoa na divisão da despesa.',
   'costs.tabOwedTo': 'Deve',
   'costs.tabPaidTo': 'Pago a {name}',
   'costs.tabNoLinkedCharge': 'Comandas vinculadas seguem a divisão — em vez disso, inclua a pessoa na despesa.',
+  'costs.payDetailsMissing': 'Os pagadores ainda não sabem como pagar você — adicione seus dados de pagamento.',
+  'costs.payDetailsAdd': 'Adicionar dados de pagamento',
 };
 export default budget;

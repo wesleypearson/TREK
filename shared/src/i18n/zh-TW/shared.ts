@@ -46,5 +46,7 @@ const shared: TranslationStrings = {
   'publicTab.ofTotal': '您在 {amount} 中的份額',
   'publicTab.paidTo': '已支付給 {name}',
   'publicTab.liveNote': '此帳單會即時追蹤您在旅程共同消費中的份額。',
+  'publicTab.noMethods': '{name} 尚未新增收款資訊 — 請直接詢問對方最合適的付款方式。',
+  'publicTab.credit': '為團隊墊付',
 };
 export default shared;
