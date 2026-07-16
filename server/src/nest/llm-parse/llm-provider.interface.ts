@@ -18,6 +18,12 @@ export interface LlmExtractionInput {
   /** Native binary (PDF or image) for multimodal providers. */
   file?: LlmExtractionFile;
   /**
+   * Additional pages of the SAME document (multi-photo receipt scans). Sent
+   * after `file` in order. Images only — providers that can't take extra
+   * binary parts ignore what they can't carry.
+   */
+  files?: LlmExtractionFile[];
+  /**
    * Generic-task overrides (receipt scanning etc.). Default to the original
    * travel-reservation behaviour when absent, so booking import is unchanged.
    */

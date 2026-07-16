@@ -19,11 +19,12 @@ export class AnthropicClient implements LlmExtractionClient {
     const url = `${base}/v1/messages`;
 
     const content: unknown[] = [];
-    if (input.file) {
-      // Images use the image block type; PDFs (and anything else) the document type.
+    // Primary file plus any additional pages of the same document (multi-photo
+    // receipt scans). Images use the image block type; PDFs the document type.
+    for (const f of [...(input.file ? [input.file] : []), ...(input.files ?? [])]) {
       content.push({
-        type: input.file.mimeType.startsWith('image/') ? 'image' : 'document',
-        source: { type: 'base64', media_type: input.file.mimeType, data: input.file.data.toString('base64') },
+        type: f.mimeType.startsWith('image/') ? 'image' : 'document',
+        source: { type: 'base64', media_type: f.mimeType, data: f.data.toString('base64') },
       });
     }
     const userText = input.userText ?? USER_TEXT;

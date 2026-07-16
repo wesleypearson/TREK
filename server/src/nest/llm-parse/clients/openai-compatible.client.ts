@@ -31,12 +31,15 @@ export class OpenAiCompatibleClient implements LlmExtractionClient {
     // Only genuine images go natively (as image_url) — OpenAI-compatible servers
     // (notably Ollama) reject `file`/PDF content parts. PDFs reach this client as
     // pre-extracted text (see llm-parse.service.ts), never as bytes.
-    if (!nuextract && input.file && input.file.mimeType.startsWith('image/')) {
-      const b64 = input.file.data.toString('base64');
-      userContent.push({
-        type: 'image_url',
-        image_url: { url: `data:${input.file.mimeType};base64,${b64}` },
-      });
+    if (!nuextract) {
+      // Primary image plus any additional pages (multi-photo receipt scans).
+      for (const f of [...(input.file ? [input.file] : []), ...(input.files ?? [])]) {
+        if (!f.mimeType.startsWith('image/')) continue;
+        userContent.push({
+          type: 'image_url',
+          image_url: { url: `data:${f.mimeType};base64,${f.data.toString('base64')}` },
+        });
+      }
     }
 
     const body = {

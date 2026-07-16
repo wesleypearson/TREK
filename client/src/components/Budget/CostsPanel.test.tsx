@@ -399,12 +399,14 @@ describe('CostsPanel — expenses feature (receipt scan + personal expenses)', (
     fireEvent.change(fileInput, { target: { files: [new File(['jpg'], 'receipt.jpg', { type: 'image/jpeg' })] } })
 
     // Prefill from the parsed receipt: merchant → name, items → ticket lines
-    // (quantity folded into the label), split mode switched to ticket.
+    // with a real quantity column (qty × unit price), split mode → ticket.
     await screen.findByDisplayValue('SuperMart')
     expect(screen.getByDisplayValue('Apples')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('Beer x2')).toBeInTheDocument()
+    // "2 × Beer @ 4.50" arrives as qty 2 + unit price — never "Beer x2" in the name.
+    expect(screen.getByDisplayValue('Beer')).toBeInTheDocument()
     expect(screen.getByDisplayValue('3.5')).toBeInTheDocument()
-    expect(screen.getByDisplayValue('9')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('2')).toBeInTheDocument()
+    expect(screen.getByDisplayValue('4.5')).toBeInTheDocument()
     // Ticket total is the sum of the scanned lines and stays read-only.
     expect(screen.getByDisplayValue('12.50')).toBeDisabled()
 

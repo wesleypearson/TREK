@@ -10,11 +10,11 @@ import {
   Post,
   Put,
   Query,
-  UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import type { User } from '../../types';
 import { BudgetService } from './budget.service';
@@ -179,30 +179,40 @@ export class BudgetController {
    */
   @Post('receipt-scan')
   @HttpCode(200)
-  @UseInterceptors(FileInterceptor('file', RECEIPT_UPLOAD))
+  @UseInterceptors(FilesInterceptor('file', 6, RECEIPT_UPLOAD))
   async receiptScan(
     @CurrentUser() user: User,
     @Param('tripId') tripId: string,
-    @UploadedFile() file: Express.Multer.File | undefined,
+    @UploadedFiles() files: Express.Multer.File[] | undefined,
   ) {
     const trip = this.requireTrip(tripId, user);
     this.requireEdit(trip, user);
-    if (!file) {
+    if (!files || files.length === 0) {
       throw new HttpException({ error: 'No file uploaded' }, 400);
     }
-    if (!RECEIPT_MIMES.test(file.mimetype || '')) {
-      throw new HttpException({ error: 'Receipt must be a photo (jpg/png/webp/heic) or a PDF' }, 400);
+    for (const f of files) {
+      if (!RECEIPT_MIMES.test(f.mimetype || '')) {
+        throw new HttpException({ error: 'Receipt must be a photo (jpg/png/webp/heic) or a PDF' }, 400);
+      }
     }
-    const stored = this.receipts.storeReceiptFile(tripId, user.id, file);
+    // A multi-part scan is several PHOTOS of one docket; PDFs (already
+    // multi-page containers, e.g. from the iOS Files/Notes document scanner)
+    // travel alone.
+    if (files.length > 1 && files.some(f => f.mimetype === 'application/pdf')) {
+      throw new HttpException({ error: 'Scan multiple pages as photos, or upload a single PDF' }, 400);
+    }
+    // Every page is stored; the first is the one the expense links to (the
+    // others remain attached to the trip as the following pages).
+    const stored = files.map((f, i) => this.receipts.storeReceiptFile(tripId, user.id, f, i));
     try {
-      const { receipt, warnings } = await this.receipts.parseReceipt(user.id, file);
-      return { file: stored, receipt, warnings };
+      const { receipt, warnings } = await this.receipts.parseReceipt(user.id, files);
+      return { file: stored[0], files: stored, receipt, warnings };
     } catch (err) {
       if (err instanceof ReceiptScanUnavailableError) {
-        throw new HttpException({ error: err.message, file: stored }, 409);
+        throw new HttpException({ error: err.message, file: stored[0] }, 409);
       }
       console.error('[receipt-scan] extraction failed:', err instanceof Error ? err.message : err);
-      throw new HttpException({ error: 'The AI could not read this receipt. You can still enter the lines manually.', file: stored }, 502);
+      throw new HttpException({ error: 'The AI could not read this receipt. You can still enter the lines manually.', file: stored[0] }, 502);
     }
   }
 

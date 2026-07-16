@@ -25,6 +25,7 @@ export interface ParsedReceiptItem {
   name: string;
   price: number;
   quantity?: number;
+  unit_price?: number;
 }
 
 export interface ParsedReceipt {
@@ -53,9 +54,10 @@ const RECEIPT_JSON_SCHEMA = {
           items: {
             type: 'object',
             properties: {
-              name: { type: 'string', description: 'Line item description, cleaned up' },
+              name: { type: 'string', description: 'Line item description, cleaned up — never embed the quantity in the name' },
               price: { type: 'number', description: 'Line total for this item (unit price × quantity), after any line discount' },
-              quantity: { type: 'number', description: 'Quantity if printed, else 1' },
+              quantity: { type: 'number', description: 'Quantity purchased as printed (e.g. "2 x" or "QTY 3"), else 1' },
+              unit_price: { type: 'number', description: 'Per-unit price as printed, when quantity > 1' },
             },
             required: ['name', 'price'],
           },
@@ -72,10 +74,12 @@ const RECEIPT_PROMPT = [
   'You are a precise receipt and tax-invoice parser for a travel expense splitter.',
   'Extract the merchant, purchase date (YYYY-MM-DD), ISO 4217 currency code, the grand total actually charged, and every purchasable line item.',
   'Rules:',
+  '- Multiple images are PAGES/SECTIONS OF ONE receipt in order (a long docket photographed in parts) — parse them as a single document and never duplicate overlapping lines.',
   '- Each item price is the LINE total (unit price × quantity) after any line-level discount, as printed.',
+  '- When a quantity is printed (e.g. "2 x", "QTY 3"), set quantity and unit_price so that quantity × unit_price equals the line price; never fold the quantity into the item name.',
   '- Skip subtotals, tax lines, tips, change, card/payment rows and loyalty points — but keep delivery/service fees as items since someone has to pay them.',
   '- If tax (GST/VAT) is charged on top of the items rather than included, add it as a final line item named "Tax".',
-  '- Keep item names short and human (e.g. "Flat white x2", not SKU codes).',
+  '- Keep item names short and human (e.g. "Flat white", not SKU codes).',
   '- Amounts are plain numbers in the receipt currency, no symbols.',
   '- If a value is unreadable, omit the field rather than guessing.',
   'Respond with { "receipts": [ { ... } ] } — an array with exactly one entry — matching the provided schema exactly.',
@@ -91,7 +95,7 @@ export class ReceiptScanService {
   }
 
   /** Store the receipt bytes as a PRIVATE trip file owned by the uploader. */
-  storeReceiptFile(tripId: string, userId: number, upload: { originalname: string; mimetype: string; buffer: Buffer }) {
+  storeReceiptFile(tripId: string, userId: number, upload: { originalname: string; mimetype: string; buffer: Buffer }, pageIndex = 0) {
     if (!fs.existsSync(filesDir)) fs.mkdirSync(filesDir, { recursive: true });
     const filename = `${uuidv4()}${path.extname(upload.originalname || '') || '.jpg'}`;
     fs.writeFileSync(path.join(filesDir, filename), upload.buffer);
@@ -99,7 +103,7 @@ export class ReceiptScanService {
       tripId,
       { filename, originalname: upload.originalname || filename, size: upload.buffer.length, mimetype: upload.mimetype },
       userId,
-      { description: 'Receipt', is_private: true },
+      { description: pageIndex > 0 ? `Receipt (page ${pageIndex + 1})` : 'Receipt', is_private: true },
     );
   }
 
@@ -108,12 +112,14 @@ export class ReceiptScanService {
    * message when no capable provider is configured; the endpoint maps that to
    * a 409 so the client can fall back to manual entry.
    */
-  async parseReceipt(userId: number, upload: { originalname: string; mimetype: string; buffer: Buffer }): Promise<{ receipt: ParsedReceipt; warnings: string[] }> {
+  async parseReceipt(userId: number, uploads: { originalname: string; mimetype: string; buffer: Buffer } | { originalname: string; mimetype: string; buffer: Buffer }[]): Promise<{ receipt: ParsedReceipt; warnings: string[] }> {
     const config = resolveLlmConfig(userId);
     if (!config) {
       throw new ReceiptScanUnavailableError('AI parsing is not configured. Add an AI provider in Settings → Integrations, or enter the lines manually.');
     }
 
+    const pages = Array.isArray(uploads) ? uploads : [uploads];
+    const upload = pages[0];
     const warnings: string[] = [];
     const isImage = IMAGE_MIMES.has(upload.mimetype) || upload.mimetype.startsWith('image/');
     const input = {
@@ -123,7 +129,9 @@ export class ReceiptScanService {
       baseUrl: config.baseUrl,
       apiKey: config.apiKey,
       resultKey: 'receipts',
-      userText: 'Extract this receipt / tax invoice as structured JSON.',
+      userText: pages.length > 1
+        ? `Extract this receipt / tax invoice as structured JSON. The ${pages.length} images are consecutive parts of ONE receipt.`
+        : 'Extract this receipt / tax invoice as structured JSON.',
     } as LlmExtractionInput;
 
     if (isImage) {
@@ -132,8 +140,11 @@ export class ReceiptScanService {
         throw new ReceiptScanUnavailableError('The configured local AI model is text-only and cannot read a photo. Enable a vision-capable model, or enter the lines manually.');
       }
       input.file = { mimeType: upload.mimetype, data: upload.buffer };
+      // Additional pages of the same docket (a long receipt shot in parts).
+      if (pages.length > 1) input.files = pages.slice(1).map(p => ({ mimeType: p.mimetype, data: p.buffer }));
     } else if (config.provider === 'anthropic' && upload.mimetype === 'application/pdf') {
-      // Anthropic ingests PDFs natively — best fidelity for scanned invoices.
+      // Anthropic ingests PDFs natively — best fidelity for scanned invoices
+      // (incl. multi-page PDFs from the iOS Files/Notes document scanner).
       input.file = { mimeType: upload.mimetype, data: upload.buffer };
     } else {
       const text = (await extractText(upload.buffer, upload.originalname || 'receipt.pdf')).trim();
@@ -174,10 +185,17 @@ function normalizeReceipt(node: Record<string, unknown> | undefined): ParsedRece
     const price = Number(rec.price);
     if (!name || !Number.isFinite(price) || price <= 0) continue;
     const quantity = Number(rec.quantity);
+    const unit = Number(rec.unit_price);
     out.items.push({
       name,
       price: Math.round(price * 100) / 100,
       ...(Number.isFinite(quantity) && quantity > 1 ? { quantity: Math.round(quantity) } : {}),
+      // Only trust a unit price that actually multiplies back to the line
+      // total — otherwise the split editor falls back to qty 1 × line total.
+      ...(Number.isFinite(unit) && unit > 0 && Number.isFinite(quantity) && quantity > 1
+        && Math.abs(Math.round(unit * Math.round(quantity) * 100) / 100 - Math.round(price * 100) / 100) < 0.011
+        ? { unit_price: Math.round(unit * 100) / 100 }
+        : {}),
     });
   }
   return out;

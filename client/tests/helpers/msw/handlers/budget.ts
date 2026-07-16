@@ -46,7 +46,7 @@ export const budgetHandlers = [
         total: 12.5,
         items: [
           { name: 'Apples', price: 3.5 },
-          { name: 'Beer', price: 9, quantity: 2 },
+          { name: 'Beer', price: 9, quantity: 2, unit_price: 4.5 },
         ],
       },
       warnings: [],
