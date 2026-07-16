@@ -181,5 +181,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'Propojené účty sledují dělení — přiřaďte osobu raději ve výdaji.',
   'costs.payDetailsMissing': 'Plátci zatím nevidí, jak vám zaplatit — přidejte své platební údaje.',
   'costs.payDetailsAdd': 'Přidat platební údaje',
+  'costs.addPerson': 'Přidat někoho (bez nutnosti účtu)',
+  'costs.addPersonPlaceholder': 'Jméno osoby',
+  'costs.reset': 'Resetovat',
+  'costs.resetTitle': 'Resetovat všechny výdaje',
+  'costs.resetWarning':
+    'Tímto trvale smažete všechny výdaje, vyrovnání a veřejné odkazy na účty v této cestě. Členové a hosté zůstanou. Tuto akci nelze vrátit zpět.',
+  'costs.resetConfirm': 'Smazat vše',
+  'costs.resetDone': 'Výdaje byly resetovány',
 };
 export default budget;

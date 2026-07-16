@@ -183,5 +183,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'I conti collegati seguono la divisione — includi invece la persona nella spesa.',
   'costs.payDetailsMissing': 'Chi paga non sa ancora come pagarti — aggiungi i tuoi dati di pagamento.',
   'costs.payDetailsAdd': 'Aggiungi dati di pagamento',
+  'costs.addPerson': 'Aggiungi qualcuno (senza bisogno di account)',
+  'costs.addPersonPlaceholder': 'Il suo nome',
+  'costs.reset': 'Azzera',
+  'costs.resetTitle': 'Azzera tutte le spese',
+  'costs.resetWarning':
+    'Questa operazione elimina definitivamente tutte le spese, i saldi e i link pubblici dei conti di questo viaggio. Membri e ospiti restano. Non può essere annullata.',
+  'costs.resetConfirm': 'Elimina tutto',
+  'costs.resetDone': 'Spese azzerate',
 };
 export default budget;

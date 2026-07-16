@@ -182,5 +182,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'リンクされたツケは分割と連動しています — 代わりに費用でこの人を割り当ててください。',
   'costs.payDetailsMissing': '支払う側にはまだ支払い方法が表示されません — 支払い情報を追加してください。',
   'costs.payDetailsAdd': '支払い情報を追加',
+  'costs.addPerson': '誰かを追加（アカウント不要）',
+  'costs.addPersonPlaceholder': 'その人の名前',
+  'costs.reset': 'リセット',
+  'costs.resetTitle': 'すべての支出をリセット',
+  'costs.resetWarning':
+    'この旅のすべての支出、精算、公開ツケリンクを完全に削除します。メンバーとゲストは残ります。この操作は取り消せません。',
+  'costs.resetConfirm': 'すべて削除',
+  'costs.resetDone': '支出をリセットしました',
 };
 export default budget;

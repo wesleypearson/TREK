@@ -182,5 +182,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'Kopplade notor följer delningen — lägg till personen i utgiften i stället.',
   'costs.payDetailsMissing': 'Betalare kan ännu inte se hur de ska betala dig — lägg till dina betalningsuppgifter.',
   'costs.payDetailsAdd': 'Lägg till betalningsuppgifter',
+  'costs.addPerson': 'Lägg till någon (inget konto behövs)',
+  'costs.addPersonPlaceholder': 'Personens namn',
+  'costs.reset': 'Återställ',
+  'costs.resetTitle': 'Återställ alla kostnader',
+  'costs.resetWarning':
+    'Detta raderar permanent alla kostnader, regleringar och offentliga notalänkar i den här resan. Medlemmar och gäster finns kvar. Det går inte att ångra.',
+  'costs.resetConfirm': 'Radera allt',
+  'costs.resetDone': 'Kostnaderna har återställts',
 };
 export default budget;

@@ -179,5 +179,12 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': '已关联的账单跟随分摊 — 请改为在费用中指定此人。',
   'costs.payDetailsMissing': '付款人还看不到如何向你付款 — 请添加你的收款信息。',
   'costs.payDetailsAdd': '添加收款信息',
+  'costs.addPerson': '添加其他人（无需账号）',
+  'costs.addPersonPlaceholder': '对方的名字',
+  'costs.reset': '重置',
+  'costs.resetTitle': '重置所有支出',
+  'costs.resetWarning': '这会永久删除本次旅行中的所有支出、结算和公开账单链接。成员和访客会保留。此操作无法撤销。',
+  'costs.resetConfirm': '删除全部',
+  'costs.resetDone': '支出已重置',
 };
 export default budget;

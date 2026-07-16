@@ -181,6 +181,14 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'Linked tabs follow the split — assign the person in the expense instead.',
   'costs.payDetailsMissing': 'Payers can’t see how to pay you yet — add your payment details.',
   'costs.payDetailsAdd': 'Add payment details',
+  'costs.addPerson': 'Add someone (no account needed)',
+  'costs.addPersonPlaceholder': 'Their name',
+  'costs.reset': 'Reset',
+  'costs.resetTitle': 'Reset all expenses',
+  'costs.resetWarning':
+    'This permanently deletes every expense, settlement and public tab link in this trip. Members and guests stay. This cannot be undone.',
+  'costs.resetConfirm': 'Delete everything',
+  'costs.resetDone': 'Expenses reset',
 };
 
 export default budget;

@@ -836,6 +836,9 @@ export const budgetApi = {
   // AI receipt scan: stores the photo/PDF as a trip file and extracts the line
   // items. 409/502 still carry the stored `file` so it can be attached manually.
   scanReceipt: (tripId: number | string, formData: FormData) => postMultipart(`/trips/${tripId}/budget/receipt-scan`, formData),
+  // Trip-owner-only testing/fresh-start tool: wipes every expense, settlement
+  // and public tab of the trip (members and guests stay).
+  resetExpenses: (tripId: number | string) => apiClient.post(`/trips/${tripId}/budget/reset`).then(r => r.data),
 }
 
 // Public expense tabs (custom): per-person running balances shared as a public

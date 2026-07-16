@@ -180,5 +180,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'الحسابات المربوطة تتبع التقسيم — عيّن الشخص في المصروف بدلًا من ذلك.',
   'costs.payDetailsMissing': 'لا يستطيع الدافعون بعد معرفة كيفية الدفع لك — أضف تفاصيل الدفع الخاصة بك.',
   'costs.payDetailsAdd': 'إضافة تفاصيل الدفع',
+  'costs.addPerson': 'إضافة شخص (لا يحتاج إلى حساب)',
+  'costs.addPersonPlaceholder': 'اسمه',
+  'costs.reset': 'إعادة تعيين',
+  'costs.resetTitle': 'إعادة تعيين كل المصروفات',
+  'costs.resetWarning':
+    'سيؤدي هذا إلى حذف كل المصروفات والتسويات وروابط الحسابات العامة في هذه الرحلة نهائيًا. يبقى الأعضاء والضيوف. لا يمكن التراجع عن هذا الإجراء.',
+  'costs.resetConfirm': 'حذف كل شيء',
+  'costs.resetDone': 'تمت إعادة تعيين المصروفات',
 };
 export default budget;

@@ -183,5 +183,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'Połączone rachunki podążają za podziałem — zamiast tego przypisz osobę w wydatku.',
   'costs.payDetailsMissing': 'Płacący nie widzą jeszcze, jak ci zapłacić — dodaj swoje dane do płatności.',
   'costs.payDetailsAdd': 'Dodaj dane do płatności',
+  'costs.addPerson': 'Dodaj kogoś (bez konta)',
+  'costs.addPersonPlaceholder': 'Imię tej osoby',
+  'costs.reset': 'Resetuj',
+  'costs.resetTitle': 'Zresetuj wszystkie wydatki',
+  'costs.resetWarning':
+    'To trwale usunie wszystkie wydatki, rozliczenia i publiczne linki do rachunków w tej podróży. Członkowie i goście zostaną. Tego nie można cofnąć.',
+  'costs.resetConfirm': 'Usuń wszystko',
+  'costs.resetDone': 'Wydatki zresetowane',
 };
 export default budget;

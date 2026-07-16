@@ -328,7 +328,14 @@ export class TripsController {
   @Post(':id/guests')
   @HttpCode(201)
   createGuest(@CurrentUser() user: User, @Param('id') id: string, @Body('name') name: unknown) {
-    this.requireOwner(id, user);
+    // Creating a guest is how any member adds an off-platform person to a
+    // bill (custom) — gated like the budget itself, not owner-only. Renaming
+    // and deleting guests stay owner-only below.
+    const access = this.trips.canAccessTrip(id, user.id);
+    if (!access) throw new HttpException({ error: 'Trip not found' }, 404);
+    if (!this.trips.can('budget_edit', user.role, access.user_id, user.id, access.user_id !== user.id)) {
+      throw new HttpException({ error: 'No permission' }, 403);
+    }
     if (typeof name !== 'string' || !name.trim()) {
       throw new HttpException({ error: 'Guest name is required' }, 400);
     }

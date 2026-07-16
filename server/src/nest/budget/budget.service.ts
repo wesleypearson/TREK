@@ -61,6 +61,10 @@ export class BudgetService {
     return svc.deleteBudgetItem(id, tripId, viewerId);
   }
 
+  resetExpenses(tripId: string): void {
+    svc.resetExpenses(tripId);
+  }
+
   updateMembers(id: string, tripId: string, userIds: number[]) {
     return svc.updateMembers(id, tripId, userIds);
   }

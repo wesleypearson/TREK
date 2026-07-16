@@ -57,6 +57,8 @@ export interface TripStoreState
   tags: Tag[]
   categories: Category[]
   budgetItems: BudgetItem[]
+  /** Bumped by settlement websocket events so open Costs views re-fetch flows. */
+  settlementsVersion: number
   files: TripFile[]
   reservations: Reservation[]
   selectedDayId: number | null
@@ -85,6 +87,7 @@ export const useTripStore = create<TripStoreState>((set, get) => ({
   tags: [],
   categories: [],
   budgetItems: [],
+  settlementsVersion: 0,
   files: [],
   reservations: [],
   selectedDayId: null,
@@ -107,6 +110,7 @@ export const useTripStore = create<TripStoreState>((set, get) => ({
     packingItems: [],
     todoItems: [],
     budgetItems: [],
+    settlementsVersion: 0,
     files: [],
     reservations: [],
     selectedDayId: null,

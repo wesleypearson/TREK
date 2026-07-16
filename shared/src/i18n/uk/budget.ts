@@ -182,5 +182,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': "Прив'язані рахунки слідують за розділенням — натомість призначте людину у витраті.",
   'costs.payDetailsMissing': 'Платники поки не бачать, як вам заплатити — додайте свої платіжні дані.',
   'costs.payDetailsAdd': 'Додати платіжні дані',
+  'costs.addPerson': 'Додати людину (акаунт не потрібен)',
+  'costs.addPersonPlaceholder': "Ім'я людини",
+  'costs.reset': 'Скинути',
+  'costs.resetTitle': 'Скинути всі витрати',
+  'costs.resetWarning':
+    'Це назавжди видалить усі витрати, розрахунки та публічні посилання на рахунки в цій подорожі. Учасники й гості залишаться. Цю дію неможливо скасувати.',
+  'costs.resetConfirm': 'Видалити все',
+  'costs.resetDone': 'Витрати скинуто',
 };
 export default budget;

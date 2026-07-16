@@ -98,6 +98,9 @@ function writeToDexie(
         case 'budget:deleted':
           await offlineDb.budgetItems.delete(payload.itemId as number)
           break
+        case 'budget:reset':
+          await offlineDb.budgetItems.where('trip_id').equals(payload.tripId as number).delete()
+          break
         case 'budget:members-updated':
         case 'budget:member-paid-updated':
         case 'budget:reordered': {
@@ -377,6 +380,17 @@ export function handleRemoteEvent(set: SetState, get: GetState, event: WebSocket
             i.id === payload.itemId ? { ...i, members: payload.members as BudgetItemMember[], persons: payload.persons as number } : i
           ),
         }
+      // Settlements aren't kept in the store (Costs fetches flows on demand),
+      // but open Costs views MUST re-fetch when any member settles/unsettles —
+      // otherwise their flows and payment rows go stale and an Undo on a
+      // deleted settlement 404s. The version bump is their refresh signal.
+      case 'budget:settlement-created':
+      case 'budget:settlement-deleted':
+      case 'budget:settlement-updated':
+        return { settlementsVersion: state.settlementsVersion + 1 }
+      // Owner wiped the whole ledger (testing/fresh-start tool).
+      case 'budget:reset':
+        return { budgetItems: [], settlementsVersion: state.settlementsVersion + 1 }
       case 'budget:member-paid-updated':
         return {
           budgetItems: state.budgetItems.map(i =>

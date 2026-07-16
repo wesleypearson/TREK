@@ -337,6 +337,44 @@ describe('Personal vs group expenses (EXP)', () => {
     expect(pay.body.item.payers).toEqual([expect.objectContaining({ user_id: owner.id, amount: 40 })]);
   });
 
+  it('EXP-015: reset wipes expenses, settlements and tabs — trip owner only, members/guests survive', async () => {
+    // Seed a full ledger: expense, settlement, guest-linked tab.
+    await createItemAs(owner.id, { name: 'Boat', payers: [{ user_id: owner.id, amount: 100 }], member_ids: [owner.id, member.id] });
+    await request(app).post(`/api/trips/${tripId}/budget/settlements`).set('Cookie', authCookie(owner.id))
+      .send({ from_user_id: member.id, to_user_id: owner.id, amount: 10 });
+    const tab = (await request(app).post(`/api/trips/${tripId}/expense-tabs`).set('Cookie', authCookie(owner.id))
+      .send({ first_name: 'Guesty', create_guest: true })).body.tab;
+
+    // budget_edit alone is NOT enough — the wipe is owner-only.
+    const denied = await request(app).post(`/api/trips/${tripId}/budget/reset`).set('Cookie', authCookie(member.id));
+    expect(denied.status).toBe(403);
+
+    const reset = await request(app).post(`/api/trips/${tripId}/budget/reset`).set('Cookie', authCookie(owner.id));
+    expect(reset.status).toBe(200);
+
+    expect((await listItemsAs(owner.id)).body.items).toHaveLength(0);
+    expect(testDb.prepare('SELECT COUNT(*) AS c FROM budget_settlements WHERE trip_id = ?').get(tripId)).toMatchObject({ c: 0 });
+    expect(testDb.prepare('SELECT COUNT(*) AS c FROM expense_tabs WHERE trip_id = ?').get(tripId)).toMatchObject({ c: 0 });
+    expect(testDb.prepare('SELECT COUNT(*) AS c FROM invite_tokens WHERE trip_id = ?').get(tripId)).toMatchObject({ c: 0 });
+    // The guest member itself survives (they're a person, not a ledger row).
+    expect(testDb.prepare('SELECT COUNT(*) AS c FROM trip_members WHERE trip_id = ? AND user_id = ?').get(tripId, tab.member_user_id)).toMatchObject({ c: 1 });
+  });
+
+  it('EXP-016: any budget-edit member can add an off-platform person as a guest', async () => {
+    // Previously owner-only; now gated like the budget itself, so anyone who
+    // can put people on a bill can create the person too.
+    const res = await request(app).post(`/api/trips/${tripId}/guests`).set('Cookie', authCookie(member.id))
+      .send({ name: 'Walk-in Wanda' });
+    expect(res.status).toBe(201);
+    expect(res.body.member).toMatchObject({ is_guest: true });
+
+    // A non-member still can't.
+    const stranger = createUser(testDb).user;
+    const denied = await request(app).post(`/api/trips/${tripId}/guests`).set('Cookie', authCookie(stranger.id))
+      .send({ name: 'Nope' });
+    expect(denied.status).toBe(404);
+  });
+
   it('EXP-014: a personal expense never reads as unfinished nor leaks into settlement', async () => {
     // Created without any payers at all — the server self-pays it for the owner.
     const res = await createItemAs(owner.id, { name: 'Own Coffee', total_price: 12.5, is_private: true });

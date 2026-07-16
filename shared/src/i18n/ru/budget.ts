@@ -182,5 +182,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'Привязанные счета следуют за разделением — вместо этого назначьте человека в расходе.',
   'costs.payDetailsMissing': 'Плательщики пока не видят, как вам заплатить — добавьте свои платёжные данные.',
   'costs.payDetailsAdd': 'Добавить платёжные данные',
+  'costs.addPerson': 'Добавить человека (аккаунт не нужен)',
+  'costs.addPersonPlaceholder': 'Имя человека',
+  'costs.reset': 'Сбросить',
+  'costs.resetTitle': 'Сбросить все расходы',
+  'costs.resetWarning':
+    'Это навсегда удалит все расходы, расчёты и публичные ссылки на счета в этой поездке. Участники и гости останутся. Отменить это действие невозможно.',
+  'costs.resetConfirm': 'Удалить всё',
+  'costs.resetDone': 'Расходы сброшены',
 };
 export default budget;

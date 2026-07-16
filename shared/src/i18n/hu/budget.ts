@@ -184,5 +184,13 @@ const budget: TranslationStrings = {
     'Az összekapcsolt számlák a felosztást követik — inkább a kiadásban rendeld hozzá a személyt.',
   'costs.payDetailsMissing': 'A fizetők még nem látják, hogyan fizethetnek neked — add meg a fizetési adataidat.',
   'costs.payDetailsAdd': 'Fizetési adatok hozzáadása',
+  'costs.addPerson': 'Valaki hozzáadása (fiók nélkül is)',
+  'costs.addPersonPlaceholder': 'A neve',
+  'costs.reset': 'Nullázás',
+  'costs.resetTitle': 'Minden költség nullázása',
+  'costs.resetWarning':
+    'Ez véglegesen töröl minden költséget, elszámolást és nyilvános számlalinket ebben az utazásban. A tagok és a vendégek megmaradnak. A művelet nem vonható vissza.',
+  'costs.resetConfirm': 'Összes törlése',
+  'costs.resetDone': 'Költségek nullázva',
 };
 export default budget;

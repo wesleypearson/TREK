@@ -835,18 +835,25 @@ describe('Trip members', () => {
     expect(membersB.body.members.find((m: any) => m.id === b.body.member.id).username).toBe('Jake');
   });
 
-  it('TRIP-GUEST-002 — guest CRUD is owner-only', async () => {
+  it('TRIP-GUEST-002 — guest creation is open to budget-edit members; managing stays owner-only', async () => {
     const { user: owner } = createUser(testDb);
     const { user: member } = createUser(testDb);
     const trip = createTrip(testDb, owner.id, { title: 'Camping' });
     addTripMember(testDb, trip.id, member.id);
 
-    // A non-owner member cannot create a guest.
-    const denied = await request(app)
+    // Any budget-edit member can add an off-platform person as a guest
+    // (custom) — that's how they land on a bill. Non-members still 404.
+    const memberCreated = await request(app)
       .post(`/api/trips/${trip.id}/guests`)
       .set('Cookie', authCookie(member.id))
+      .send({ name: 'Walk-in' });
+    expect(memberCreated.status).toBe(201);
+    const { user: stranger } = createUser(testDb);
+    const denied = await request(app)
+      .post(`/api/trips/${trip.id}/guests`)
+      .set('Cookie', authCookie(stranger.id))
       .send({ name: 'Nope' });
-    expect(denied.status).toBe(403);
+    expect(denied.status).toBe(404);
 
     const created = await request(app)
       .post(`/api/trips/${trip.id}/guests`)

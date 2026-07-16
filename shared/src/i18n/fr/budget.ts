@@ -184,5 +184,13 @@ const budget: TranslationStrings = {
   'costs.payDetailsMissing':
     'Les payeurs ne savent pas encore comment vous payer — ajoutez vos coordonnées de paiement.',
   'costs.payDetailsAdd': 'Ajouter des coordonnées de paiement',
+  'costs.addPerson': "Ajouter quelqu'un (aucun compte requis)",
+  'costs.addPersonPlaceholder': 'Son nom',
+  'costs.reset': 'Réinitialiser',
+  'costs.resetTitle': 'Réinitialiser toutes les dépenses',
+  'costs.resetWarning':
+    "Cette action supprime définitivement toutes les dépenses, tous les règlements et tous les liens d'ardoise publics de ce voyage. Les membres et les invités sont conservés. Elle ne peut pas être annulée.",
+  'costs.resetConfirm': 'Tout supprimer',
+  'costs.resetDone': 'Dépenses réinitialisées',
 };
 export default budget;
