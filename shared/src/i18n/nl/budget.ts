@@ -183,5 +183,13 @@ const budget: TranslationStrings = {
     'Gekoppelde rekeningen volgen de verdeling — wijs de persoon in plaats daarvan toe in de uitgave.',
   'costs.payDetailsMissing': 'Betalers zien nog niet hoe ze je kunnen betalen — voeg je betaalgegevens toe.',
   'costs.payDetailsAdd': 'Betaalgegevens toevoegen',
+  'costs.addPerson': 'Iemand toevoegen (geen account nodig)',
+  'costs.addPersonPlaceholder': 'Naam van de persoon',
+  'costs.reset': 'Resetten',
+  'costs.resetTitle': 'Alle uitgaven resetten',
+  'costs.resetWarning':
+    'Dit verwijdert permanent alle uitgaven, afrekeningen en openbare rekeninglinks in deze reis. Leden en gasten blijven. Dit kan niet ongedaan worden gemaakt.',
+  'costs.resetConfirm': 'Alles verwijderen',
+  'costs.resetDone': 'Uitgaven gereset',
 };
 export default budget;

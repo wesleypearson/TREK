@@ -186,5 +186,13 @@ const budget: TranslationStrings = {
   'costs.payDetailsMissing':
     'Όσοι πληρώνουν δεν βλέπουν ακόμη πώς να σας πληρώσουν — προσθέστε τα στοιχεία πληρωμής σας.',
   'costs.payDetailsAdd': 'Προσθήκη στοιχείων πληρωμής',
+  'costs.addPerson': 'Προσθήκη ατόμου (δεν χρειάζεται λογαριασμό)',
+  'costs.addPersonPlaceholder': 'Το όνομά του',
+  'costs.reset': 'Επαναφορά',
+  'costs.resetTitle': 'Επαναφορά όλων των εξόδων',
+  'costs.resetWarning':
+    'Αυτό διαγράφει οριστικά όλα τα έξοδα, τις εξοφλήσεις και τους δημόσιους συνδέσμους λογαριασμών σε αυτό το ταξίδι. Τα μέλη και οι επισκέπτες παραμένουν. Δεν μπορεί να αναιρεθεί.',
+  'costs.resetConfirm': 'Διαγραφή όλων',
+  'costs.resetDone': 'Τα έξοδα επαναφέρθηκαν',
 };
 export default budget;

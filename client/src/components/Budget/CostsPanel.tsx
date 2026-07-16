@@ -7,7 +7,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useCanDo } from '../../store/permissionsStore'
 import { useToast } from '../shared/Toast'
 import { useTranslation } from '../../i18n'
-import { budgetApi } from '../../api/client'
+import { budgetApi, tripsApi } from '../../api/client'
 import { useExchangeRates } from '../../hooks/useExchangeRates'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { formatMoney, currencyDecimals, currencyLocale } from '../../utils/formatters'
@@ -216,8 +216,44 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
   // Public expense tabs (custom): false = closed, {} = browse, { item } = charge
   // that ledger expense to a tab.
   const [tabsModal, setTabsModal] = useState<false | { item?: BudgetItem }>(false)
+  // Owner-only fresh-start tool while the group is testing.
+  const isTripOwner = trip?.user_id === me
+  const [resetOpen, setResetOpen] = useState(false)
+  const [resetting, setResetting] = useState(false)
+  const handleReset = async () => {
+    setResetting(true)
+    try {
+      await budgetApi.resetExpenses(tripId)
+      setResetOpen(false)
+      toast.success(t('costs.resetDone'))
+      loadBudgetItems(tripId)
+      loadSettlement()
+    } catch { toast.error(t('common.unknownError')) } finally { setResetting(false) }
+  }
+  // Add an off-platform person as a trip guest straight from the split editor —
+  // the start of their onboarding (they get counted in bills immediately, and a
+  // linked tab/join link can follow). Guests created here show up in the split
+  // lists at once; the server list catches up on the next trip load.
+  const [extraGuests, setExtraGuests] = useState<TripMember[]>([])
+  const handleCreateGuest = useCallback(async (name: string): Promise<TripMember | null> => {
+    try {
+      const res = await tripsApi.createGuest(tripId, name)
+      const guest = (res.member || res) as TripMember
+      setExtraGuests(prev => prev.some(g => g.id === guest.id) ? prev : [...prev, guest])
+      return guest
+    } catch (err) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error
+      toast.error(msg || t('common.unknownError'))
+      return null
+    }
+  }, [tripId, toast, t])
 
-  const people = tripMembers
+  // Trip members plus any guests created inline this session (the members
+  // prop refreshes on the next trip load; this keeps them usable right away).
+  const people = useMemo(() => {
+    const known = new Set(tripMembers.map(p => p.id))
+    return [...tripMembers, ...extraGuests.filter(g => !known.has(g.id))]
+  }, [tripMembers, extraGuests])
   const personById = useCallback((id: number) => people.find(p => p.id === id), [people])
   const personName = useCallback((id: number) => id === me ? t('costs.you') : (personById(id)?.username || '?'), [me, personById, t])
   const colorFor = useCallback((id: number) => {
@@ -234,7 +270,10 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
   }, [tripId, base])
 
   useEffect(() => { loadBudgetItems(tripId); loadSettlement() }, [tripId])
-  useEffect(() => { loadSettlement() }, [budgetItems.length, base])
+  // settlementsVersion bumps on every settlement websocket event (any member,
+  // any device, incl. linked-tab payments) so flows/payment rows never go stale.
+  const settlementsVersion = useTripStore(s => s.settlementsVersion)
+  useEffect(() => { loadSettlement() }, [budgetItems.length, base, settlementsVersion])
 
   // The bottom-nav "+" on the Costs tab opens the add-expense modal via ?create=expense.
   const [searchParams, setSearchParams] = useSearchParams()
@@ -343,7 +382,16 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
     } catch { toast.error(t('common.unknownError')) }
   }
   const undoSettlement = async (id: number) => {
-    try { await budgetApi.deleteSettlement(tripId, id); loadSettlement() } catch { toast.error(t('common.unknownError')) }
+    try {
+      await budgetApi.deleteSettlement(tripId, id)
+      loadSettlement()
+    } catch (err) {
+      // Already undone elsewhere (double tap / another member) — just resync,
+      // there's nothing to alarm the user about.
+      const status = (err as { response?: { status?: number } })?.response?.status
+      if (status === 404) loadSettlement()
+      else toast.error(t('common.unknownError'))
+    }
   }
   const settleAll = async () => {
     const flows = settlement?.flows || []
@@ -471,6 +519,13 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         </div>
         {canEdit && (
           <div style={{ display: 'flex', gap: 10 }}>
+            {isTripOwner && (
+              <button onClick={() => setResetOpen(true)} title={t('costs.resetTitle')}
+                className="bg-surface-card border border-edge text-content-muted"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 14px', borderRadius: 12, fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <RotateCcw size={15} /> {t('costs.reset')}
+              </button>
+            )}
             <button onClick={() => setTabsModal({})}
               className="bg-surface-card border border-edge text-content"
               style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 16px', borderRadius: 12, fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
@@ -602,8 +657,24 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
 
       {modalOpen && (
         <ExpenseModal tripId={tripId} base={base} people={people} me={me} editing={editing}
+          onCreateGuest={handleCreateGuest}
           onClose={() => setModalOpen(false)}
           onSaved={() => { setModalOpen(false); loadBudgetItems(tripId); loadSettlement() }} />
+      )}
+
+      {resetOpen && (
+        <Modal isOpen onClose={() => setResetOpen(false)} title={t('costs.resetTitle')} size="md"
+          footer={
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+              <button onClick={() => setResetOpen(false)} className="text-content-muted border border-edge" style={{ padding: '8px 16px', borderRadius: 10, background: 'none', fontSize: 'calc(13px * var(--fs-scale-body, 1))', cursor: 'pointer', fontFamily: 'inherit' }}>{t('common.cancel')}</button>
+              <button onClick={handleReset} disabled={resetting}
+                className="bg-[#dc2626] text-white" style={{ padding: '8px 18px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: resetting ? 0.6 : 1 }}>
+                {t('costs.resetConfirm')}
+              </button>
+            </div>
+          }>
+          <p className="text-content" style={{ margin: 0, fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', lineHeight: 1.6 }}>{t('costs.resetWarning')}</p>
+        </Modal>
       )}
 
       {(editingSettlement || addingPayment) && (
@@ -750,11 +821,20 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <div className="text-content" style={{ fontSize: 'calc(19px * var(--fs-scale-subtitle, 1))', fontWeight: 700, letterSpacing: '-0.02em' }}>{t('costs.expenses')}</div>
-            <button onClick={handleExportCsv} title={t('budget.exportCsv')} disabled={!budgetItems.length}
-              className="bg-surface-card border border-edge text-content-muted disabled:opacity-40"
-              style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
-              <Download size={15} />
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {isTripOwner && (
+                <button onClick={() => setResetOpen(true)} title={t('costs.resetTitle')}
+                  className="bg-surface-card border border-edge text-content-muted"
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                  <RotateCcw size={15} />
+                </button>
+              )}
+              <button onClick={handleExportCsv} title={t('budget.exportCsv')} disabled={!budgetItems.length}
+                className="bg-surface-card border border-edge text-content-muted disabled:opacity-40"
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                <Download size={15} />
+              </button>
+            </div>
           </div>
           <div className="bg-surface-card border border-edge" style={{ display: 'flex', alignItems: 'center', gap: 8, borderRadius: 12, padding: '0 12px', height: 42 }}>
             <Search size={16} className="text-content-faint" />
@@ -1072,8 +1152,11 @@ export interface ExpensePrefill {
   reservationId?: number
 }
 
-export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClose, onSaved }: {
-  tripId: number; base: string; people: TripMember[]; me: number; editing: BudgetItem | null; prefill?: ExpensePrefill; onClose: () => void; onSaved: () => void
+export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCreateGuest, onClose, onSaved }: {
+  tripId: number; base: string; people: TripMember[]; me: number; editing: BudgetItem | null; prefill?: ExpensePrefill;
+  /** Create an off-platform person as a trip guest, inline from the split editor. */
+  onCreateGuest?: (name: string) => Promise<TripMember | null>;
+  onClose: () => void; onSaved: () => void
 }) {
   const { t, locale } = useTranslation()
   const toast = useToast()
@@ -1292,6 +1375,26 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
       nextParts.add(id)
     }
     setParticipants(nextParts)
+  }
+
+  // Add an off-platform person (trip guest) without leaving the bill — the
+  // first step of their onboarding. They join the split immediately; the
+  // tab/join-link flow can pick them up afterwards.
+  const [addingPerson, setAddingPerson] = useState(false)
+  const [personName, setPersonName] = useState('')
+  const [personBusy, setPersonBusy] = useState(false)
+  const addPerson = async () => {
+    if (!onCreateGuest || !personName.trim() || personBusy) return
+    setPersonBusy(true)
+    const guest = await onCreateGuest(personName.trim())
+    if (guest) {
+      setPersonName('')
+      setAddingPerson(false)
+      // Assign them to this bill right away in equal/custom mode; itemized
+      // lines stay explicit (assign them per line, like everyone else).
+      if (!isTicketMode) setParticipants(prev => new Set([...prev, guest.id]))
+    }
+    setPersonBusy(false)
   }
 
   const save = async () => {
@@ -1624,6 +1727,36 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onClo
                 )}
               </div>
             </>
+          )}
+
+          {/* Add someone who isn't on the platform yet — created as a trip
+              guest (free, no account) and immediately part of the split. */}
+          {onCreateGuest && (
+            addingPerson ? (
+              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                <input autoFocus value={personName} onChange={e => setPersonName(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') addPerson() }}
+                  placeholder={t('costs.addPersonPlaceholder')}
+                  className="bg-surface-input border border-edge text-content"
+                  style={{ flex: '1 1 160px', minWidth: 0, borderRadius: 10, padding: '9px 12px', fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', outline: 'none', fontFamily: 'inherit' }} />
+                <button type="button" onClick={addPerson} disabled={!personName.trim() || personBusy}
+                  className="bg-[var(--text-primary)] text-[var(--bg-primary)]"
+                  style={{ padding: '8px 16px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: !personName.trim() || personBusy ? 0.5 : 1 }}>
+                  {t('common.add')}
+                </button>
+                <button type="button" onClick={() => { setAddingPerson(false); setPersonName('') }}
+                  className="text-content-muted border border-edge"
+                  style={{ padding: '8px 14px', borderRadius: 10, background: 'none', fontSize: 'calc(13px * var(--fs-scale-body, 1))', cursor: 'pointer', fontFamily: 'inherit' }}>
+                  {t('common.cancel')}
+                </button>
+              </div>
+            ) : (
+              <button type="button" onClick={() => setAddingPerson(true)}
+                className="text-content-muted"
+                style={{ marginTop: 10, display: 'inline-flex', alignItems: 'center', gap: 7, padding: '8px 14px', borderRadius: 10, border: '1.5px dashed var(--border-color, #d1d5db)', background: 'none', fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+                <Plus size={14} /> {t('costs.addPerson')}
+              </button>
+            )
           )}
         </div>
         )}

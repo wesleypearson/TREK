@@ -183,5 +183,13 @@ const budget: TranslationStrings = {
   'costs.tabNoLinkedCharge': 'Comandas vinculadas seguem a divisão — em vez disso, inclua a pessoa na despesa.',
   'costs.payDetailsMissing': 'Os pagadores ainda não sabem como pagar você — adicione seus dados de pagamento.',
   'costs.payDetailsAdd': 'Adicionar dados de pagamento',
+  'costs.addPerson': 'Adicionar alguém (sem precisar de conta)',
+  'costs.addPersonPlaceholder': 'Nome da pessoa',
+  'costs.reset': 'Redefinir',
+  'costs.resetTitle': 'Redefinir todas as despesas',
+  'costs.resetWarning':
+    'Isso exclui permanentemente todas as despesas, acertos e links públicos de comanda desta viagem. Membros e convidados permanecem. Isso não pode ser desfeito.',
+  'costs.resetConfirm': 'Excluir tudo',
+  'costs.resetDone': 'Despesas redefinidas',
 };
 export default budget;

@@ -292,10 +292,11 @@ describe('TripsController (parity with the legacy /api/trips route)', () => {
   });
 
   describe('guests (#1362)', () => {
-    it('404 without access, 403 for a non-owner, 400 without a name; else creates', () => {
+    it('404 without access, 403 without budget_edit, 400 without a name; else creates', () => {
       expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue(undefined) })).createGuest(user, '9', 'Anna'))).toEqual({ status: 404, body: { error: 'Trip not found' } });
-      // access.user_id (5) ≠ requester (1) → not the owner
-      expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue({ user_id: 5 }) })).createGuest(user, '9', 'Anna'))).toEqual({ status: 403, body: { error: 'Only the owner can manage guests' } });
+      // Creation is gated like the budget (custom): members without the
+      // budget_edit permission are refused, everyone else may add a guest.
+      expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue({ user_id: 5 }), can: vi.fn().mockReturnValue(false) })).createGuest(user, '9', 'Anna'))).toEqual({ status: 403, body: { error: 'No permission' } });
       expect(thrown(() => new TripsController(svc()).createGuest(user, '9', '  '))).toEqual({ status: 400, body: { error: 'Guest name is required' } });
       const createGuest = vi.fn().mockReturnValue({ member: { id: 7, username: 'Anna', is_guest: true } });
       const s = svc({ createGuest } as Partial<TripsService>);

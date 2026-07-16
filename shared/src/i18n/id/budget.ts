@@ -184,5 +184,13 @@ const budget: TranslationStrings = {
     'Tagihan tertaut mengikuti pembagian — sebagai gantinya, tetapkan orang tersebut di pengeluaran.',
   'costs.payDetailsMissing': 'Pembayar belum dapat melihat cara membayar Anda — tambahkan detail pembayaran Anda.',
   'costs.payDetailsAdd': 'Tambahkan detail pembayaran',
+  'costs.addPerson': 'Tambahkan seseorang (tanpa perlu akun)',
+  'costs.addPersonPlaceholder': 'Nama orangnya',
+  'costs.reset': 'Reset',
+  'costs.resetTitle': 'Reset semua pengeluaran',
+  'costs.resetWarning':
+    'Ini akan menghapus secara permanen semua pengeluaran, pelunasan, dan tautan tagihan publik di perjalanan ini. Anggota dan tamu tetap ada. Tindakan ini tidak dapat dibatalkan.',
+  'costs.resetConfirm': 'Hapus semuanya',
+  'costs.resetDone': 'Pengeluaran direset',
 };
 export default budget;

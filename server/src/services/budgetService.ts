@@ -406,6 +406,25 @@ export function setItemPayers(id: string | number, tripId: string | number, paye
   return updated;
 }
 
+/**
+ * Wipe every expense-related record of a trip (custom, testing/fresh-start
+ * tool): budget items (cascades splits/payers), settle-ups, public tabs
+ * (cascades their charges/payments, plus their unused join invites).
+ * Members and guests are untouched. Owner-gated at the controller.
+ */
+export function resetExpenses(tripId: string | number): void {
+  db.transaction(() => {
+    db.prepare(`
+      DELETE FROM invite_tokens WHERE used_count = 0
+        AND token IN (SELECT join_token FROM expense_tabs WHERE trip_id = ? AND join_token IS NOT NULL)
+    `).run(tripId);
+    db.prepare('DELETE FROM expense_tabs WHERE trip_id = ?').run(tripId);
+    db.prepare('DELETE FROM budget_settlements WHERE trip_id = ?').run(tripId);
+    db.prepare('DELETE FROM budget_items WHERE trip_id = ?').run(tripId);
+    db.prepare('DELETE FROM budget_category_order WHERE trip_id = ?').run(tripId);
+  })();
+}
+
 export function deleteBudgetItem(id: string | number, tripId: string | number, viewerId?: number): boolean {
   const item = db.prepare('SELECT id, is_private, created_by FROM budget_items WHERE id = ? AND trip_id = ?').get(id, tripId) as
     | { id: number; is_private?: number; created_by?: number | null }

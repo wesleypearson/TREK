@@ -184,5 +184,13 @@ const budget: TranslationStrings = {
   'costs.payDetailsMissing':
     'Ödeme yapacaklar size nasıl ödeme yapacaklarını henüz göremiyor — ödeme bilgilerinizi ekleyin.',
   'costs.payDetailsAdd': 'Ödeme bilgilerini ekle',
+  'costs.addPerson': 'Birini ekle (hesap gerekmez)',
+  'costs.addPersonPlaceholder': 'Adı',
+  'costs.reset': 'Sıfırla',
+  'costs.resetTitle': 'Tüm harcamaları sıfırla',
+  'costs.resetWarning':
+    'Bu işlem, bu gezideki tüm harcamaları, hesaplaşmaları ve herkese açık hesap bağlantılarını kalıcı olarak siler. Üyeler ve misafirler kalır. Bu işlem geri alınamaz.',
+  'costs.resetConfirm': 'Her şeyi sil',
+  'costs.resetDone': 'Harcamalar sıfırlandı',
 };
 export default budget;

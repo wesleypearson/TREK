@@ -133,6 +133,27 @@ export class BudgetController {
     return { settlement };
   }
 
+  /**
+   * Wipe the whole ledger (custom testing/fresh-start tool): every expense,
+   * settlement and public tab of the trip. Trip OWNER only — this is the one
+   * budget action budget_edit deliberately does not grant.
+   */
+  @Post('reset')
+  @HttpCode(200)
+  resetExpenses(
+    @CurrentUser() user: User,
+    @Param('tripId') tripId: string,
+    @Headers('x-socket-id') socketId?: string,
+  ) {
+    const trip = this.requireTrip(tripId, user) as { user_id?: number };
+    if (trip.user_id !== user.id) {
+      throw new HttpException({ error: 'Only the trip owner can reset expenses' }, 403);
+    }
+    this.budget.resetExpenses(tripId);
+    this.budget.broadcast(tripId, 'budget:reset', { tripId: Number(tripId) }, socketId);
+    return { success: true };
+  }
+
   @Delete('settlements/:settlementId')
   deleteSettlement(
     @CurrentUser() user: User,

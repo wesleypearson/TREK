@@ -185,6 +185,14 @@ const budget: TranslationStrings = {
   'costs.payDetailsMissing':
     'Người trả tiền chưa thấy cách thanh toán cho bạn — hãy thêm thông tin thanh toán của bạn.',
   'costs.payDetailsAdd': 'Thêm thông tin thanh toán',
+  'costs.addPerson': 'Thêm ai đó (không cần tài khoản)',
+  'costs.addPersonPlaceholder': 'Tên của họ',
+  'costs.reset': 'Đặt lại',
+  'costs.resetTitle': 'Đặt lại toàn bộ chi phí',
+  'costs.resetWarning':
+    'Thao tác này xóa vĩnh viễn mọi khoản chi, thanh toán và liên kết sổ công khai trong chuyến đi này. Thành viên và khách vẫn được giữ lại. Không thể hoàn tác.',
+  'costs.resetConfirm': 'Xóa tất cả',
+  'costs.resetDone': 'Đã đặt lại chi phí',
 };
 
 export default budget;
