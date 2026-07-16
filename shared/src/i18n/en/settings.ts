@@ -467,7 +467,8 @@ const settings: TranslationStrings = {
   'settings.offline.banner.failed': 'Failed to sync: {count}',
   'settings.offline.banner.conflicts': 'Conflicts: {count}',
   'settings.paymentDetails': 'Payment details',
-  'settings.paymentDetailsHint': 'Shown on the public expense tabs you share, so people know how to pay you back. All fields are optional and only visible to someone with one of your tab links.',
+  'settings.paymentDetailsHint':
+    'Shown on the public expense tabs you share, so people know how to pay you back. All fields are optional and only visible to someone with one of your tab links.',
   'settings.paymentBank': 'Bank transfer (e.g. BSB + account number)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

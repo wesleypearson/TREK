@@ -278,7 +278,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Configurar',
   'settings.notificationPreferences.testSuccess': 'Notificação de teste enviada.',
   'settings.notificationPreferences.testFailed': 'Falha no teste.',
-  'settings.notificationPreferences.pluginConfigured': 'Configurado. Gerencie suas credenciais na página de configurações do plugin.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Configurado. Gerencie suas credenciais na página de configurações do plugin.',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.ntfy': 'Ntfy',
@@ -476,7 +477,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Quando',
   'settings.pluginActivity.columns.status': 'Resultado',
   'settings.paymentDetails': 'Dados de pagamento',
-  'settings.paymentDetailsHint': 'Aparecem nas comandas públicas que você compartilha, para que saibam como te pagar de volta. Todos os campos são opcionais e só ficam visíveis para quem tem um dos seus links de comanda.',
+  'settings.paymentDetailsHint':
+    'Aparecem nas comandas públicas que você compartilha, para que saibam como te pagar de volta. Todos os campos são opcionais e só ficam visíveis para quem tem um dos seus links de comanda.',
   'settings.paymentBank': 'Transferência bancária (ex.: BSB + número da conta)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

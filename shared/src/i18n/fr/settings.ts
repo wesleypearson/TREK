@@ -283,7 +283,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Configurer',
   'settings.notificationPreferences.testSuccess': 'Notification de test envoyée.',
   'settings.notificationPreferences.testFailed': 'Échec du test.',
-  'settings.notificationPreferences.pluginConfigured': 'Configuré. Gérez vos identifiants sur la page de réglages du plugin.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Configuré. Gérez vos identifiants sur la page de réglages du plugin.',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.ntfy': 'Ntfy',
@@ -484,7 +485,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Quand',
   'settings.pluginActivity.columns.status': 'Résultat',
   'settings.paymentDetails': 'Informations de paiement',
-  'settings.paymentDetailsHint': "Affichées sur les ardoises publiques que vous partagez, pour que l'on sache comment vous rembourser. Tous les champs sont facultatifs et visibles uniquement avec l'un de vos liens d'ardoise.",
+  'settings.paymentDetailsHint':
+    "Affichées sur les ardoises publiques que vous partagez, pour que l'on sache comment vous rembourser. Tous les champs sont facultatifs et visibles uniquement avec l'un de vos liens d'ardoise.",
   'settings.paymentBank': 'Virement bancaire (p. ex. BSB + numéro de compte)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

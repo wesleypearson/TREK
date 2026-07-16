@@ -205,14 +205,17 @@ const admin: TranslationStrings = {
   'admin.plugins.viewErrors': 'عرض سجل الأخطاء',
   'admin.plugins.errorLog': 'سجل الأخطاء',
   'admin.plugins.allowedHosts': 'المضيفون المسموح بهم',
-  'admin.plugins.allowedHosts.hint': 'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). أضف المضيفين الذين يمكنها الوصول إليهم — ولن تصل إلى غيرهم.',
+  'admin.plugins.allowedHosts.hint':
+    'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). أضف المضيفين الذين يمكنها الوصول إليهم — ولن تصل إلى غيرهم.',
   'admin.plugins.allowedHosts.none': 'لم تتم إضافة أي مضيف بعد.',
-  'admin.plugins.allowedHosts.unsupported': 'لا تستخدم هذه الإضافة مضيفين يحددهم المشغّل. مضيفوها المسموح بهم ثابتون في ملف التعريف.',
+  'admin.plugins.allowedHosts.unsupported':
+    'لا تستخدم هذه الإضافة مضيفين يحددهم المشغّل. مضيفوها المسموح بهم ثابتون في ملف التعريف.',
   'admin.plugins.allowedHosts.restartNote': 'الحفظ يعيد تشغيل الإضافة لتأخذ القائمة الجديدة.',
   'admin.plugins.allowedHosts.add': 'إضافة مضيف مسموح به',
   'admin.plugins.allowedHosts.count': '{n} مضيف مسموح به',
   'admin.plugins.operatorEgressPill': '+ مضيفون تضيفهم',
-  'admin.plugins.operatorEgressHint': 'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). بعد التثبيت أضف المضيفين من ⋯ ← المضيفون المسموح بهم. ولن تصل إلى غيرهم.',
+  'admin.plugins.operatorEgressHint':
+    'تتصل هذه الإضافة بخدمة لا يمكن لأحد سواك تسميتها (خادم مستضاف ذاتيًا). بعد التثبيت أضف المضيفين من ⋯ ← المضيفون المسموح بهم. ولن تصل إلى غيرهم.',
   'admin.plugins.noErrors': 'لا توجد أخطاء مسجّلة.',
   'admin.plugins.uninstalled': 'تمت إزالة الإضافة',
   'admin.plugins.uninstallTitle': 'إزالة الإضافة؟',

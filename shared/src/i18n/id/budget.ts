@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Lihat struk',
   'costs.tabs': 'Tagihan',
   'costs.tabsTitle': 'Tagihan pengeluaran publik',
-  'costs.tabsHint': 'Bagikan tautan yang menunjukkan dengan tepat berapa utang seseorang kepada Anda — tanpa perlu akun. Biaya baru terus ditambahkan ke total yang sama sampai ia membayar.',
+  'costs.tabsHint':
+    'Bagikan tautan yang menunjukkan dengan tepat berapa utang seseorang kepada Anda — tanpa perlu akun. Biaya baru terus ditambahkan ke total yang sama sampai ia membayar.',
   'costs.tabsEmpty': 'Belum ada tagihan. Buat satu untuk setiap orang yang berutang kepada Anda.',
   'costs.newTab': 'Tagihan baru',
   'costs.tabFirstName': 'Nama depan',
@@ -166,17 +167,21 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Jumlah yang ditagihkan',
   'costs.shareReceiptToo': 'Bagikan struk di halaman publik',
   'costs.addedToTab': 'Ditambahkan ke tagihan',
-  'costs.tabsFootnote': 'Siapa pun yang memiliki tautan tagihan dapat melihat biayanya, pembayarannya, dan detail pembayaran Anda.',
+  'costs.tabsFootnote':
+    'Siapa pun yang memiliki tautan tagihan dapat melihat biayanya, pembayarannya, dan detail pembayaran Anda.',
   'costs.personalHint': 'Tidak dibagi atau diselesaikan — hanya dicatat sebagai pengeluaran pribadimu.',
   'costs.tabLinkNewGuest': 'Tamu sementara baru — ikut dalam setiap pembagian',
   'costs.tabLinkMember': 'Tautkan ke {name}',
   'costs.tabLinkNone': 'Hanya nama (tanpa tautan anggota)',
-  'costs.tabLinkHint': 'Tagihan tertaut mengikuti pembukuan perjalanan: bagikan biaya dengan menetapkan orang ini dalam pembagian pengeluaran.',
+  'costs.tabLinkHint':
+    'Tagihan tertaut mengikuti pembukuan perjalanan: bagikan biaya dengan menetapkan orang ini dalam pembagian pengeluaran.',
   'costs.tabLinked': 'Tertaut',
-  'costs.tabLiveHint': 'Mengikuti pembukuan perjalanan — bagikan biaya dengan {name} dengan menetapkannya dalam pembagian pengeluaran.',
+  'costs.tabLiveHint':
+    'Mengikuti pembukuan perjalanan — bagikan biaya dengan {name} dengan menetapkannya dalam pembagian pengeluaran.',
   'costs.tabOwedTo': 'Berutang',
   'costs.tabPaidTo': 'Dibayar kepada {name}',
-  'costs.tabNoLinkedCharge': 'Tagihan tertaut mengikuti pembagian — sebagai gantinya, tetapkan orang tersebut di pengeluaran.',
+  'costs.tabNoLinkedCharge':
+    'Tagihan tertaut mengikuti pembagian — sebagai gantinya, tetapkan orang tersebut di pengeluaran.',
   'costs.payDetailsMissing': 'Pembayar belum dapat melihat cara membayar Anda — tambahkan detail pembayaran Anda.',
   'costs.payDetailsAdd': 'Tambahkan detail pembayaran',
 };

@@ -138,7 +138,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': '查看小票',
   'costs.tabs': '账单',
   'costs.tabsTitle': '公开消费账单',
-  'costs.tabsHint': '分享一个链接，让对方清楚看到欠您多少钱 — 无需注册账号。新消费会继续累加到同一份账单，直到对方付清。',
+  'costs.tabsHint':
+    '分享一个链接，让对方清楚看到欠您多少钱 — 无需注册账号。新消费会继续累加到同一份账单，直到对方付清。',
   'costs.tabsEmpty': '还没有账单。为每位欠您钱的人各建一份吧。',
   'costs.newTab': '新建账单',
   'costs.tabFirstName': '名字',

@@ -477,7 +477,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Когда',
   'settings.pluginActivity.columns.status': 'Результат',
   'settings.paymentDetails': 'Платёжные реквизиты',
-  'settings.paymentDetailsHint': 'Показываются на публичных счетах, которыми вы делитесь, чтобы люди знали, как вернуть вам деньги. Все поля необязательны и видны только тем, у кого есть одна из ваших ссылок на счёт.',
+  'settings.paymentDetailsHint':
+    'Показываются на публичных счетах, которыми вы делитесь, чтобы люди знали, как вернуть вам деньги. Все поля необязательны и видны только тем, у кого есть одна из ваших ссылок на счёт.',
   'settings.paymentBank': 'Банковский перевод (например, BSB + номер счёта)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

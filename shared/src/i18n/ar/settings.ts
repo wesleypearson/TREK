@@ -461,7 +461,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'الوقت',
   'settings.pluginActivity.columns.status': 'النتيجة',
   'settings.paymentDetails': 'بيانات الدفع',
-  'settings.paymentDetailsHint': 'تظهر على الحسابات العامة التي تشاركها، ليعرف الآخرون كيف يعيدون لك المال. جميع الحقول اختيارية ولا يراها إلا من لديه أحد روابط حساباتك.',
+  'settings.paymentDetailsHint':
+    'تظهر على الحسابات العامة التي تشاركها، ليعرف الآخرون كيف يعيدون لك المال. جميع الحقول اختيارية ولا يراها إلا من لديه أحد روابط حساباتك.',
   'settings.paymentBank': 'تحويل بنكي (مثل BSB + رقم الحساب)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

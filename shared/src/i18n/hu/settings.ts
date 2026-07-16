@@ -279,7 +279,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Beállítás',
   'settings.notificationPreferences.testSuccess': 'Teszt értesítés elküldve.',
   'settings.notificationPreferences.testFailed': 'A teszt sikertelen.',
-  'settings.notificationPreferences.pluginConfigured': 'Beállítva. A hitelesítő adatok a bővítmény beállításainál kezelhetők.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Beállítva. A hitelesítő adatok a bővítmény beállításainál kezelhetők.',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.ntfy': 'Ntfy',
@@ -477,7 +478,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Mikor',
   'settings.pluginActivity.columns.status': 'Eredmény',
   'settings.paymentDetails': 'Fizetési adatok',
-  'settings.paymentDetailsHint': 'A megosztott nyilvános számláidon jelennek meg, hogy tudják, hogyan fizethetnek vissza neked. Minden mező opcionális, és csak az láthatja, akinek megvan az egyik számlalinked.',
+  'settings.paymentDetailsHint':
+    'A megosztott nyilvános számláidon jelennek meg, hogy tudják, hogyan fizethetnek vissza neked. Minden mező opcionális, és csak az láthatja, akinek megvan az egyik számlalinked.',
   'settings.paymentBank': 'Banki átutalás (pl. BSB + számlaszám)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

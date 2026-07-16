@@ -232,14 +232,17 @@ const admin: TranslationStrings = {
   'admin.plugins.viewErrors': 'Hata günlüğünü görüntüle',
   'admin.plugins.errorLog': 'Hata günlüğü',
   'admin.plugins.allowedHosts': 'İzin verilen ana bilgisayarlar',
-  'admin.plugins.allowedHosts.hint': 'Bu eklenti yalnızca sizin adlandırabileceğiniz bir hizmete bağlanır (kendi barındırdığınız sunucu). Erişebileceği ana bilgisayarları ekleyin — başkasına erişemez.',
+  'admin.plugins.allowedHosts.hint':
+    'Bu eklenti yalnızca sizin adlandırabileceğiniz bir hizmete bağlanır (kendi barındırdığınız sunucu). Erişebileceği ana bilgisayarları ekleyin — başkasına erişemez.',
   'admin.plugins.allowedHosts.none': 'Henüz ana bilgisayar eklenmedi.',
-  'admin.plugins.allowedHosts.unsupported': 'Bu eklenti operatör tarafından verilen ana bilgisayarları kullanmaz. İzin verilenler manifestinde sabittir.',
+  'admin.plugins.allowedHosts.unsupported':
+    'Bu eklenti operatör tarafından verilen ana bilgisayarları kullanmaz. İzin verilenler manifestinde sabittir.',
   'admin.plugins.allowedHosts.restartNote': 'Kaydetmek, yeni listeyi alması için eklentiyi yeniden başlatır.',
   'admin.plugins.allowedHosts.add': 'İzin verilen ana bilgisayar ekle',
   'admin.plugins.allowedHosts.count': '{n} izin verilen ana bilgisayar',
   'admin.plugins.operatorEgressPill': '+ eklediğiniz ana bilgisayarlar',
-  'admin.plugins.operatorEgressHint': 'Bu eklenti yalnızca sizin adlandırabileceğiniz bir hizmete bağlanır (kendi barındırdığınız sunucu). Kurulumdan sonra ⋯ → İzin verilen ana bilgisayarlar altından ekleyin. Başkasına erişemez.',
+  'admin.plugins.operatorEgressHint':
+    'Bu eklenti yalnızca sizin adlandırabileceğiniz bir hizmete bağlanır (kendi barındırdığınız sunucu). Kurulumdan sonra ⋯ → İzin verilen ana bilgisayarlar altından ekleyin. Başkasına erişemez.',
   'admin.plugins.noErrors': 'Kayıtlı hata yok.',
   'admin.plugins.uninstalled': 'Eklenti kaldırıldı',
   'admin.plugins.uninstallTitle': 'Eklenti kaldırılsın mı?',

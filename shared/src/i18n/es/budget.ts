@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Ver recibo',
   'costs.tabs': 'Cuentas',
   'costs.tabsTitle': 'Cuentas públicas de gastos',
-  'costs.tabsHint': 'Comparte un enlace que muestra a alguien exactamente lo que te debe — sin registrarse. Los nuevos cargos se van sumando a la misma cuenta hasta que pague.',
+  'costs.tabsHint':
+    'Comparte un enlace que muestra a alguien exactamente lo que te debe — sin registrarse. Los nuevos cargos se van sumando a la misma cuenta hasta que pague.',
   'costs.tabsEmpty': 'Aún no hay cuentas. Crea una para cada persona que te deba dinero.',
   'costs.newTab': 'Nueva cuenta',
   'costs.tabFirstName': 'Nombre',
@@ -171,9 +172,11 @@ const budget: TranslationStrings = {
   'costs.tabLinkNewGuest': 'Nuevo invitado temporal — entra en todos los repartos',
   'costs.tabLinkMember': 'Vincular a {name}',
   'costs.tabLinkNone': 'Solo el nombre (sin vínculo con un miembro)',
-  'costs.tabLinkHint': 'Las cuentas vinculadas siguen el registro del viaje: comparte una factura asignando a esta persona en el reparto del gasto.',
+  'costs.tabLinkHint':
+    'Las cuentas vinculadas siguen el registro del viaje: comparte una factura asignando a esta persona en el reparto del gasto.',
   'costs.tabLinked': 'Vinculada',
-  'costs.tabLiveHint': 'Sigue el registro del viaje — comparte facturas con {name} asignándole en el reparto del gasto.',
+  'costs.tabLiveHint':
+    'Sigue el registro del viaje — comparte facturas con {name} asignándole en el reparto del gasto.',
   'costs.tabOwedTo': 'Debe',
   'costs.tabPaidTo': 'Pagado a {name}',
   'costs.tabNoLinkedCharge': 'Las cuentas vinculadas siguen el reparto — asigna a la persona en el gasto.',

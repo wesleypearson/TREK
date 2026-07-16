@@ -188,14 +188,17 @@ const admin: TranslationStrings = {
   'admin.plugins.viewErrors': 'Hibanapló megtekintése',
   'admin.plugins.errorLog': 'Hibanapló',
   'admin.plugins.allowedHosts': 'Engedélyezett hosztok',
-  'admin.plugins.allowedHosts.hint': 'Ez a bővítmény olyan szolgáltatással kommunikál, amelyet csak te tudsz megnevezni (saját üzemeltetésű kiszolgáló). Add meg a hosztokat, amelyeket elérhet — másokat nem.',
+  'admin.plugins.allowedHosts.hint':
+    'Ez a bővítmény olyan szolgáltatással kommunikál, amelyet csak te tudsz megnevezni (saját üzemeltetésű kiszolgáló). Add meg a hosztokat, amelyeket elérhet — másokat nem.',
   'admin.plugins.allowedHosts.none': 'Még nincs hozzáadott hoszt.',
-  'admin.plugins.allowedHosts.unsupported': 'Ez a bővítmény nem használ üzemeltető által megadott hosztokat. Az engedélyezett hosztjai a manifestben rögzítettek.',
+  'admin.plugins.allowedHosts.unsupported':
+    'Ez a bővítmény nem használ üzemeltető által megadott hosztokat. Az engedélyezett hosztjai a manifestben rögzítettek.',
   'admin.plugins.allowedHosts.restartNote': 'A mentés újraindítja a bővítményt, hogy átvegye az új listát.',
   'admin.plugins.allowedHosts.add': 'Engedélyezett hoszt hozzáadása',
   'admin.plugins.allowedHosts.count': '{n} engedélyezett hoszt',
   'admin.plugins.operatorEgressPill': '+ általad hozzáadott hosztok',
-  'admin.plugins.operatorEgressHint': 'Ez a bővítmény olyan szolgáltatással kommunikál, amelyet csak te tudsz megnevezni (saját üzemeltetésű kiszolgáló). Telepítés után add meg a hosztokat a ⋯ → Engedélyezett hosztok alatt. Másokat nem ér el.',
+  'admin.plugins.operatorEgressHint':
+    'Ez a bővítmény olyan szolgáltatással kommunikál, amelyet csak te tudsz megnevezni (saját üzemeltetésű kiszolgáló). Telepítés után add meg a hosztokat a ⋯ → Engedélyezett hosztok alatt. Másokat nem ér el.',
   'admin.plugins.noErrors': 'Nincsenek naplózott hibák.',
   'admin.plugins.uninstalled': 'Plugin eltávolítva',
   'admin.plugins.uninstallTitle': 'Plugin eltávolítása?',

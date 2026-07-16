@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'View receipt',
   'costs.tabs': 'Tabs',
   'costs.tabsTitle': 'Public expense tabs',
-  'costs.tabsHint': 'Share a link that shows someone exactly what they owe you — no account needed. New charges keep adding to the same running total until they pay.',
+  'costs.tabsHint':
+    'Share a link that shows someone exactly what they owe you — no account needed. New charges keep adding to the same running total until they pay.',
   'costs.tabsEmpty': 'No tabs yet. Create one for each person who owes you.',
   'costs.newTab': 'New tab',
   'costs.tabFirstName': 'First name',
@@ -171,7 +172,8 @@ const budget: TranslationStrings = {
   'costs.tabLinkNewGuest': 'New temp guest — joins every split',
   'costs.tabLinkMember': 'Link to {name}',
   'costs.tabLinkNone': 'Name only (no member link)',
-  'costs.tabLinkHint': 'Linked tabs follow the trip ledger: share a bill by assigning this person in the expense split.',
+  'costs.tabLinkHint':
+    'Linked tabs follow the trip ledger: share a bill by assigning this person in the expense split.',
   'costs.tabLinked': 'Linked',
   'costs.tabLiveHint': 'Follows the trip ledger — share bills with {name} by assigning them in the expense split.',
   'costs.tabOwedTo': 'Owes',

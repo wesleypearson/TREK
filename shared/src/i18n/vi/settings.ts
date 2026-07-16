@@ -103,7 +103,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Cấu hình',
   'settings.notificationPreferences.testSuccess': 'Đã gửi thông báo thử.',
   'settings.notificationPreferences.testFailed': 'Thử nghiệm thất bại.',
-  'settings.notificationPreferences.pluginConfigured': 'Đã cấu hình. Quản lý thông tin đăng nhập ở trang cài đặt của plugin.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Đã cấu hình. Quản lý thông tin đăng nhập ở trang cài đặt của plugin.',
   'settings.notificationPreferences.ntfy': 'Ntfy',
   'settings.notificationPreferences.noChannels':
     'Không có kênh thông báo nào được cấu hình. Yêu cầu quản trị viên thiết lập thông báo qua email hoặc webhook.',
@@ -478,7 +479,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Thời điểm',
   'settings.pluginActivity.columns.status': 'Kết quả',
   'settings.paymentDetails': 'Thông tin thanh toán',
-  'settings.paymentDetailsHint': 'Hiển thị trên các sổ nợ công khai mà bạn chia sẻ, để mọi người biết cách trả tiền lại cho bạn. Tất cả các trường đều không bắt buộc và chỉ người có một trong các liên kết sổ nợ của bạn mới thấy.',
+  'settings.paymentDetailsHint':
+    'Hiển thị trên các sổ nợ công khai mà bạn chia sẻ, để mọi người biết cách trả tiền lại cho bạn. Tất cả các trường đều không bắt buộc và chỉ người có một trong các liên kết sổ nợ của bạn mới thấy.',
   'settings.paymentBank': 'Chuyển khoản ngân hàng (vd: BSB + số tài khoản)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

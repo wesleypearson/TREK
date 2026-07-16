@@ -79,7 +79,8 @@ const budget: TranslationStrings = {
   'costs.itemName': 'Positionsname',
   'costs.splitting': 'Aufteilung:',
   'costs.everyone': 'Alle',
-  'costs.ticketHint': 'Jede Position braucht einen Namen, einen Betrag und mindestens eine Person, bevor du speichern kannst.',
+  'costs.ticketHint':
+    'Jede Position braucht einen Namen, einen Betrag und mindestens eine Person, bevor du speichern kannst.',
   'costs.everyoneSquare': 'Alle quitt',
   'costs.nothingOutstanding': 'Aktuell keine offenen Zahlungen.',
   'costs.pay': 'zahlst',
@@ -139,7 +140,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Beleg anzeigen',
   'costs.tabs': 'Deckel',
   'costs.tabsTitle': 'Öffentliche Deckel',
-  'costs.tabsHint': 'Teile einen Link, der jemandem genau zeigt, was er dir schuldet — ganz ohne Konto. Neue Posten landen auf demselben Deckel, bis alles bezahlt ist.',
+  'costs.tabsHint':
+    'Teile einen Link, der jemandem genau zeigt, was er dir schuldet — ganz ohne Konto. Neue Posten landen auf demselben Deckel, bis alles bezahlt ist.',
   'costs.tabsEmpty': 'Noch keine Deckel. Erstelle einen für jede Person, die dir etwas schuldet.',
   'costs.newTab': 'Neuer Deckel',
   'costs.tabFirstName': 'Vorname',
@@ -166,18 +168,23 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Betrag für den Deckel',
   'costs.shareReceiptToo': 'Beleg auf der öffentlichen Seite teilen',
   'costs.addedToTab': 'Auf den Deckel gesetzt',
-  'costs.tabsFootnote': 'Jeder mit einem Deckel-Link kann dessen Posten, Zahlungen und deine Zahlungsinformationen sehen.',
+  'costs.tabsFootnote':
+    'Jeder mit einem Deckel-Link kann dessen Posten, Zahlungen und deine Zahlungsinformationen sehen.',
   'costs.personalHint': 'Wird nicht geteilt oder verrechnet — nur als deine eigene Ausgabe erfasst.',
   'costs.tabLinkNewGuest': 'Neuer temporärer Gast — macht bei jeder Aufteilung mit',
   'costs.tabLinkMember': 'Mit {name} verknüpfen',
   'costs.tabLinkNone': 'Nur Name (ohne Mitglieder-Verknüpfung)',
-  'costs.tabLinkHint': 'Verknüpfte Deckel folgen der Reiseabrechnung: Teile eine Rechnung, indem du diese Person bei der Aufteilung der Ausgabe auswählst.',
+  'costs.tabLinkHint':
+    'Verknüpfte Deckel folgen der Reiseabrechnung: Teile eine Rechnung, indem du diese Person bei der Aufteilung der Ausgabe auswählst.',
   'costs.tabLinked': 'Verknüpft',
-  'costs.tabLiveHint': 'Folgt der Reiseabrechnung — teile Rechnungen mit {name}, indem du die Person bei der Aufteilung der Ausgabe auswählst.',
+  'costs.tabLiveHint':
+    'Folgt der Reiseabrechnung — teile Rechnungen mit {name}, indem du die Person bei der Aufteilung der Ausgabe auswählst.',
   'costs.tabOwedTo': 'Schuldet',
   'costs.tabPaidTo': 'An {name} gezahlt',
-  'costs.tabNoLinkedCharge': 'Verknüpfte Deckel folgen der Aufteilung — wähle die Person stattdessen in der Ausgabe aus.',
-  'costs.payDetailsMissing': 'Zahlende sehen noch nicht, wie sie dich bezahlen können — füge deine Zahlungsdetails hinzu.',
+  'costs.tabNoLinkedCharge':
+    'Verknüpfte Deckel folgen der Aufteilung — wähle die Person stattdessen in der Ausgabe aus.',
+  'costs.payDetailsMissing':
+    'Zahlende sehen noch nicht, wie sie dich bezahlen können — füge deine Zahlungsdetails hinzu.',
   'costs.payDetailsAdd': 'Zahlungsdetails hinzufügen',
 };
 export default budget;

@@ -33,13 +33,15 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Інше',
   'publicTab.copy': 'Копіювати',
   'publicTab.claimTitle': 'Дайте {owner} знати, що це ви',
-  'publicTab.claimHint': 'Підтвердьте ім’я та прізвище, щоб рахунок було позначено як переглянутий. Зберігається лише ваше ім’я.',
+  'publicTab.claimHint':
+    'Підтвердьте ім’я та прізвище, щоб рахунок було позначено як переглянутий. Зберігається лише ваше ім’я.',
   'publicTab.firstName': 'Ім’я',
   'publicTab.lastName': 'Прізвище',
   'publicTab.claimSubmit': 'Підтвердити',
   'publicTab.claimedThanks': 'Дякуємо, {name} — рахунок позначено як переглянутий.',
   'publicTab.joinCta': 'Приєднатися до подорожі в Travla',
-  'publicTab.joinHint': 'Створіть безкоштовний обліковий запис на цьому сервері за одноразовим запрошенням і перегляньте всю подорож.',
+  'publicTab.joinHint':
+    'Створіть безкоштовний обліковий запис на цьому сервері за одноразовим запрошенням і перегляньте всю подорож.',
   'publicTab.expired': 'Це посилання більше не активне',
   'publicTab.expiredHint': 'Попросіть нове в того, хто його надіслав.',
   'publicTab.youOwe': 'Ваш борг перед {name}',

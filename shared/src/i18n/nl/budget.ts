@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Bon bekijken',
   'costs.tabs': 'Rekeningen',
   'costs.tabsTitle': 'Openbare rekeningen',
-  'costs.tabsHint': 'Deel een link die iemand precies laat zien wat diegene je schuldig is — geen account nodig. Nieuwe posten komen op dezelfde rekening te staan totdat er betaald is.',
+  'costs.tabsHint':
+    'Deel een link die iemand precies laat zien wat diegene je schuldig is — geen account nodig. Nieuwe posten komen op dezelfde rekening te staan totdat er betaald is.',
   'costs.tabsEmpty': 'Nog geen rekeningen. Maak er een voor iedereen die je geld schuldig is.',
   'costs.newTab': 'Nieuwe rekening',
   'costs.tabFirstName': 'Voornaam',
@@ -171,12 +172,15 @@ const budget: TranslationStrings = {
   'costs.tabLinkNewGuest': 'Nieuwe tijdelijke gast — doet mee in elke verdeling',
   'costs.tabLinkMember': 'Koppelen aan {name}',
   'costs.tabLinkNone': 'Alleen naam (geen koppeling met een lid)',
-  'costs.tabLinkHint': 'Gekoppelde rekeningen volgen het reisoverzicht: deel een uitgave door deze persoon toe te wijzen in de verdeling van de uitgave.',
+  'costs.tabLinkHint':
+    'Gekoppelde rekeningen volgen het reisoverzicht: deel een uitgave door deze persoon toe te wijzen in de verdeling van de uitgave.',
   'costs.tabLinked': 'Gekoppeld',
-  'costs.tabLiveHint': 'Volgt het reisoverzicht — deel uitgaven met {name} door diegene toe te wijzen in de verdeling van de uitgave.',
+  'costs.tabLiveHint':
+    'Volgt het reisoverzicht — deel uitgaven met {name} door diegene toe te wijzen in de verdeling van de uitgave.',
   'costs.tabOwedTo': 'Is schuldig',
   'costs.tabPaidTo': 'Betaald aan {name}',
-  'costs.tabNoLinkedCharge': 'Gekoppelde rekeningen volgen de verdeling — wijs de persoon in plaats daarvan toe in de uitgave.',
+  'costs.tabNoLinkedCharge':
+    'Gekoppelde rekeningen volgen de verdeling — wijs de persoon in plaats daarvan toe in de uitgave.',
   'costs.payDetailsMissing': 'Betalers zien nog niet hoe ze je kunnen betalen — voeg je betaalgegevens toe.',
   'costs.payDetailsAdd': 'Betaalgegevens toevoegen',
 };

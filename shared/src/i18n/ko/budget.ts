@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': '영수증 보기',
   'costs.tabs': '외상 장부',
   'costs.tabsTitle': '공개 외상 장부',
-  'costs.tabsHint': '상대방이 나에게 얼마를 빚졌는지 정확히 보여 주는 링크를 공유하세요 — 계정이 없어도 볼 수 있습니다. 새 지출은 상대가 갚을 때까지 같은 장부에 계속 쌓입니다.',
+  'costs.tabsHint':
+    '상대방이 나에게 얼마를 빚졌는지 정확히 보여 주는 링크를 공유하세요 — 계정이 없어도 볼 수 있습니다. 새 지출은 상대가 갚을 때까지 같은 장부에 계속 쌓입니다.',
   'costs.tabsEmpty': '아직 장부가 없습니다. 나에게 빚진 사람마다 하나씩 만들어 보세요.',
   'costs.newTab': '새 장부',
   'costs.tabFirstName': '이름',
@@ -171,7 +172,8 @@ const budget: TranslationStrings = {
   'costs.tabLinkNewGuest': '새 임시 게스트 — 모든 분할에 참여',
   'costs.tabLinkMember': '{name}님과 연결',
   'costs.tabLinkNone': '이름만 (멤버 연결 없음)',
-  'costs.tabLinkHint': '연결된 장부는 여행 정산과 연동됩니다. 비용 분할에서 이 사람을 지정하면 비용을 함께 나눌 수 있습니다.',
+  'costs.tabLinkHint':
+    '연결된 장부는 여행 정산과 연동됩니다. 비용 분할에서 이 사람을 지정하면 비용을 함께 나눌 수 있습니다.',
   'costs.tabLinked': '연결됨',
   'costs.tabLiveHint': '여행 정산과 연동됩니다 — 비용 분할에서 {name}님을 지정하면 비용을 함께 나눌 수 있습니다.',
   'costs.tabOwedTo': '빚진 금액',

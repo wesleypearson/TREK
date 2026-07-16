@@ -448,7 +448,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': '時間',
   'settings.pluginActivity.columns.status': '結果',
   'settings.paymentDetails': '收款方式',
-  'settings.paymentDetailsHint': '顯示在您分享的公開消費帳單上，讓對方知道如何還錢給您。所有欄位皆為選填，只有拿到您帳單連結的人才能看到。',
+  'settings.paymentDetailsHint':
+    '顯示在您分享的公開消費帳單上，讓對方知道如何還錢給您。所有欄位皆為選填，只有拿到您帳單連結的人才能看到。',
   'settings.paymentBank': '銀行轉帳（例如 BSB + 帳號）',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

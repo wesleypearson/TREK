@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Xem hóa đơn',
   'costs.tabs': 'Sổ nợ',
   'costs.tabsTitle': 'Sổ nợ công khai',
-  'costs.tabsHint': 'Chia sẻ một liên kết cho người khác thấy chính xác họ nợ bạn bao nhiêu — không cần tài khoản. Các khoản mới sẽ tiếp tục cộng dồn vào cùng một sổ cho đến khi họ trả xong.',
+  'costs.tabsHint':
+    'Chia sẻ một liên kết cho người khác thấy chính xác họ nợ bạn bao nhiêu — không cần tài khoản. Các khoản mới sẽ tiếp tục cộng dồn vào cùng một sổ cho đến khi họ trả xong.',
   'costs.tabsEmpty': 'Chưa có sổ nợ nào. Hãy tạo một sổ cho mỗi người đang nợ bạn.',
   'costs.newTab': 'Sổ nợ mới',
   'costs.tabFirstName': 'Tên',
@@ -166,18 +167,23 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Số tiền ghi sổ',
   'costs.shareReceiptToo': 'Hiển thị hóa đơn trên trang công khai',
   'costs.addedToTab': 'Đã ghi vào sổ',
-  'costs.tabsFootnote': 'Bất kỳ ai có liên kết sổ nợ đều xem được các khoản ghi sổ, các khoản thanh toán và thông tin nhận tiền của bạn.',
+  'costs.tabsFootnote':
+    'Bất kỳ ai có liên kết sổ nợ đều xem được các khoản ghi sổ, các khoản thanh toán và thông tin nhận tiền của bạn.',
   'costs.personalHint': 'Không chia hay quyết toán — chỉ được ghi lại là khoản chi của riêng bạn.',
   'costs.tabLinkNewGuest': 'Khách tạm mới — tham gia mọi lần chia',
   'costs.tabLinkMember': 'Liên kết với {name}',
   'costs.tabLinkNone': 'Chỉ tên (không liên kết thành viên)',
-  'costs.tabLinkHint': 'Sổ nợ liên kết bám theo sổ cái chuyến đi: chia hóa đơn bằng cách chỉ định người này trong phần chia của khoản chi.',
+  'costs.tabLinkHint':
+    'Sổ nợ liên kết bám theo sổ cái chuyến đi: chia hóa đơn bằng cách chỉ định người này trong phần chia của khoản chi.',
   'costs.tabLinked': 'Đã liên kết',
-  'costs.tabLiveHint': 'Bám theo sổ cái chuyến đi — chia hóa đơn với {name} bằng cách chỉ định họ trong phần chia của khoản chi.',
+  'costs.tabLiveHint':
+    'Bám theo sổ cái chuyến đi — chia hóa đơn với {name} bằng cách chỉ định họ trong phần chia của khoản chi.',
   'costs.tabOwedTo': 'Còn nợ',
   'costs.tabPaidTo': 'Đã trả cho {name}',
-  'costs.tabNoLinkedCharge': 'Sổ nợ liên kết bám theo phần chia — hãy chỉ định người này trong khoản chi thay vì ở đây.',
-  'costs.payDetailsMissing': 'Người trả tiền chưa thấy cách thanh toán cho bạn — hãy thêm thông tin thanh toán của bạn.',
+  'costs.tabNoLinkedCharge':
+    'Sổ nợ liên kết bám theo phần chia — hãy chỉ định người này trong khoản chi thay vì ở đây.',
+  'costs.payDetailsMissing':
+    'Người trả tiền chưa thấy cách thanh toán cho bạn — hãy thêm thông tin thanh toán của bạn.',
   'costs.payDetailsAdd': 'Thêm thông tin thanh toán',
 };
 

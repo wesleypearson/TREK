@@ -104,7 +104,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Ρύθμιση',
   'settings.notificationPreferences.testSuccess': 'Στάλθηκε δοκιμαστική ειδοποίηση.',
   'settings.notificationPreferences.testFailed': 'Η δοκιμή απέτυχε.',
-  'settings.notificationPreferences.pluginConfigured': 'Ρυθμίστηκε. Διαχειριστείτε τα διαπιστευτήρια στη σελίδα ρυθμίσεων του πρόσθετου.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Ρυθμίστηκε. Διαχειριστείτε τα διαπιστευτήρια στη σελίδα ρυθμίσεων του πρόσθετου.',
   'settings.notificationPreferences.ntfy': 'Ntfy',
   'settings.notificationPreferences.noChannels':
     'Δεν έχουν διαμορφωθεί κανάλια ειδοποιήσεων. Ζητήστε από έναν διαχειριστή να ρυθμίσει ειδοποιήσεις email ή webhook.',
@@ -487,7 +488,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Πότε',
   'settings.pluginActivity.columns.status': 'Αποτέλεσμα',
   'settings.paymentDetails': 'Στοιχεία πληρωμής',
-  'settings.paymentDetailsHint': 'Εμφανίζονται στους δημόσιους λογαριασμούς που μοιράζεστε, ώστε να ξέρουν πώς να σας εξοφλήσουν. Όλα τα πεδία είναι προαιρετικά και ορατά μόνο σε όποιον έχει έναν από τους συνδέσμους σας.',
+  'settings.paymentDetailsHint':
+    'Εμφανίζονται στους δημόσιους λογαριασμούς που μοιράζεστε, ώστε να ξέρουν πώς να σας εξοφλήσουν. Όλα τα πεδία είναι προαιρετικά και ορατά μόνο σε όποιον έχει έναν από τους συνδέσμους σας.',
   'settings.paymentBank': 'Τραπεζικό έμβασμα (π.χ. BSB + αριθμός λογαριασμού)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

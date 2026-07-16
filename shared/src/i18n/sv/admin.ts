@@ -244,14 +244,17 @@ const admin: TranslationStrings = {
   'admin.plugins.viewErrors': 'Visa felloggen',
   'admin.plugins.errorLog': 'Fellogg',
   'admin.plugins.allowedHosts': 'Tillåtna värdar',
-  'admin.plugins.allowedHosts.hint': 'Detta plugin pratar med en tjänst som bara du kan namnge (en självhostad server). Lägg till de värdar det får nå — inga andra.',
+  'admin.plugins.allowedHosts.hint':
+    'Detta plugin pratar med en tjänst som bara du kan namnge (en självhostad server). Lägg till de värdar det får nå — inga andra.',
   'admin.plugins.allowedHosts.none': 'Inga värdar tillagda ännu.',
-  'admin.plugins.allowedHosts.unsupported': 'Detta plugin använder inte operatörsangivna värdar. Dess tillåtna värdar är låsta i manifestet.',
+  'admin.plugins.allowedHosts.unsupported':
+    'Detta plugin använder inte operatörsangivna värdar. Dess tillåtna värdar är låsta i manifestet.',
   'admin.plugins.allowedHosts.restartNote': 'Att spara startar om pluginet så att den nya listan används.',
   'admin.plugins.allowedHosts.add': 'Lägg till tillåten värd',
   'admin.plugins.allowedHosts.count': '{n} tillåtna värdar',
   'admin.plugins.operatorEgressPill': '+ värdar du lägger till',
-  'admin.plugins.operatorEgressHint': 'Detta plugin pratar med en tjänst som bara du kan namnge (en självhostad server). Lägg efter installation till värdarna under ⋯ → Tillåtna värdar. Inga andra nås.',
+  'admin.plugins.operatorEgressHint':
+    'Detta plugin pratar med en tjänst som bara du kan namnge (en självhostad server). Lägg efter installation till värdarna under ⋯ → Tillåtna värdar. Inga andra nås.',
   'admin.plugins.noErrors': 'Inga fel loggade.',
   'admin.plugins.uninstalled': 'Pluginet har avinstallerats',
   'admin.plugins.uninstallTitle': 'Avinstallera pluginet?',

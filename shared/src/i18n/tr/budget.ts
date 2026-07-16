@@ -139,7 +139,8 @@ const budget: TranslationStrings = {
   'costs.viewReceipt': 'Fişi görüntüle',
   'costs.tabs': 'Hesaplar',
   'costs.tabsTitle': 'Herkese açık masraf hesapları',
-  'costs.tabsHint': 'Birine size tam olarak ne kadar borçlu olduğunu gösteren bir bağlantı paylaşın — üyelik gerekmez. Yeni masraflar, ödeme yapılana kadar aynı hesaba eklenmeye devam eder.',
+  'costs.tabsHint':
+    'Birine size tam olarak ne kadar borçlu olduğunu gösteren bir bağlantı paylaşın — üyelik gerekmez. Yeni masraflar, ödeme yapılana kadar aynı hesaba eklenmeye devam eder.',
   'costs.tabsEmpty': 'Henüz hesap yok. Size borcu olan her kişi için bir tane oluşturun.',
   'costs.newTab': 'Yeni hesap',
   'costs.tabFirstName': 'Ad',
@@ -166,18 +167,22 @@ const budget: TranslationStrings = {
   'costs.addToTabAmount': 'Hesaba yazılacak tutar',
   'costs.shareReceiptToo': 'Fişi herkese açık sayfada paylaş',
   'costs.addedToTab': 'Hesaba yazıldı',
-  'costs.tabsFootnote': 'Hesap bağlantısına sahip olan herkes hesaba yazılanları, ödemeleri ve ödeme bilgilerinizi görebilir.',
+  'costs.tabsFootnote':
+    'Hesap bağlantısına sahip olan herkes hesaba yazılanları, ödemeleri ve ödeme bilgilerinizi görebilir.',
   'costs.personalHint': 'Bölüşülmez ve hesaplaşmaya girmez — yalnızca kendi harcaman olarak kaydedilir.',
   'costs.tabLinkNewGuest': 'Yeni geçici misafir — her bölüşüme katılır',
   'costs.tabLinkMember': '{name} ile bağla',
   'costs.tabLinkNone': 'Yalnızca isim (üye bağlantısı yok)',
-  'costs.tabLinkHint': 'Bağlı hesaplar gezi defterini takip eder: bir masrafı paylaşmak için bu kişiyi masrafın bölüşümüne ekleyin.',
+  'costs.tabLinkHint':
+    'Bağlı hesaplar gezi defterini takip eder: bir masrafı paylaşmak için bu kişiyi masrafın bölüşümüne ekleyin.',
   'costs.tabLinked': 'Bağlı',
-  'costs.tabLiveHint': 'Gezi defterini takip eder — {name} ile masraf paylaşmak için kişiyi masrafın bölüşümüne ekleyin.',
+  'costs.tabLiveHint':
+    'Gezi defterini takip eder — {name} ile masraf paylaşmak için kişiyi masrafın bölüşümüne ekleyin.',
   'costs.tabOwedTo': 'Borcu',
   'costs.tabPaidTo': '{name} adlı kişiye ödendi',
   'costs.tabNoLinkedCharge': 'Bağlı hesaplar bölüşümü takip eder — bunun yerine kişiyi masrafa ekleyin.',
-  'costs.payDetailsMissing': 'Ödeme yapacaklar size nasıl ödeme yapacaklarını henüz göremiyor — ödeme bilgilerinizi ekleyin.',
+  'costs.payDetailsMissing':
+    'Ödeme yapacaklar size nasıl ödeme yapacaklarını henüz göremiyor — ödeme bilgilerinizi ekleyin.',
   'costs.payDetailsAdd': 'Ödeme bilgilerini ekle',
 };
 export default budget;

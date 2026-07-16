@@ -278,7 +278,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Configura',
   'settings.notificationPreferences.testSuccess': 'Notifica di prova inviata.',
   'settings.notificationPreferences.testFailed': 'Test non riuscito.',
-  'settings.notificationPreferences.pluginConfigured': 'Configurato. Gestisci le credenziali nelle impostazioni del plugin.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Configurato. Gestisci le credenziali nelle impostazioni del plugin.',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.ntfy': 'Ntfy',
@@ -476,7 +477,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Quando',
   'settings.pluginActivity.columns.status': 'Esito',
   'settings.paymentDetails': 'Dati di pagamento',
-  'settings.paymentDetailsHint': 'Mostrati sui conti pubblici che condividi, così chi ti deve dei soldi sa come ripagarti. Tutti i campi sono facoltativi e visibili solo a chi ha uno dei tuoi link.',
+  'settings.paymentDetailsHint':
+    'Mostrati sui conti pubblici che condividi, così chi ti deve dei soldi sa come ripagarti. Tutti i campi sono facoltativi e visibili solo a chi ha uno dei tuoi link.',
   'settings.paymentBank': 'Bonifico bancario (es. BSB + numero di conto)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

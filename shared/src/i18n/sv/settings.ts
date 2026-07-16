@@ -102,7 +102,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Konfigurera',
   'settings.notificationPreferences.testSuccess': 'Testavisering skickad.',
   'settings.notificationPreferences.testFailed': 'Testet misslyckades.',
-  'settings.notificationPreferences.pluginConfigured': 'Konfigurerat. Hantera dina uppgifter på pluginets inställningssida.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Konfigurerat. Hantera dina uppgifter på pluginets inställningssida.',
   'settings.notificationPreferences.ntfy': 'Ntfy',
   'settings.notificationPreferences.noChannels':
     'Inga meddelandekanaler har konfigurerats. Be en administratör att ställa in e-post- eller webhook-meddelanden.',
@@ -473,7 +474,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'När',
   'settings.pluginActivity.columns.status': 'Resultat',
   'settings.paymentDetails': 'Betalningsuppgifter',
-  'settings.paymentDetailsHint': 'Visas på de offentliga notor du delar, så att andra vet hur de kan betala tillbaka. Alla fält är valfria och syns bara för den som har en av dina notalänkar.',
+  'settings.paymentDetailsHint':
+    'Visas på de offentliga notor du delar, så att andra vet hur de kan betala tillbaka. Alla fält är valfria och syns bara för den som har en av dina notalänkar.',
   'settings.paymentBank': 'Banköverföring (t.ex. BSB + kontonummer)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

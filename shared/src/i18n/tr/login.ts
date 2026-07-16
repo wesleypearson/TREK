@@ -21,7 +21,7 @@ const login: TranslationStrings = {
   'login.features.filesDesc': 'Belgeleri yükleyin ve yönetin',
   'login.features.routes': 'Akıllı Rotalar',
   'login.features.routesDesc': "Otomatik optimize etme ve Google Haritalar'ı dışa aktarma",
-  'login.selfHosted': 'Kendi kendine barındırılan \ · Verileriniz size ait kalır',
+  'login.selfHosted': 'Kendi kendine barındırılan · Verileriniz size ait kalır',
   'login.title': 'Oturum Aç',
   'login.subtitle': 'Tekrar hoş geldiniz',
   'login.signingIn': 'Oturum açılıyor…',

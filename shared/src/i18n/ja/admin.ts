@@ -219,14 +219,17 @@ const admin: TranslationStrings = {
   'admin.plugins.viewErrors': 'エラーログを表示',
   'admin.plugins.errorLog': 'エラーログ',
   'admin.plugins.allowedHosts': '許可するホスト',
-  'admin.plugins.allowedHosts.hint': 'このプラグインは、あなたしか指定できないサービス（セルフホストのサーバー）と通信します。到達を許可するホストを追加してください。それ以外には到達できません。',
+  'admin.plugins.allowedHosts.hint':
+    'このプラグインは、あなたしか指定できないサービス（セルフホストのサーバー）と通信します。到達を許可するホストを追加してください。それ以外には到達できません。',
   'admin.plugins.allowedHosts.none': 'ホストはまだ追加されていません。',
-  'admin.plugins.allowedHosts.unsupported': 'このプラグインは運用者指定のホストを使いません。許可ホストはマニフェストで固定されています。',
+  'admin.plugins.allowedHosts.unsupported':
+    'このプラグインは運用者指定のホストを使いません。許可ホストはマニフェストで固定されています。',
   'admin.plugins.allowedHosts.restartNote': '保存するとプラグインが再起動し、新しい一覧が反映されます。',
   'admin.plugins.allowedHosts.add': '許可ホストを追加',
   'admin.plugins.allowedHosts.count': '許可ホスト {n} 件',
   'admin.plugins.operatorEgressPill': '+ 追加するホスト',
-  'admin.plugins.operatorEgressHint': 'このプラグインは、あなたしか指定できないサービス（セルフホストのサーバー）と通信します。インストール後、⋯ → 許可するホスト から追加してください。それ以外には到達できません。',
+  'admin.plugins.operatorEgressHint':
+    'このプラグインは、あなたしか指定できないサービス（セルフホストのサーバー）と通信します。インストール後、⋯ → 許可するホスト から追加してください。それ以外には到達できません。',
   'admin.plugins.noErrors': '記録されたエラーはありません。',
   'admin.plugins.uninstalled': 'プラグインをアンインストールしました',
   'admin.plugins.uninstallTitle': 'プラグインをアンインストールしますか？',
@@ -536,7 +539,8 @@ const admin: TranslationStrings = {
   'admin.update.button': 'リリースノートを表示',
   'admin.update.install': '更新をインストール',
   'admin.update.confirmTitle': '更新をインストールしますか？',
-  'admin.update.confirmText': 'Travlaを {current} から {version} に更新します。更新後、サーバーは自動的に再起動します。',
+  'admin.update.confirmText':
+    'Travlaを {current} から {version} に更新します。更新後、サーバーは自動的に再起動します。',
   'admin.update.dataInfo':
     'すべてのデータ（旅行、ユーザー、APIキー、アップロード、Vacay、Atlas、予算）は保持されます。',
   'admin.update.warning': '再起動中、アプリは短時間利用できません。',

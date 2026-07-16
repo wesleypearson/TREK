@@ -465,7 +465,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': '시간',
   'settings.pluginActivity.columns.status': '결과',
   'settings.paymentDetails': '결제 정보',
-  'settings.paymentDetailsHint': '공유한 공개 외상 장부에 표시되어 상대방이 돈을 갚을 방법을 알 수 있습니다. 모든 항목은 선택 사항이며, 내 장부 링크를 가진 사람에게만 보입니다.',
+  'settings.paymentDetailsHint':
+    '공유한 공개 외상 장부에 표시되어 상대방이 돈을 갚을 방법을 알 수 있습니다. 모든 항목은 선택 사항이며, 내 장부 링크를 가진 사람에게만 보입니다.',
   'settings.paymentBank': '계좌 이체 (예: BSB + 계좌번호)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

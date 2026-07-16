@@ -33,20 +33,23 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Anders',
   'publicTab.copy': 'Kopiëren',
   'publicTab.claimTitle': 'Laat {owner} weten dat jij het bent',
-  'publicTab.claimHint': 'Bevestig je voor- en achternaam zodat deze rekening als gezien wordt gemarkeerd. Alleen je naam wordt opgeslagen.',
+  'publicTab.claimHint':
+    'Bevestig je voor- en achternaam zodat deze rekening als gezien wordt gemarkeerd. Alleen je naam wordt opgeslagen.',
   'publicTab.firstName': 'Voornaam',
   'publicTab.lastName': 'Achternaam',
   'publicTab.claimSubmit': 'Bevestigen',
   'publicTab.claimedThanks': 'Bedankt, {name} — deze rekening is als gezien gemarkeerd.',
   'publicTab.joinCta': 'Doe mee met de reis op Travla',
-  'publicTab.joinHint': 'Maak met een eenmalige uitnodiging een gratis account aan op deze server en bekijk de hele reis.',
+  'publicTab.joinHint':
+    'Maak met een eenmalige uitnodiging een gratis account aan op deze server en bekijk de hele reis.',
   'publicTab.expired': 'Deze link is niet meer actief',
   'publicTab.expiredHint': 'Vraag degene die hem stuurde om een nieuwe.',
   'publicTab.youOwe': 'Wat je {name} schuldig bent',
   'publicTab.ofTotal': 'jouw deel van {amount}',
   'publicTab.paidTo': 'Betaald aan {name}',
   'publicTab.liveNote': 'Deze rekening volgt in realtime jouw deel van de gedeelde uitgaven van de reis.',
-  'publicTab.noMethods': '{name} heeft nog geen betaalgegevens toegevoegd — vraag direct naar de beste manier om te betalen.',
+  'publicTab.noMethods':
+    '{name} heeft nog geen betaalgegevens toegevoegd — vraag direct naar de beste manier om te betalen.',
   'publicTab.credit': 'Voorgeschoten voor de groep',
 };
 export default shared;

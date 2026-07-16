@@ -97,7 +97,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Yapılandır',
   'settings.notificationPreferences.testSuccess': 'Test bildirimi gönderildi.',
   'settings.notificationPreferences.testFailed': 'Test başarısız.',
-  'settings.notificationPreferences.pluginConfigured': 'Yapılandırıldı. Kimlik bilgilerini eklentinin ayarlar sayfasından yönetin.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Yapılandırıldı. Kimlik bilgilerini eklentinin ayarlar sayfasından yönetin.',
   'settings.notificationPreferences.ntfy': 'Ntfy',
   'settings.notificationPreferences.noChannels':
     'Bildirim kanalı yapılandırılmadı. Yöneticiden e-posta veya webhook kurmasını isteyin.',
@@ -473,7 +474,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Ne zaman',
   'settings.pluginActivity.columns.status': 'Sonuç',
   'settings.paymentDetails': 'Ödeme bilgileri',
-  'settings.paymentDetailsHint': 'Paylaştığınız herkese açık masraf hesaplarında gösterilir; böylece insanlar borcunu nasıl ödeyeceğini bilir. Tüm alanlar isteğe bağlıdır ve yalnızca hesap bağlantılarınızdan birine sahip kişiler görebilir.',
+  'settings.paymentDetailsHint':
+    'Paylaştığınız herkese açık masraf hesaplarında gösterilir; böylece insanlar borcunu nasıl ödeyeceğini bilir. Tüm alanlar isteğe bağlıdır ve yalnızca hesap bağlantılarınızdan birine sahip kişiler görebilir.',
   'settings.paymentBank': 'Banka havalesi (örn. BSB + hesap numarası)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

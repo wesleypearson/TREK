@@ -279,7 +279,8 @@ const settings: TranslationStrings = {
   'settings.notificationPreferences.configure': 'Instellen',
   'settings.notificationPreferences.testSuccess': 'Testmelding verstuurd.',
   'settings.notificationPreferences.testFailed': 'Test mislukt.',
-  'settings.notificationPreferences.pluginConfigured': 'Ingesteld. Beheer je gegevens op de instellingenpagina van de plug-in.',
+  'settings.notificationPreferences.pluginConfigured':
+    'Ingesteld. Beheer je gegevens op de instellingenpagina van de plug-in.',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.ntfy': 'Ntfy',
@@ -477,7 +478,8 @@ const settings: TranslationStrings = {
   'settings.pluginActivity.columns.when': 'Wanneer',
   'settings.pluginActivity.columns.status': 'Resultaat',
   'settings.paymentDetails': 'Betaalgegevens',
-  'settings.paymentDetailsHint': 'Worden getoond op de openbare rekeningen die je deelt, zodat mensen weten hoe ze je kunnen terugbetalen. Alle velden zijn optioneel en alleen zichtbaar voor wie een van je rekeninglinks heeft.',
+  'settings.paymentDetailsHint':
+    'Worden getoond op de openbare rekeningen die je deelt, zodat mensen weten hoe ze je kunnen terugbetalen. Alle velden zijn optioneel en alleen zichtbaar voor wie een van je rekeninglinks heeft.',
   'settings.paymentBank': 'Bankoverschrijving (bijv. BSB + rekeningnummer)',
   'settings.paymentPayid': 'PayID',
   'settings.paymentVenmo': 'Venmo',

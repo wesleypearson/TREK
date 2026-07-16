@@ -33,20 +33,23 @@ const shared: TranslationStrings = {
   'publicTab.otherPay': 'Autre',
   'publicTab.copy': 'Copier',
   'publicTab.claimTitle': "Dites à {owner} que c'est vous",
-  'publicTab.claimHint': 'Confirmez vos prénom et nom pour que cette ardoise soit marquée comme vue. Seul votre nom est enregistré.',
+  'publicTab.claimHint':
+    'Confirmez vos prénom et nom pour que cette ardoise soit marquée comme vue. Seul votre nom est enregistré.',
   'publicTab.firstName': 'Prénom',
   'publicTab.lastName': 'Nom',
   'publicTab.claimSubmit': 'Confirmer',
   'publicTab.claimedThanks': 'Merci, {name} — cette ardoise est marquée comme vue.',
   'publicTab.joinCta': 'Rejoindre le voyage sur Travla',
-  'publicTab.joinHint': 'Créez un compte gratuit sur ce serveur avec une invitation unique et découvrez tout le voyage.',
+  'publicTab.joinHint':
+    'Créez un compte gratuit sur ce serveur avec une invitation unique et découvrez tout le voyage.',
   'publicTab.expired': "Ce lien n'est plus actif",
   'publicTab.expiredHint': "Demandez-en un nouveau à la personne qui vous l'a envoyé.",
   'publicTab.youOwe': 'Ce que vous devez à {name}',
   'publicTab.ofTotal': 'votre part de {amount}',
   'publicTab.paidTo': 'Payé à {name}',
   'publicTab.liveNote': 'Cette ardoise suit en temps réel votre part des notes partagées du voyage.',
-  'publicTab.noMethods': '{name} n’a pas encore ajouté de coordonnées de paiement — demandez-lui directement le meilleur moyen de payer.',
+  'publicTab.noMethods':
+    '{name} n’a pas encore ajouté de coordonnées de paiement — demandez-lui directement le meilleur moyen de payer.',
   'publicTab.credit': 'Avancé pour le groupe',
 };
 export default shared;
