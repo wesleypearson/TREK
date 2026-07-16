@@ -47,8 +47,17 @@ export function splitEqualShares(total: number, members: { user_id: number }[], 
 export interface TicketItem {
   id: string
   name: string
+  /** UNIT price. The line amount is qty × price (qty defaults to '1'). */
   price: string
+  qty: string
   participants: Set<number>
+}
+
+/** The line amount in cents: quantity × unit price, rounded to the cent. */
+export function ticketLineCents(item: Pick<TicketItem, 'price' | 'qty'>): number {
+  const qty = Math.max(1, Math.round(parseFloat(item.qty) || 1))
+  const unit = parseFloat(item.price) || 0
+  return Math.round(qty * unit * 100)
 }
 
 export function calculateTicketShares(items: TicketItem[]): { shares: Record<number, number>; total: number } {
@@ -56,8 +65,7 @@ export function calculateTicketShares(items: TicketItem[]): { shares: Record<num
   let totalCents = 0
 
   for (const item of items) {
-    const priceNum = parseFloat(item.price) || 0
-    const priceCents = Math.round(priceNum * 100)
+    const priceCents = ticketLineCents(item)
     totalCents += priceCents
 
     const partIds = [...item.participants]
@@ -153,7 +161,7 @@ interface ReceiptScanResponse {
     date?: string | null
     currency?: string | null
     total?: number | null
-    items?: { name: string; price: number; quantity?: number | null }[]
+    items?: { name: string; price: number; quantity?: number | null; unit_price?: number | null }[]
   }
   warnings?: string[]
 }
@@ -1201,6 +1209,9 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
           id: String(Math.random()),
           name: item.name,
           price: String(item.price),
+          // Legacy rows have no qty (their price was the line total) — qty 1
+          // keeps the amounts identical.
+          qty: String(item.qty || 1),
           participants: new Set(item.parts || [])
         }))
       } catch {
@@ -1264,7 +1275,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
     return splitEqualShares(remaining, emptyParts.map(id => ({ user_id: id })), editing?.id || 0)
   }, [totalNum, participants, customAmounts, editing])
   
-  const ticketValid = ticketItems.length > 0 && ticketItems.every(item => item.name.trim().length > 0 && (parseFloat(item.price) || 0) > 0 && item.participants.size > 0)
+  const ticketValid = ticketItems.length > 0 && ticketItems.every(item => item.name.trim().length > 0 && (parseFloat(item.price) || 0) > 0 && (parseFloat(item.qty || '1') || 0) >= 1 && item.participants.size > 0)
   const valid = name.trim().length > 0 && (
     isPrivate
       ? totalNum > 0 // personal: just a name and an amount — nothing to split
@@ -1291,9 +1302,16 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
         id: String(Date.now() + Math.random()),
         name: '',
         price: '',
+        qty: '1',
         participants: new Set(people.map(p => p.id))
       }
     ])
+  }
+
+  const handleUpdateItemQty = (id: string, qty: string) => {
+    if (/^\d{0,3}$/.test(qty)) {
+      setTicketItems(prev => prev.map(item => item.id === id ? { ...item, qty } : item))
+    }
   }
 
   const handleUpdateItemName = (id: string, name: string) => {
@@ -1323,12 +1341,22 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
     }))
   }
 
-  const handleScanPick = async (picked: File) => {
+  const handleScanPick = async (pickedList: File[]) => {
     setScanning(true)
     try {
-      const file = await prepareReceiptImage(picked)
+      // Several files = several PHOTOS of one long docket (iOS lets you pick
+      // multiple from the library or Files). A PDF (e.g. an iOS Notes/Files
+      // document scan) always travels alone — drop accompanying files.
+      let picked = pickedList
+      if (picked.length > 1) {
+        const pdf = picked.find(f => f.type === 'application/pdf')
+        picked = pdf ? [pdf] : picked.slice(0, 6)
+      }
       const fd = new FormData()
-      fd.append('file', file, file.name)
+      for (const p of picked) {
+        const file = await prepareReceiptImage(p)
+        fd.append('file', file, file.name)
+      }
       const res: ReceiptScanResponse = await budgetApi.scanReceipt(tripId, fd)
       if (res.file?.id) setReceiptFileId(res.file.id)
       const receipt = res.receipt
@@ -1343,12 +1371,21 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
         setSplitMode('ticket')
         // Participants start EMPTY on purpose: the payer must explicitly assign
         // who shared each line — nobody gets billed for lines they didn't have.
-        setTicketItems(items.map(item => ({
-          id: String(Date.now() + Math.random()),
-          name: (item.quantity || 1) > 1 ? `${item.name} x${item.quantity}` : item.name,
-          price: String(item.price),
-          participants: new Set<number>(),
-        })))
+        setTicketItems(items.map(item => {
+          // Real qty × unit-price lines when the extraction gives a unit price
+          // that multiplies back to the printed line total exactly; otherwise
+          // qty 1 at the line total, so the receipt's numbers are never off.
+          const qty = Math.max(1, Math.round(item.quantity || 1))
+          const unit = item.unit_price
+          const clean = qty > 1 && unit != null && Math.abs(Math.round(unit * qty * 100) - Math.round(item.price * 100)) === 0
+          return {
+            id: String(Date.now() + Math.random()),
+            name: item.name,
+            qty: clean ? String(qty) : '1',
+            price: clean ? String(unit) : String(item.price),
+            participants: new Set<number>(),
+          }
+        }))
       }
       for (const w of res.warnings || []) toast.warning(w)
     } catch (err) {
@@ -1430,6 +1467,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
         items: ticketItems.map(item => ({
           name: item.name,
           price: item.price,
+          qty: Math.max(1, Math.round(parseFloat(item.qty) || 1)),
           parts: [...item.participants]
         }))
       }) : null,
@@ -1465,9 +1503,13 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
             {scanning ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />}
             {scanning ? t('costs.scanningReceipt') : t('costs.scanReceipt')}
           </button>
-          <input ref={scanInputRef} type="file" accept="image/*,application/pdf" capture="environment"
+          {/* No `capture` attribute: iOS then offers the full sheet — Take
+              Photo, Photo Library AND Files (where Notes/Files document scans
+              live) — instead of jumping straight to the camera. `multiple`
+              lets a long docket arrive as several photos. */}
+          <input ref={scanInputRef} type="file" accept="image/*,application/pdf" multiple
             style={{ display: 'none' }}
-            onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) handleScanPick(f) }} />
+            onChange={e => { const fs = Array.from(e.target.files || []); e.target.value = ''; if (fs.length) handleScanPick(fs) }} />
         </div>
         <div>
           <label className={labelCls}>{t('costs.whatFor')}</label>
@@ -1595,10 +1637,21 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                         // minWidth: 0 lets the name shrink on phones — without it the
                         // input's intrinsic width squeezed the price box to ZERO width,
                         // making the amount untappable on mobile (the "can't type a
-                        // number" bug). The price box gets a guaranteed fixed basis.
+                        // number" bug). Qty + price boxes get guaranteed fixed bases.
                         style={{ flex: '1 1 auto', minWidth: 0, padding: '6px 10px', borderRadius: 8, fontSize: 13, border: '1px solid var(--border-color)', outline: 'none' }}
                       />
-                      <div className="bg-surface-input border border-edge" style={{ flex: '0 0 104px', display: 'flex', alignItems: 'center', padding: '0 8px', borderRadius: 8 }}>
+                      <div className="bg-surface-input border border-edge" style={{ flex: '0 0 38px', display: 'flex', alignItems: 'center', borderRadius: 8 }}>
+                        <NumericInput
+                          mode="integer"
+                          placeholder="1"
+                          value={item.qty}
+                          onValueChange={v => handleUpdateItemQty(item.id, v)}
+                          className="text-content"
+                          style={{ width: '100%', minWidth: 0, border: 0, background: 'none', outline: 'none', fontSize: 13, fontWeight: 600, textAlign: 'center', padding: '6px 0' }}
+                        />
+                      </div>
+                      <span className="text-content-faint" style={{ fontSize: 12, flexShrink: 0, margin: '0 -2px' }}>×</span>
+                      <div className="bg-surface-input border border-edge" style={{ flex: '0 0 92px', display: 'flex', alignItems: 'center', padding: '0 8px', borderRadius: 8 }}>
                         <span className="text-content-faint" style={{ fontSize: 12, flexShrink: 0 }}>{sym(currency)}</span>
                         <NumericInput
                           mode="decimal"
@@ -1613,6 +1666,11 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                         <Trash2 size={15} />
                       </button>
                     </div>
+                    {ticketLineCents(item) > 0 && Math.round(parseFloat(item.qty) || 1) > 1 && (
+                      <div className="text-content-faint" style={{ fontSize: 11, textAlign: 'right', marginTop: -2 }}>
+                        = {sym(currency)}{(ticketLineCents(item) / 100).toFixed(2)}
+                      </div>
+                    )}
 
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, alignItems: 'center' }}>
                       <span className="text-content-faint" style={{ fontSize: 10.5, fontWeight: 600, textTransform: 'uppercase', marginRight: 4 }}>{t('costs.splitting')}</span>

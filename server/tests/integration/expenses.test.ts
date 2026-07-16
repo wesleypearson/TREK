@@ -423,6 +423,48 @@ describe('Receipt scanning (EXP)', () => {
     expect((await listFilesAs(owner.id)).body.files).toHaveLength(1);
   });
 
+  it('EXP-017: a long docket can arrive as multiple photos — one parse, every page stored', async () => {
+    const res = await request(app)
+      .post(`/api/trips/${tripId}/budget/receipt-scan`)
+      .set('Cookie', authCookie(owner.id))
+      .attach('file', PNG_BYTES, 'page1.png')
+      .attach('file', PNG_BYTES, 'page2.png');
+    expect(res.status).toBe(200);
+    expect(res.body.files).toHaveLength(2);
+    expect(res.body.file.id).toBe(res.body.files[0].id);
+    expect(res.body.receipt.items.length).toBeGreaterThan(0);
+    // The LLM got BOTH pages in one call.
+    const input = extractMock.mock.calls.at(-1)![0];
+    expect(input.file).toBeTruthy();
+    expect(input.files).toHaveLength(1);
+    // Page 2 is stored and labeled as the following page of the same receipt.
+    const desc = testDb.prepare('SELECT description FROM trip_files WHERE id = ?').get(res.body.files[1].id) as { description: string };
+    expect(desc.description).toBe('Receipt (page 2)');
+
+    // Photos + a PDF in one request make no sense — clean 400.
+    const mixed = await request(app)
+      .post(`/api/trips/${tripId}/budget/receipt-scan`)
+      .set('Cookie', authCookie(owner.id))
+      .attach('file', PNG_BYTES, 'page1.png')
+      .attach('file', Buffer.from('%PDF-1.4'), 'doc.pdf');
+    expect(mixed.status).toBe(400);
+  });
+
+  it('EXP-018: quantities come back as real qty × unit-price lines, never folded into the name', async () => {
+    extractMock.mockResolvedValueOnce([{
+      merchant: 'Bar X', currency: 'AUD', total: 24,
+      items: [
+        { name: 'Beer', price: 21, quantity: 3, unit_price: 7 },
+        { name: 'Nuts', price: 3, quantity: 2, unit_price: 1.49 }, // 2×1.49=2.98 ≠ 3 → unit dropped
+      ],
+    }]);
+    const res = await scanReceiptAs(owner.id);
+    expect(res.status).toBe(200);
+    expect(res.body.receipt.items[0]).toEqual({ name: 'Beer', price: 21, quantity: 3, unit_price: 7 });
+    // Inconsistent unit price is discarded; the printed line total survives.
+    expect(res.body.receipt.items[1]).toEqual({ name: 'Nuts', price: 3, quantity: 2 });
+  });
+
   it('EXP-010: creating an expense with receipt_file_id links the stored receipt', async () => {
     const scan = await scanReceiptAs(owner.id);
     expect(scan.status).toBe(200);
