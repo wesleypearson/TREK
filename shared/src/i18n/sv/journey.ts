@@ -208,7 +208,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Skrivskyddad · Offentlig Journey',
   'journey.public.tagline': 'Reseresurser och upptäcktspaket',
   'journey.public.sharedVia': 'Dela via',
-  'journey.public.madeWith': 'Gjord med',
   'journey.pdf.journeyBook': 'Journey bok',
   'journey.pdf.madeWith': 'Gjord med Travla',
   'journey.pdf.day': 'Dag',

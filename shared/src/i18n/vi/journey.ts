@@ -208,7 +208,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Chỉ đọc · Hành trình công khai',
   'journey.public.tagline': 'Bộ tài nguyên du lịch & khám phá',
   'journey.public.sharedVia': 'Được chia sẻ qua',
-  'journey.public.madeWith': 'Được làm bằng',
   'journey.pdf.journeyBook': 'Sách hành trình',
   'journey.pdf.madeWith': 'Được làm bằng Travla',
   'journey.pdf.day': 'Ngày',

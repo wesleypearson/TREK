@@ -203,7 +203,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Pouze ke čtení · Veřejný cestovní deník',
   'journey.public.tagline': 'Your trips. Your plan. Your server.',
   'journey.public.sharedVia': 'Sdíleno přes',
-  'journey.public.madeWith': 'Vytvořeno pomocí',
   'journey.pdf.journeyBook': 'Cestovní kniha',
   'journey.pdf.madeWith': 'Vytvořeno pomocí Travla',
   'journey.pdf.day': 'Den',

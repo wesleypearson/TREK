@@ -207,7 +207,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Nur lesen · Öffentliche Journey',
   'journey.public.tagline': 'Your trips. Your plan. Your server.',
   'journey.public.sharedVia': 'Geteilt über',
-  'journey.public.madeWith': 'Erstellt mit',
   'journey.pdf.journeyBook': 'Reisebuch',
   'journey.pdf.madeWith': 'Erstellt mit Travla',
   'journey.pdf.day': 'Tag',

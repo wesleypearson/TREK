@@ -202,7 +202,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': '唯讀 · 公開旅程',
   'journey.public.tagline': '旅行資源與探索工具包',
   'journey.public.sharedVia': '分享自',
-  'journey.public.madeWith': '由',
   'journey.pdf.journeyBook': '旅程手冊',
   'journey.pdf.madeWith': '由 Travla 製作',
   'journey.pdf.day': '第',

@@ -4,7 +4,6 @@ const id: NotificationLocale = {
   email: {
     footer: 'Anda menerima ini karena Anda telah mengaktifkan notifikasi di Travla.',
     manage: 'Kelola preferensi di Pengaturan',
-    madeWith: 'Dibuat dengan',
     openTrek: 'Buka Travla',
   },
   events: {

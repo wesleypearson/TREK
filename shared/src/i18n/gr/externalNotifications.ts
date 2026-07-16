@@ -4,7 +4,6 @@ const gr: NotificationLocale = {
   email: {
     footer: 'Λάβατε αυτό το μήνυμα επειδή έχετε ενεργοποιήσει τις ειδοποιήσεις στο Travla.',
     manage: 'Διαχείριση προτιμήσεων στις Ρυθμίσεις',
-    madeWith: 'Δημιουργήθηκε με',
     openTrek: 'Άνοιγμα Travla',
   },
   events: {

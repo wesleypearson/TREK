@@ -4,7 +4,6 @@ const en: NotificationLocale = {
   email: {
     footer: 'Du har fått detta eftersom du har aktiverat aviseringar i Travla.',
     manage: 'Hantera egenskaper under Inställningar',
-    madeWith: 'Gjorde med',
     openTrek: 'Öppna Travla',
   },
   events: {

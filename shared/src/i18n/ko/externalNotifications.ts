@@ -4,7 +4,6 @@ const ko: NotificationLocale = {
   email: {
     footer: 'Travla에서 알림을 활성화했기 때문에 이 이메일을 받으셨습니다.',
     manage: '설정에서 환경설정 관리',
-    madeWith: 'Made with',
     openTrek: 'Travla 열기',
   },
   events: {

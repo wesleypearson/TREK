@@ -204,7 +204,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Alleen-lezen · Openbaar reisverslag',
   'journey.public.tagline': 'Your trips. Your plan. Your server.',
   'journey.public.sharedVia': 'Gedeeld via',
-  'journey.public.madeWith': 'Gemaakt met',
   'journey.pdf.journeyBook': 'Reisboek',
   'journey.pdf.madeWith': 'Gemaakt met Travla',
   'journey.pdf.day': 'Dag',

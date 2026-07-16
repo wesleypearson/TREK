@@ -204,7 +204,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': '읽기 전용 · 공개 Journey',
   'journey.public.tagline': '여행 기록 및 탐험 키트',
   'journey.public.sharedVia': '공유 경로',
-  'journey.public.madeWith': '으로 만들어짐',
   'journey.pdf.journeyBook': 'Journey 책',
   'journey.pdf.madeWith': 'Travla로 만들어짐',
   'journey.pdf.day': '일차',

@@ -4,7 +4,6 @@ const zhTW: NotificationLocale = {
   email: {
     footer: '您收到這封郵件是因為您在 Travla 中啟用了通知。',
     manage: '管理偏好設定',
-    madeWith: 'Made with',
     openTrek: '開啟 Travla',
   },
   events: {

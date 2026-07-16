@@ -1,7 +1,6 @@
 export interface EmailStrings {
   footer: string;
   manage: string;
-  madeWith: string;
   openTrek: string;
 }
 

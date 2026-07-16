@@ -203,7 +203,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Hanya baca · Journey Publik',
   'journey.public.tagline': 'Your trips. Your plan. Your server.',
   'journey.public.sharedVia': 'Dibagikan melalui',
-  'journey.public.madeWith': 'Dibuat dengan',
   'journey.pdf.journeyBook': 'Buku Journey',
   'journey.pdf.madeWith': 'Dibuat dengan Travla',
   'journey.pdf.day': 'Hari',

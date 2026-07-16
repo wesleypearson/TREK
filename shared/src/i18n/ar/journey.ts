@@ -220,7 +220,6 @@ const journey: TranslationStrings = {
   'journey.public.readOnly': 'Read-only · Public Journey', // en-fallback
   'journey.public.tagline': 'Your trips. Your plan. Your server.', // en-fallback
   'journey.public.sharedVia': 'Shared via', // en-fallback
-  'journey.public.madeWith': 'Made with', // en-fallback
   'journey.pdf.journeyBook': 'Journey Book', // en-fallback
   'journey.pdf.madeWith': 'Made with Travla', // en-fallback
   'journey.pdf.day': 'Day', // en-fallback
