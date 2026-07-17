@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Error al renombrar el invitado',
   'members.guestRemoved': 'Invitado eliminado',
   'members.confirmRemoveGuest': '¿Eliminar este invitado? También se eliminarán sus asignaciones y partes de gastos.',
+  'members.crewSection': 'Miembros del viaje',
+  'members.crewInfoTitle': 'Miembros de este viaje',
+  'members.crewInfoBody':
+    'Los miembros tienen una cuenta completa y pueden ver el viaje. El propietario controla el viaje en sí; todo lo demás sigue la configuración de permisos de la instancia. Añade miembros desde la lista de abajo o pásales el enlace de acceso: los incorpora directamente como miembros.',
+  'members.guestInfoTitle': 'Invitados temporales',
+  'members.guestInfoBody':
+    'Un invitado es una persona sin cuenta: puede figurar en gastos, saldos compartidos, equipaje y tareas, pero nunca puede iniciar sesión. Cuando consiga una cuenta real, promociona al invitado a esa cuenta: cada parte, pago y saldo se traslada y el invitado desaparece.',
+  'members.addedMeta': 'Añadido el {date}',
+  'members.addedMetaBy': 'Añadido el {date} · invitado por {name}',
+  'members.removeMemberTitle': 'Eliminar miembro',
+  'members.removeMemberBody':
+    '{name} perderá el acceso a este viaje. Sus gastos y partes anteriores se conservan en el registro.',
+  'members.leaveTitle': 'Abandonar viaje',
+  'members.leaveBody': 'Perderás el acceso a este viaje hasta que alguien vuelva a añadirte.',
+  'members.leaveConfirm': 'Abandonar',
+  'members.removeConfirm': 'Eliminar',
+  'members.deleteGuestTitle': 'Eliminar invitado',
+  'members.deleteGuestBody':
+    'Esto elimina permanentemente a {name}. Sus partes y asignaciones se quitan de todos los gastos, y cualquier enlace de saldo suyo deja de funcionar. Si ya se ha unido a la plataforma, promociónalo en su lugar para que no se pierda nada.',
+  'members.deleteGuestConfirm': 'Eliminar invitado',
+  'members.promote': 'Promocionar',
+  'members.promoteTitle': 'Promocionar invitado a cuenta completa',
+  'members.promoteBody':
+    'Elige la cuenta que ahora pertenece a {name}. Cada parte, pago, liquidación y saldo del invitado se traslada a esa cuenta (se une a los miembros si es necesario) y después la entrada del invitado desaparece. Esto no se puede deshacer.',
+  'members.promoteSelect': 'Su cuenta',
+  'members.promoteSearch': 'Buscar cuentas…',
+  'members.promoteConfirm': 'Fusionar con la cuenta',
+  'members.promoteDone': 'Invitado promocionado: el historial se movió a la cuenta',
+  'members.promoteError': 'Error al promocionar el invitado',
+  'members.transferTitle': 'Transferir la propiedad',
+  'members.transferConfirm': 'Hacer propietario',
 };
 export default members;

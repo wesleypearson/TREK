@@ -34,5 +34,35 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Misafir yeniden adlandırılamadı',
   'members.guestRemoved': 'Misafir kaldırıldı',
   'members.confirmRemoveGuest': 'Bu misafir kaldırılsın mı? Atamaları ve masraf payları da kaldırılacak.',
+  'members.crewSection': 'Seyahat üyeleri',
+  'members.crewInfoTitle': 'Bu seyahatin üyeleri',
+  'members.crewInfoBody':
+    'Üyeler tam hesaba sahiptir ve seyahati görebilir. Sahip, seyahatin kendisini yönetir; geri kalan her şey sunucu örneğinin izin ayarlarını izler. Aşağıdaki listeden üye ekleyin veya katılım bağlantısını iletin — bağlantı onları doğrudan üye yapar.',
+  'members.guestInfoTitle': 'Geçici misafirler',
+  'members.guestInfoBody':
+    'Misafir, hesabı olmayan kişidir: masraflara, açık hesaplara, valize ve görevlere eklenebilir, ancak asla giriş yapamaz. Gerçek bir hesap edindiğinde misafiri o hesaba yükseltin — tüm paylar, ödemeler ve açık hesaplar taşınır ve misafir kaybolur.',
+  'members.addedMeta': '{date} tarihinde eklendi',
+  'members.addedMetaBy': '{date} tarihinde eklendi · davet eden: {name}',
+  'members.removeMemberTitle': 'Üyeyi kaldır',
+  'members.removeMemberBody': '{name} bu seyahate erişimini kaybedecek. Geçmiş masrafları ve payları kayıtlarda kalır.',
+  'members.leaveTitle': 'Seyahatten ayrıl',
+  'members.leaveBody': 'Biri sizi yeniden ekleyene kadar bu seyahate erişiminizi kaybedersiniz.',
+  'members.leaveConfirm': 'Ayrıl',
+  'members.removeConfirm': 'Kaldır',
+  'members.deleteGuestTitle': 'Misafiri sil',
+  'members.deleteGuestBody':
+    'Bu işlem {name} adlı misafiri kalıcı olarak siler. Payları ve atamaları tüm masraflardan kaldırılır ve ona ait açık hesap bağlantıları çalışmaz olur. Platforma katıldıysa, hiçbir şey kaybolmasın diye bunun yerine onu yükseltin.',
+  'members.deleteGuestConfirm': 'Misafiri sil',
+  'members.promote': 'Yükselt',
+  'members.promoteTitle': 'Misafiri tam hesaba yükselt',
+  'members.promoteBody':
+    'Artık {name} kişisine ait olan hesabı seçin. Misafirin tüm payları, ödemeleri, mahsuplaşmaları ve açık hesapları o hesaba taşınır (gerekirse hesap üye olur), ardından misafir kaydı kaybolur. Bu işlem geri alınamaz.',
+  'members.promoteSelect': 'Hesabı',
+  'members.promoteSearch': 'Hesap ara…',
+  'members.promoteConfirm': 'Hesapla birleştir',
+  'members.promoteDone': 'Misafir yükseltildi — geçmiş hesaba taşındı',
+  'members.promoteError': 'Misafir yükseltilemedi',
+  'members.transferTitle': 'Sahipliği devret',
+  'members.transferConfirm': 'Sahip yap',
 };
 export default members;

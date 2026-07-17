@@ -33,5 +33,35 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Nepodařilo se přejmenovat hosta',
   'members.guestRemoved': 'Host odebrán',
   'members.confirmRemoveGuest': 'Odebrat tohoto hosta? Jeho přiřazení a podíly na nákladech budou také odebrány.',
+  'members.crewSection': 'Členové cesty',
+  'members.crewInfoTitle': 'Členové této cesty',
+  'members.crewInfoBody':
+    'Členové mají plnohodnotný účet a cestu vidí. Vlastník spravuje samotnou cestu; vše ostatní se řídí nastavením oprávnění instance. Přidejte členy ze seznamu níže, nebo jim předejte odkaz pro připojení — rovnou je zařadí mezi členy.',
+  'members.guestInfoTitle': 'Dočasní hosté',
+  'members.guestInfoBody':
+    'Host je osoba bez účtu: může figurovat v nákladech, útratách, balení a úkolech, ale nikdy se nemůže přihlásit. Jakmile získá skutečný účet, povyšte hosta na tento účet — každý podíl, platba i útrata se přenesou a host zmizí.',
+  'members.addedMeta': 'Přidán {date}',
+  'members.addedMetaBy': 'Přidán {date} · pozval(a) {name}',
+  'members.removeMemberTitle': 'Odebrat člena',
+  'members.removeMemberBody': '{name} ztratí přístup k této cestě. Jeho dřívější výdaje a podíly zůstanou v evidenci.',
+  'members.leaveTitle': 'Opustit cestu',
+  'members.leaveBody': 'Ztratíte přístup k této cestě, dokud vás někdo znovu nepřidá.',
+  'members.leaveConfirm': 'Opustit',
+  'members.removeConfirm': 'Odebrat',
+  'members.deleteGuestTitle': 'Smazat hosta',
+  'members.deleteGuestBody':
+    'Tímto trvale smažete hosta {name}. Jeho podíly a přiřazení budou odstraněny ze všech nákladů a všechny odkazy na jeho útratu přestanou fungovat. Pokud se mezitím připojil k platformě, raději ho povyšte, aby se nic neztratilo.',
+  'members.deleteGuestConfirm': 'Smazat hosta',
+  'members.promote': 'Povýšit',
+  'members.promoteTitle': 'Povýšit hosta na plnohodnotný účet',
+  'members.promoteBody':
+    'Vyberte účet, který nyní patří uživateli {name}. Každý podíl, platba, vyrovnání i útrata hosta se přesunou na tento účet (v případě potřeby se stane členem), poté záznam hosta zmizí. Tuto akci nelze vrátit zpět.',
+  'members.promoteSelect': 'Jeho účet',
+  'members.promoteSearch': 'Hledat účty…',
+  'members.promoteConfirm': 'Sloučit s účtem',
+  'members.promoteDone': 'Host povýšen — historie byla přesunuta na účet',
+  'members.promoteError': 'Hosta se nepodařilo povýšit',
+  'members.transferTitle': 'Převést vlastnictví',
+  'members.transferConfirm': 'Nastavit jako vlastníka',
 };
 export default members;

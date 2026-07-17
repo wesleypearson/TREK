@@ -33,5 +33,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': '게스트 이름 변경 실패',
   'members.guestRemoved': '게스트가 제거되었습니다',
   'members.confirmRemoveGuest': '이 게스트를 제거할까요? 배정 및 비용 분담도 함께 제거됩니다.',
+  'members.crewSection': '여행 멤버',
+  'members.crewInfoTitle': '이 여행의 멤버',
+  'members.crewInfoBody':
+    '멤버는 정식 계정을 가지고 있으며 여행을 볼 수 있습니다. 소유자는 여행 자체를 관리하고, 그 외의 사항은 인스턴스 권한 설정을 따릅니다. 아래 목록에서 멤버를 추가하거나 참가 링크를 전달하세요. 링크를 통해 바로 멤버가 됩니다.',
+  'members.guestInfoTitle': '임시 게스트',
+  'members.guestInfoBody':
+    '게스트는 계정이 없는 사람입니다. 비용, 공유 잔액, 짐, 할 일에 배정할 수 있지만 로그인은 할 수 없습니다. 실제 계정이 생기면 게스트를 그 계정으로 승격하세요. 모든 분담, 결제, 공유 잔액이 이전되고 게스트는 사라집니다.',
+  'members.addedMeta': '{date}에 추가됨',
+  'members.addedMetaBy': '{date}에 추가됨 · {name}님이 초대함',
+  'members.removeMemberTitle': '멤버 제거',
+  'members.removeMemberBody':
+    '{name}님은 이 여행에 대한 접근 권한을 잃게 됩니다. 과거의 비용과 분담 내역은 기록에 남습니다.',
+  'members.leaveTitle': '여행 떠나기',
+  'members.leaveBody': '누군가 다시 추가할 때까지 이 여행에 접근할 수 없게 됩니다.',
+  'members.leaveConfirm': '떠나기',
+  'members.removeConfirm': '제거',
+  'members.deleteGuestTitle': '게스트 삭제',
+  'members.deleteGuestBody':
+    '{name}을(를) 영구적으로 삭제합니다. 분담과 배정이 모든 비용에서 제거되고, 이 게스트의 공유 잔액 링크도 작동하지 않게 됩니다. 이미 플랫폼에 가입했다면 아무것도 잃지 않도록 대신 승격하세요.',
+  'members.deleteGuestConfirm': '게스트 삭제',
+  'members.promote': '승격',
+  'members.promoteTitle': '게스트를 정식 계정으로 승격',
+  'members.promoteBody':
+    '{name}님이 현재 사용하는 계정을 선택하세요. 게스트의 모든 분담, 결제, 정산, 공유 잔액이 해당 계정으로 이전되고(필요하면 멤버로 추가됩니다) 게스트 항목은 사라집니다. 이 작업은 되돌릴 수 없습니다.',
+  'members.promoteSelect': '본인 계정',
+  'members.promoteSearch': '계정 검색…',
+  'members.promoteConfirm': '계정으로 병합',
+  'members.promoteDone': '게스트 승격 완료 — 기록이 계정으로 이동되었습니다',
+  'members.promoteError': '게스트 승격 실패',
+  'members.transferTitle': '소유권 이전',
+  'members.transferConfirm': '소유자로 지정',
 };
 export default members;

@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Kan gast niet hernoemen',
   'members.guestRemoved': 'Gast verwijderd',
   'members.confirmRemoveGuest': 'Deze gast verwijderen? Hun toewijzingen en kostenaandelen worden ook verwijderd.',
+  'members.crewSection': 'Leden van de reis',
+  'members.crewInfoTitle': 'Leden van deze reis',
+  'members.crewInfoBody':
+    'Leden hebben een volwaardig account en kunnen de reis zien. De eigenaar beheert de reis zelf; al het andere volgt de rechteninstellingen van de instantie. Voeg leden toe via de lijst hieronder, of geef ze de deelnamelink — daarmee worden ze direct lid.',
+  'members.guestInfoTitle': 'Tijdelijke gasten',
+  'members.guestInfoBody':
+    'Een gast is iemand zonder account: gasten kunnen aan kosten, lopende rekeningen, bagage en taken worden gekoppeld, maar kunnen nooit inloggen. Zodra ze een echt account hebben, promoveer je de gast naar dat account — elke verdeling, betaling en lopende rekening verhuist mee en de gast verdwijnt.',
+  'members.addedMeta': 'Toegevoegd op {date}',
+  'members.addedMetaBy': 'Toegevoegd op {date} · uitgenodigd door {name}',
+  'members.removeMemberTitle': 'Lid verwijderen',
+  'members.removeMemberBody':
+    '{name} verliest de toegang tot deze reis. Eerdere uitgaven en aandelen blijven in de administratie staan.',
+  'members.leaveTitle': 'Reis verlaten',
+  'members.leaveBody': 'Je verliest de toegang tot deze reis totdat iemand je opnieuw toevoegt.',
+  'members.leaveConfirm': 'Verlaten',
+  'members.removeConfirm': 'Verwijderen',
+  'members.deleteGuestTitle': 'Gast verwijderen',
+  'members.deleteGuestBody':
+    'Hiermee wordt {name} permanent verwijderd. Zijn of haar aandelen en toewijzingen worden uit alle kosten verwijderd, en elke link naar zijn of haar lopende rekening stopt met werken. Is deze persoon inmiddels lid van het platform, promoveer de gast dan in plaats daarvan zodat er niets verloren gaat.',
+  'members.deleteGuestConfirm': 'Gast verwijderen',
+  'members.promote': 'Promoveren',
+  'members.promoteTitle': 'Gast promoveren naar volwaardig account',
+  'members.promoteBody':
+    'Kies het account dat nu van {name} is. Elke verdeling, betaling, verrekening en lopende rekening van de gast verhuist naar dat account (het wordt zo nodig lid van de reis), daarna verdwijnt de gast. Dit kan niet ongedaan worden gemaakt.',
+  'members.promoteSelect': 'Hun account',
+  'members.promoteSearch': 'Accounts zoeken…',
+  'members.promoteConfirm': 'Samenvoegen met account',
+  'members.promoteDone': 'Gast gepromoveerd — geschiedenis verplaatst naar het account',
+  'members.promoteError': 'Kan gast niet promoveren',
+  'members.transferTitle': 'Eigenaarschap overdragen',
+  'members.transferConfirm': 'Eigenaar maken',
 };
 export default members;

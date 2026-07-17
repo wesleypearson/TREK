@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Không thể đổi tên khách',
   'members.guestRemoved': 'Đã xóa khách',
   'members.confirmRemoveGuest': 'Xóa khách này? Các phân công và phần chi phí của họ cũng sẽ bị xóa.',
+  'members.crewSection': 'Thành viên chuyến đi',
+  'members.crewInfoTitle': 'Thành viên của chuyến đi này',
+  'members.crewInfoBody':
+    'Thành viên có tài khoản đầy đủ và có thể xem chuyến đi. Chủ sở hữu quản lý chính chuyến đi; mọi thứ khác tuân theo cài đặt quyền của hệ thống. Thêm thành viên từ danh sách bên dưới, hoặc gửi cho họ liên kết tham gia — liên kết sẽ đưa họ vào nhóm thành viên ngay.',
+  'members.guestInfoTitle': 'Khách tạm thời',
+  'members.guestInfoBody':
+    'Khách là người không có tài khoản: họ có thể được ghi vào hóa đơn, số dư chung, hành lý và công việc, nhưng không bao giờ đăng nhập được. Khi họ có tài khoản thật, hãy nâng cấp khách lên tài khoản đó — mọi phần chia, khoản thanh toán và số dư chung sẽ được chuyển sang và khách sẽ biến mất.',
+  'members.addedMeta': 'Đã thêm {date}',
+  'members.addedMetaBy': 'Đã thêm {date} · được mời bởi {name}',
+  'members.removeMemberTitle': 'Xóa thành viên',
+  'members.removeMemberBody':
+    '{name} sẽ mất quyền truy cập vào chuyến đi này. Các chi phí và phần chia trước đây vẫn được giữ trong sổ sách.',
+  'members.leaveTitle': 'Rời khỏi chuyến đi',
+  'members.leaveBody': 'Bạn sẽ mất quyền truy cập vào chuyến đi này cho đến khi có người thêm lại bạn.',
+  'members.leaveConfirm': 'Rời khỏi',
+  'members.removeConfirm': 'Xóa',
+  'members.deleteGuestTitle': 'Xóa khách',
+  'members.deleteGuestBody':
+    'Thao tác này xóa vĩnh viễn {name}. Phần chia và phân công của họ bị gỡ khỏi mọi hóa đơn, và mọi liên kết số dư của họ sẽ ngừng hoạt động. Nếu họ đã tham gia nền tảng, hãy nâng cấp họ thay vì xóa để không mất gì cả.',
+  'members.deleteGuestConfirm': 'Xóa khách',
+  'members.promote': 'Nâng cấp',
+  'members.promoteTitle': 'Nâng cấp khách lên tài khoản đầy đủ',
+  'members.promoteBody':
+    'Chọn tài khoản hiện thuộc về {name}. Mọi phần chia, khoản thanh toán, quyết toán và số dư chung của khách sẽ chuyển sang tài khoản đó (tài khoản sẽ tham gia nhóm thành viên nếu cần), sau đó mục khách sẽ biến mất. Không thể hoàn tác thao tác này.',
+  'members.promoteSelect': 'Tài khoản của họ',
+  'members.promoteSearch': 'Tìm tài khoản…',
+  'members.promoteConfirm': 'Gộp vào tài khoản',
+  'members.promoteDone': 'Đã nâng cấp khách — lịch sử đã được chuyển sang tài khoản',
+  'members.promoteError': 'Không thể nâng cấp khách',
+  'members.transferTitle': 'Chuyển quyền sở hữu',
+  'members.transferConfirm': 'Đặt làm chủ sở hữu',
 };
 export default members;

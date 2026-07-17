@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Det gick inte att byta namn på gästen',
   'members.guestRemoved': 'Gäst borttagen',
   'members.confirmRemoveGuest': 'Ta bort den här gästen? Deras tilldelningar och kostnadsandelar tas också bort.',
+  'members.crewSection': 'Resans medlemmar',
+  'members.crewInfoTitle': 'Medlemmar på den här resan',
+  'members.crewInfoBody':
+    'Medlemmar har fullständiga konton och kan se resan. Ägaren styr själva resan; allt annat följer instansens behörighetsinställningar. Lägg till medlemmar från listan nedan, eller ge dem anslutningslänken — den gör dem direkt till medlemmar.',
+  'members.guestInfoTitle': 'Tillfälliga gäster',
+  'members.guestInfoBody':
+    'En gäst är en person utan konto: gäster kan stå med på kostnader, notor, packning och uppgifter, men kan aldrig logga in. När de får ett riktigt konto uppgraderar du gästen till det — varje andel, betalning och nota flyttas över och gästen försvinner.',
+  'members.addedMeta': 'Tillagd {date}',
+  'members.addedMetaBy': 'Tillagd {date} · inbjuden av {name}',
+  'members.removeMemberTitle': 'Ta bort medlem',
+  'members.removeMemberBody':
+    '{name} förlorar åtkomsten till den här resan. Tidigare utgifter och andelar finns kvar i räkenskaperna.',
+  'members.leaveTitle': 'Lämna resan',
+  'members.leaveBody': 'Du förlorar åtkomsten till den här resan tills någon lägger till dig igen.',
+  'members.leaveConfirm': 'Lämna',
+  'members.removeConfirm': 'Ta bort',
+  'members.deleteGuestTitle': 'Radera gäst',
+  'members.deleteGuestBody':
+    'Detta raderar {name} permanent. Gästens andelar och tilldelningar tas bort från alla kostnader, och alla notlänkar för gästen slutar fungera. Om personen har gått med på plattformen bör du i stället uppgradera gästen så att inget går förlorat.',
+  'members.deleteGuestConfirm': 'Radera gäst',
+  'members.promote': 'Uppgradera',
+  'members.promoteTitle': 'Uppgradera gäst till fullständigt konto',
+  'members.promoteBody':
+    'Välj det konto som {name} nu äger. Varje andel, betalning, avräkning och nota för gästen flyttas till det kontot (det blir medlem om det behövs), och sedan försvinner gästposten. Detta kan inte ångras.',
+  'members.promoteSelect': 'Personens konto',
+  'members.promoteSearch': 'Sök konton…',
+  'members.promoteConfirm': 'Slå ihop med konto',
+  'members.promoteDone': 'Gästen uppgraderad — historiken flyttades till kontot',
+  'members.promoteError': 'Det gick inte att uppgradera gästen',
+  'members.transferTitle': 'Överför ägarskap',
+  'members.transferConfirm': 'Gör till ägare',
 };
 export default members;

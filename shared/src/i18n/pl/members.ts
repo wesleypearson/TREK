@@ -33,5 +33,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Nie udało się zmienić nazwy gościa',
   'members.guestRemoved': 'Usunięto gościa',
   'members.confirmRemoveGuest': 'Usunąć tego gościa? Jego przypisania i udziały w kosztach również zostaną usunięte.',
+  'members.crewSection': 'Członkowie podróży',
+  'members.crewInfoTitle': 'Członkowie tej podróży',
+  'members.crewInfoBody':
+    'Członkowie mają pełne konta i widzą podróż. Właściciel zarządza samą podróżą; wszystko inne wynika z ustawień uprawnień instancji. Dodawaj członków z listy poniżej lub przekaż im link dołączenia — od razu dodaje ich do członków.',
+  'members.guestInfoTitle': 'Goście tymczasowi',
+  'members.guestInfoBody':
+    'Gość to osoba bez konta: może figurować w kosztach, otwartych rachunkach, pakowaniu i zadaniach, ale nigdy nie może się zalogować. Gdy założy prawdziwe konto, awansuj gościa na to konto — każdy udział, płatność i otwarty rachunek zostaną przeniesione, a gość zniknie.',
+  'members.addedMeta': 'Dodano {date}',
+  'members.addedMetaBy': 'Dodano {date} · zaproszenie od {name}',
+  'members.removeMemberTitle': 'Usuń członka',
+  'members.removeMemberBody':
+    '{name} utraci dostęp do tej podróży. Wcześniejsze wydatki i udziały pozostaną w ewidencji.',
+  'members.leaveTitle': 'Opuść podróż',
+  'members.leaveBody': 'Stracisz dostęp do tej podróży, dopóki ktoś nie doda cię ponownie.',
+  'members.leaveConfirm': 'Opuść',
+  'members.removeConfirm': 'Usuń',
+  'members.deleteGuestTitle': 'Usuń gościa',
+  'members.deleteGuestBody':
+    'To trwale usuwa gościa {name}. Jego udziały i przypisania zostaną usunięte ze wszystkich kosztów, a każdy link do jego rachunku przestanie działać. Jeśli dołączył już do platformy, zamiast tego awansuj go, aby nic nie przepadło.',
+  'members.deleteGuestConfirm': 'Usuń gościa',
+  'members.promote': 'Awansuj',
+  'members.promoteTitle': 'Awansuj gościa na pełne konto',
+  'members.promoteBody':
+    'Wybierz konto, które teraz należy do {name}. Każdy udział, płatność, rozliczenie i otwarty rachunek gościa przechodzą na to konto (w razie potrzeby dołącza ono do członków), a wpis gościa znika. Tej operacji nie można cofnąć.',
+  'members.promoteSelect': 'Jego konto',
+  'members.promoteSearch': 'Szukaj kont...',
+  'members.promoteConfirm': 'Scal z kontem',
+  'members.promoteDone': 'Gość awansowany — historia została przeniesiona na konto',
+  'members.promoteError': 'Nie udało się awansować gościa',
+  'members.transferTitle': 'Przekaż własność',
+  'members.transferConfirm': 'Ustaw jako właściciela',
 };
 export default members;
