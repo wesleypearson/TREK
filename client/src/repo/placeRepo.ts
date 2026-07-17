@@ -27,7 +27,7 @@ export const placeRepo = {
         ...(data as Partial<Place>),
         id: tempId,
         trip_id: Number(tripId),
-        name: (data.name as string) ?? 'New place',
+        name: (data.name as string) ?? 'New venue',
       } as Place
       await offlineDb.places.put(tempPlace)
       const id = generateUUID()

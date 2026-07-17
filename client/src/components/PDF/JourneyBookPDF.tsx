@@ -262,7 +262,7 @@ export async function downloadJourneyBookPDF(journey: JourneyDetail) {
     <div class="cover-dim"></div>
     <div class="cover-mesh"></div>
     <div class="cover-content">
-      <div class="cover-label">Journey Book</div>
+      <div class="cover-label">Tour Book</div>
       <h1>${esc(journey.title)}</h1>
       ${journey.subtitle ? `<div class="sub">${esc(journey.subtitle)}</div>` : ''}
       <div class="cover-stats">

@@ -1,18 +1,20 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt, Link2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt, Link2, MapPin, HelpCircle } from 'lucide-react'
 import { useTripStore } from '../../store/tripStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useCanDo } from '../../store/permissionsStore'
 import { useToast } from '../shared/Toast'
 import { useTranslation } from '../../i18n'
-import { budgetApi, tripsApi } from '../../api/client'
+import { budgetApi, tripsApi, placesApi } from '../../api/client'
 import { useExchangeRates } from '../../hooks/useExchangeRates'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { formatMoney, currencyDecimals, currencyLocale } from '../../utils/formatters'
 import { openFile } from '../../utils/fileDownload'
 import Modal from '../shared/Modal'
+import InfoDot from '../shared/InfoDot'
+import ExpensesGuideModal from './ExpensesGuideModal'
 import ExpenseTabsModal from './ExpenseTabsModal'
 import CustomSelect from '../shared/CustomSelect'
 import { CustomDatePicker } from '../shared/CustomDateTimePicker'
@@ -227,6 +229,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
   // Owner-only fresh-start tool while the group is testing.
   const isTripOwner = trip?.user_id === me
   const [resetOpen, setResetOpen] = useState(false)
+  const [guideOpen, setGuideOpen] = useState(false)
   const [resetting, setResetting] = useState(false)
   const handleReset = async () => {
     setResetting(true)
@@ -451,7 +454,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    const safeName = (trip?.title || 'trip').replace(/[^a-zA-Z0-9À-ɏ _-]/g, '').trim()
+    const safeName = (trip?.title || 'event').replace(/[^a-zA-Z0-9À-ɏ _-]/g, '').trim()
     a.download = `costs-${safeName}.csv`
     a.click()
     URL.revokeObjectURL(url)
@@ -527,6 +530,11 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         </div>
         {canEdit && (
           <div style={{ display: 'flex', gap: 10 }}>
+            <button onClick={() => setGuideOpen(true)} title={t('costs.guide.title')}
+              className="bg-surface-card border border-edge text-content-muted"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 14px', borderRadius: 12, fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit' }}>
+              <HelpCircle size={16} /> {t('costs.guide.open')}
+            </button>
             {isTripOwner && (
               <button onClick={() => setResetOpen(true)} title={t('costs.resetTitle')}
                 className="bg-surface-card border border-edge text-content-muted"
@@ -636,7 +644,9 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           {/* settle up */}
           <div className={cardCls} style={{ borderRadius: 22, padding: '22px 24px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-              <div className={labelCls}>{t('costs.settleUp')} · <span className="text-content">{(settlement?.flows || []).length}</span></div>
+              <div className={labelCls} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>{t('costs.settleUp')} · <span className="text-content">{(settlement?.flows || []).length}</span>
+                <InfoDot title={t('costs.info.settleTitle')} size={13} style={{ margin: '-8px 0' }}><p style={{ margin: 0 }}>{t('costs.info.settleBody')}</p></InfoDot>
+              </div>
               {canEdit && (
                 <button onClick={() => setAddingPayment(true)}
                   className="text-content-muted bg-surface-secondary border border-edge"
@@ -670,6 +680,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           onSaved={() => { setModalOpen(false); loadBudgetItems(tripId); loadSettlement() }} />
       )}
 
+      {guideOpen && <ExpensesGuideModal onClose={() => setGuideOpen(false)} />}
       {resetOpen && (
         <Modal isOpen onClose={() => setResetOpen(false)} title={t('costs.resetTitle')} size="md"
           footer={
@@ -830,6 +841,11 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
             <div className="text-content" style={{ fontSize: 'calc(19px * var(--fs-scale-subtitle, 1))', fontWeight: 700, letterSpacing: '-0.02em' }}>{t('costs.expenses')}</div>
             <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={() => setGuideOpen(true)} title={t('costs.guide.title')}
+                className="bg-surface-card border border-edge text-content-muted"
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 10, cursor: 'pointer', fontFamily: 'inherit', flexShrink: 0 }}>
+                <HelpCircle size={15} />
+              </button>
               {isTripOwner && (
                 <button onClick={() => setResetOpen(true)} title={t('costs.resetTitle')}
                   className="bg-surface-card border border-edge text-content-muted"
@@ -909,14 +925,14 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
             <span className="text-content" style={{ fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', fontWeight: 600 }}>{e.name}</span>
             {!!e.is_private && (
               <span title={t('costs.personal')} style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--text-faint)', flexShrink: 0 }}>
-                <Lock size={11} />
+                <Lock size={13} />
               </span>
             )}
             {e.receipt_file_id != null && (
               <button type="button" title={t('costs.viewReceipt')}
                 onClick={() => openFile(`/api/trips/${tripId}/files/${e.receipt_file_id}/download`).catch(() => toast.error(t('common.unknownError')))}
-                style={{ display: 'inline-flex', alignItems: 'center', background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--text-faint)', flexShrink: 0 }}>
-                <Receipt size={11} />
+                style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', minWidth: 26, minHeight: 26, margin: '-6px -4px', background: 'none', border: 0, padding: 0, cursor: 'pointer', color: 'var(--text-faint)', flexShrink: 0 }}>
+                <Receipt size={13} />
               </button>
             )}
             {unfinished && !isMobile && (
@@ -938,7 +954,14 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           )}
           {!isMobile && (
             <div className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {t(c.labelKey)}{cur !== base ? ` · ${fmt(e.total_price, cur)} → ${fmt(baseTotal(e))}` : ''}
+              {t(c.labelKey)}
+              {e.place_name ? <> · <MapPin size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> {e.place_name}</> : ''}
+              {cur !== base ? ` · ${fmt(e.total_price, cur)} → ${fmt(baseTotal(e))}` : ''}
+            </div>
+          )}
+          {isMobile && e.place_name && (
+            <div className="text-content-faint" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(12px * var(--fs-scale-body, 1))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <MapPin size={11} style={{ flexShrink: 0 }} /> {e.place_name}
             </div>
           )}
         </div>
@@ -953,9 +976,9 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           </div>
           {canEdit && (
             <div className="exp-actions" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
-              <button title={t('common.edit')} onClick={() => { setEditing(e); setModalOpen(true) }} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer' }}><Pencil size={13} /></button>
-              <button title={t('costs.addToTab')} onClick={() => setTabsModal({ item: e })} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer' }}><Link2 size={13} /></button>
-              <button title={t('common.delete')} onClick={() => handleDelete(e.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer', color: '#dc2626' }}><Trash2 size={13} /></button>
+              <button title={t('common.edit')} onClick={() => { setEditing(e); setModalOpen(true) }} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer' }}><Pencil size={15} /></button>
+              <button title={t('costs.addToTab')} onClick={() => setTabsModal({ item: e })} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer' }}><Link2 size={15} /></button>
+              <button title={t('common.delete')} onClick={() => handleDelete(e.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer', color: '#dc2626' }}><Trash2 size={15} /></button>
             </div>
           )}
         </div>
@@ -980,8 +1003,8 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           <div className="text-content" style={{ fontSize: 'calc(18px * var(--fs-scale-subtitle, 1))', fontWeight: 600, whiteSpace: 'nowrap' }}>{fmt(s.amount)}</div>
           {canEdit && (
             <div className="exp-actions" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
-              <button title={t('common.edit')} onClick={() => setEditingSettlement(s)} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer' }}><Pencil size={13} /></button>
-              <button title={t('costs.undo')} onClick={() => undoSettlement(s.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 28, height: 28, borderRadius: 999, cursor: 'pointer', color: '#dc2626' }}><RotateCcw size={13} /></button>
+              <button title={t('common.edit')} onClick={() => setEditingSettlement(s)} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer' }}><Pencil size={15} /></button>
+              <button title={t('costs.undo')} onClick={() => undoSettlement(s.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer', color: '#dc2626' }}><RotateCcw size={15} /></button>
             </div>
           )}
         </div>
@@ -1158,6 +1181,8 @@ export interface ExpensePrefill {
   category?: string
   amount?: number
   reservationId?: number
+  /** Pre-pin the expense to a venue (the venue card's "Add expense" flow). */
+  placeId?: number
 }
 
 export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCreateGuest, onClose, onSaved }: {
@@ -1246,6 +1271,18 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
   const [receiptFileId, setReceiptFileId] = useState<number | null>(editing?.receipt_file_id ?? null)
   const [scanning, setScanning] = useState(false)
   const scanInputRef = useRef<HTMLInputElement>(null)
+
+  // Venue link: pin the expense to one of the event's venues. The list loads
+  // lazily; only visible venues are offered (the server enforces that too).
+  const [placeId, setPlaceId] = useState<number | null>(editing?.place_id ?? prefill?.placeId ?? null)
+  const [venues, setVenues] = useState<{ id: number; name: string }[] | null>(null)
+  useEffect(() => {
+    let live = true
+    placesApi.list(tripId)
+      .then((res: { places?: { id: number; name: string }[] }) => { if (live) setVenues(res.places || []) })
+      .catch(() => { if (live) setVenues([]) })
+    return () => { live = false }
+  }, [tripId])
 
   // A personal expense is never split — ticket mode (and its derived total)
   // only applies while the expense is a group one.
@@ -1463,6 +1500,10 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
       total_price: totalNum,
       is_private: isPrivate,
       receipt_file_id: receiptFileId,
+      // Only send the venue pin when it actually changed: re-sending another
+      // member's private venue id (hydrated nameless) would read as unknown to
+      // the server and 400 the whole save.
+      ...(placeId !== (editing?.place_id ?? null) ? { place_id: placeId } : {}),
       note: isTicketMode ? 'TICKETJSON:' + JSON.stringify({
         items: ticketItems.map(item => ({
           name: item.name,
@@ -1503,6 +1544,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
             {scanning ? <Loader2 size={15} className="animate-spin" /> : <Camera size={15} />}
             {scanning ? t('costs.scanningReceipt') : t('costs.scanReceipt')}
           </button>
+          <InfoDot title={t('costs.info.scanTitle')} size={14} style={{ marginLeft: 4, verticalAlign: 'middle' }}><p style={{ margin: 0 }}>{t('costs.info.scanBody')}</p></InfoDot>
           {/* No `capture` attribute: iOS then offers the full sheet — Take
               Photo, Photo Library AND Files (where Notes/Files document scans
               live) — instead of jumping straight to the camera. `multiple`
@@ -1557,12 +1599,30 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                 <button key={c.key} onClick={() => setCat(c.key)}
                   className={on ? 'bg-surface-card text-content border' : 'bg-surface-secondary text-content-muted border border-edge'}
                   style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 11px 6px 7px', borderRadius: 999, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', borderColor: on ? 'var(--text-primary)' : undefined }}>
-                  <span style={{ width: 20, height: 20, borderRadius: 6, display: 'grid', placeItems: 'center', background: c.color + '22', color: c.color }}><Icon size={12} /></span>
+                  <span style={{ width: 24, height: 24, borderRadius: 7, display: 'grid', placeItems: 'center', background: c.color + '22', color: c.color }}><Icon size={14} /></span>
                   {t(c.labelKey)}
                 </button>
               )
             })}
           </div>
+        </div>
+
+        <div>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+            <label className={labelCls}>{t('costs.venue')}</label>
+            <InfoDot title={t('costs.info.venueTitle')} size={13} style={{ margin: '-4px 0 2px' }}><p style={{ margin: 0 }}>{t('costs.info.venueBody')}</p></InfoDot>
+          </span>
+          <CustomSelect value={placeId != null ? String(placeId) : ''} onChange={v => setPlaceId(v ? Number(v) : null)} searchable
+            options={[
+              { value: '', label: t('costs.noVenue') },
+              // Keep a pin to a venue the picker can't offer (someone else's
+              // private venue, hydrated without a name) selectable as-is.
+              ...(placeId != null && venues != null && !venues.some(p => p.id === placeId)
+                ? [{ value: String(placeId), label: editing?.place_name || t('costs.privateVenue') }]
+                : []),
+              ...(venues || []).map(p => ({ value: String(p.id), label: p.name })),
+            ]}
+            style={{ width: '100%' }} />
         </div>
 
         {!isPrivate && (
@@ -1579,6 +1639,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
 
         {canTogglePrivate && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignSelf: 'flex-start' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
             <label className="text-content" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500 }}>
               <input type="checkbox" checked={isPrivate}
                 onChange={e => {
@@ -1591,6 +1652,8 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
               <Lock size={13} className="text-content-faint" />
               {t('costs.personalExpense')}
             </label>
+            <InfoDot title={t('costs.info.personalTitle')} size={14}><p style={{ margin: 0 }}>{t('costs.info.personalBody')}</p></InfoDot>
+            </div>
             {isPrivate && (
               <div className="text-content-faint" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', paddingLeft: 21 }}>
                 {t('costs.personalHint')}
@@ -1602,21 +1665,24 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
         {!isPrivate && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <label className={labelCls}>{t('costs.split') || 'Split'}</label>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+              <label className={labelCls} style={{ marginBottom: 0 }}>{t('costs.split') || 'Split'}</label>
+              <InfoDot title={t('costs.info.splitTitle')} size={13}><p style={{ margin: 0 }}>{t('costs.info.splitBody')}</p></InfoDot>
+            </span>
             <div className="bg-surface-secondary" style={{ display: 'flex', borderRadius: 8, padding: 2 }}>
               <button type="button" onClick={() => setSplitMode('equally')}
                 className={splitMode === 'equally' ? 'bg-surface-card text-content' : 'text-content-muted'}
-                style={{ padding: '4px 10px', fontSize: 11.5, borderRadius: 6, fontWeight: 600, border: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
+                style={{ padding: '6px 12px', fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', borderRadius: 6, fontWeight: 600, border: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {t('costs.splitEqually') || 'Equally'}
               </button>
               <button type="button" onClick={() => setSplitMode('custom')}
                 className={splitMode === 'custom' ? 'bg-surface-card text-content' : 'text-content-muted'}
-                style={{ padding: '4px 10px', fontSize: 11.5, borderRadius: 6, fontWeight: 600, border: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
+                style={{ padding: '6px 12px', fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', borderRadius: 6, fontWeight: 600, border: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {t('costs.splitCustom') || 'Custom'}
               </button>
               <button type="button" onClick={() => setSplitMode('ticket')}
                 className={splitMode === 'ticket' ? 'bg-surface-card text-content' : 'text-content-muted'}
-                style={{ padding: '4px 10px', fontSize: 11.5, borderRadius: 6, fontWeight: 600, border: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
+                style={{ padding: '6px 12px', fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', borderRadius: 6, fontWeight: 600, border: 0, cursor: 'pointer', fontFamily: 'inherit' }}>
                 {t('costs.splitTicket') || 'Ticket'}
               </button>
             </div>
@@ -1718,7 +1784,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
 
               {ticketItems.length > 0 && (
                 <div className="bg-surface-secondary border border-edge" style={{ padding: 12, borderRadius: 10 }}>
-                  <div className="text-content" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>Individual Shares Summary</div>
+                  <div className="text-content" style={{ fontSize: 12, fontWeight: 600, marginBottom: 8 }}>{t('costs.sharesSummary')}</div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                     {people.map(p => {
                       const share = ticketInfo.shares[p.id] || 0
@@ -1753,7 +1819,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                             {sym(currency)}{(equalShares[p.id] || 0).toFixed(2)}
                           </span>
                         ) : (
-                          <span className="text-content-faint" style={{ fontSize: 12, textAlign: 'right', paddingRight: 10 }}>Excluded</span>
+                          <span className="text-content-faint" style={{ fontSize: 12, textAlign: 'right', paddingRight: 10 }}>{t('costs.excluded')}</span>
                         )
                       ) : (
                         on ? (
@@ -1779,8 +1845,13 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                 ) : (
                   <span style={{ fontWeight: 600, color: customBalanced ? '#16a34a' : '#dc2626' }}>
                     {customBalanced 
-                      ? 'Split matches total' 
-                      : `Sum of splits: ${sym(currency)}${splitSum.toFixed(2)} of ${sym(currency)}${totalNum.toFixed(2)} (${(totalNum - splitSum) > 0 ? 'under by' : 'over by'} ${sym(currency)}${Math.abs(totalNum - splitSum).toFixed(2)})`}
+                      ? t('costs.splitMatches')
+                      : t('costs.splitProgress', {
+                          sum: `${sym(currency)}${splitSum.toFixed(2)}`,
+                          total: `${sym(currency)}${totalNum.toFixed(2)}`,
+                          direction: (totalNum - splitSum) > 0 ? t('costs.splitUnder') : t('costs.splitOver'),
+                          diff: `${sym(currency)}${Math.abs(totalNum - splitSum).toFixed(2)}`,
+                        })}
                   </span>
                 )}
               </div>

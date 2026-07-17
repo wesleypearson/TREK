@@ -5,6 +5,7 @@ const common: TranslationStrings = {
   'common.showMore': 'Tampilkan lebih banyak',
   'common.showLess': 'Tampilkan lebih sedikit',
   'common.cancel': 'Batal',
+  'common.moreInfo': 'Info selengkapnya',
   'common.clear': 'Hapus',
   'common.delete': 'Hapus',
   'common.preview': 'Pratinjau',

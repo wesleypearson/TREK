@@ -149,7 +149,7 @@ export function DayPlanSidebarToolbar({
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = url
-                    a.download = `${trip?.title || 'trip'}.ics`
+                    a.download = `${trip?.title || 'event'}.ics`
                     a.click()
                     URL.revokeObjectURL(url)
                   } catch { toast.error(t('planner.icsExportFailed')) }
@@ -181,7 +181,7 @@ export function DayPlanSidebarToolbar({
           <IcsSubscribeModal
             endpoint={`/api/trips/${tripId}/feed`}
             title="Subscribe to calendar"
-            description="This link stays in sync with your trip automatically. Calendar apps re-fetch it every hour."
+            description="This link stays in sync with your event automatically. Calendar apps re-fetch it every hour."
             onClose={() => setSubscribeOpen(false)}
           />
         )}

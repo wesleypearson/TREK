@@ -97,6 +97,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} = {to}',
   'costs.category': '分类',
   'costs.whoPaid': '谁支付的？',
+  'costs.venue': '场地',
+  'costs.noVenue': '无场地',
+  'costs.privateVenue': '私人场地',
   'costs.splitBetween': '平均分摊给',
   'costs.pickSomeone': '至少选择一人参与分摊。',
   'costs.splitSummary': '分 {count} 份 · 每份 {amount}',
@@ -186,5 +189,65 @@ const budget: TranslationStrings = {
   'costs.resetWarning': '这会永久删除本次旅行中的所有支出、结算和公开账单链接。成员和访客会保留。此操作无法撤销。',
   'costs.resetConfirm': '删除全部',
   'costs.resetDone': '支出已重置',
+
+  'costs.sharesSummary': '每人分摊金额汇总',
+  'costs.excluded': '不参与分摊',
+  'costs.splitMatches': '分摊金额与总额一致',
+  'costs.splitProgress': '分摊合计：{sum} / {total}（{direction} {diff}）',
+  'costs.splitUnder': '少',
+  'costs.splitOver': '多',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': '分摊账单',
+  'costs.info.splitBody':
+    '“平均分摊”把总额平均分给所选的每个人。“自定义金额”可以为每个人手动输入份额。“按账单明细”逐行拆分账单 — 为每行设置数量和单价，再点选共享该行的成员，每个人只需为自己消费的部分付款。',
+  'costs.info.personalTitle': '个人支出',
+  'costs.info.personalBody':
+    '个人支出只属于您自己：它记入您的个人花销，对其他成员不可见，也绝不会进入团队结算。用它在共同支出之外记录自己的花费。',
+  'costs.info.venueTitle': '支出关联场地',
+  'costs.info.venueBody':
+    '把支出固定到旅行的某个场地，它就会连同累计金额一起显示在该场地卡片上 — 让您一眼看出一个场地花了多少钱。直接从场地卡片添加支出，则会自动关联好。',
+  'costs.info.tabsTitle': '账单与分享链接',
+  'costs.info.tabsBody':
+    '账单让一个人实时看到自己欠您多少钱，通过无需注册的链接分享。把账单关联到某位成员（或按姓名添加的访客），它就会跟随旅行账目：此人在分摊中的份额、欠谁的钱以及各笔付款 — 还包括您的收款信息，让对方清楚该如何结清。',
+  'costs.info.settleTitle': '结算',
+  'costs.info.settleBody':
+    '结算以最少的转账次数算出谁该付给谁多少钱，并使用每笔支出录入时锁定的汇率。钱真正到账时记录一笔付款，所有人的余额都会实时更新。',
+  'costs.info.scanTitle': '扫描小票',
+  'costs.info.scanBody':
+    '用相机扫描小票、从相册选择照片或选择文件 — 包括从 iOS 备忘录应用保存的文稿扫描件。较长的小票可以分成多张照片，每一行都会带着数量和单价导入，随时可以分配给成员。',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': '指南',
+  'costs.guide.title': '支出指南',
+  'costs.guide.intro':
+    '这次旅行的所有共同花销都汇集在这里 — 录入、分摊、关联场地，并且无需表格即可结算。下面介绍它的用法，以及其他人看到的样子。',
+  'costs.guide.lodgeTitle': '录入支出',
+  'costs.guide.lodgeBody':
+    '点按“添加支出”，填写名称、金额和类别，并注明谁付了款。支出可以使用任何货币 — 汇率在保存那一刻锁定，结算后的数字永远不会变动。',
+  'costs.guide.splitTitle': '分摊',
+  'costs.guide.splitBody':
+    '可以平均分摊、输入自定义份额，或按明细逐行拆分小票，并把每一行分配给共享它的成员。不在某一行上的人无需为该行付款。',
+  'costs.guide.scanTitle': '小票扫描',
+  'costs.guide.scanBody':
+    '拍下小票（或从“文件”中选择 iOS 备忘录的文稿扫描件），各行内容会自动识别 — 数量、单价和总额。较长的小票最多可分六次拍摄。',
+  'costs.guide.personalTitle': '个人花销',
+  'costs.guide.personalBody':
+    '把支出标记为“个人支出（仅自己）”即可记录自己的花费。它对其他成员不可见，也绝不影响团队结算。',
+  'costs.guide.venuesTitle': '场地',
+  'costs.guide.venuesBody':
+    '把支出关联到旅行的各个场地。每张场地卡片都显示关联支出及其总额，卡片上的“添加支出”按钮会直接录入已关联好的支出。',
+  'costs.guide.tabsTitle': '账单与分享链接',
+  'costs.guide.tabsBody':
+    '给任何人一个实时查看其欠款余额的链接 — 无需注册账号。关联账单会自动跟随账目；独立账单只包含您记到上面的内容。您的收款信息会显示在链接中，让对方知道如何付款给您。',
+  'costs.guide.settleTitle': '结算',
+  'costs.guide.settleBody':
+    '“结算”以最少的转账次数显示谁该付给谁。付款发生时随手记录；撤销一笔结算会重新打开相应余额。',
+  'costs.guide.guestsTitle': '没有账号的人',
+  'costs.guide.guestsBody':
+    '按姓名把某人加进账单 — 无需注册。此人可以像其他人一样参与分摊，拥有自己的账单链接，之后还能通过旅行邀请链接认领自己的位置。',
+  'costs.guide.viewsTitle': '其他成员看到的内容',
+  'costs.guide.viewsBody':
+    '每位成员都能看到共享账目、自己的余额，以及每笔支出中借出或欠下的金额。个人支出只有本人可见；私密场地的名称绝不会通过支出泄露；账单链接只向外部人员展示他们自己的消费、付款和付款方式 — 绝不会展示整本账目。',
 };
 export default budget;

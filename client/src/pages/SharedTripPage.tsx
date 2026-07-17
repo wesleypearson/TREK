@@ -89,7 +89,7 @@ export default function SharedTripPage() {
           <img src="/icons/icon-white.svg" alt="Travla" width="26" height="26" />
         </div>
 
-        <div style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.35, marginBottom: 12 }}>Your trips. Your plan. Your server.</div>
+        <div style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.35, marginBottom: 12 }}>Your events. Your plan. Your server.</div>
 
         <h1 style={{ margin: '0 0 4px', fontSize: 'calc(26px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: -0.5 }}>{trip.title}</h1>
 

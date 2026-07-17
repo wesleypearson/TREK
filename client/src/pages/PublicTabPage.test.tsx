@@ -113,7 +113,7 @@ describe('PublicTabPage', () => {
   describe('FE-PAGE-TAB-005: join link', () => {
     it('links to the one-use invite registration when available, hides it when used', async () => {
       renderTab();
-      await waitFor(() => expect(screen.getByText(/join the trip/i)).toBeInTheDocument());
+      await waitFor(() => expect(screen.getByText(/join the event/i)).toBeInTheDocument());
       expect(document.querySelector('a[href="/login?invite=abc123"]')).not.toBeNull();
     });
 
@@ -121,7 +121,7 @@ describe('PublicTabPage', () => {
       server.use(http.get('/api/public/tabs/:token', () => HttpResponse.json({ ...tabPayload, join_url: null })));
       renderTab();
       await waitFor(() => expect(screen.getByText('Hi Lisa,')).toBeInTheDocument());
-      expect(screen.queryByText(/join the trip/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/join the event/i)).not.toBeInTheDocument();
     });
   });
 

@@ -58,6 +58,18 @@ export class BudgetController {
     }
   }
 
+  /**
+   * A venue link must point at a venue of this event that the acting user can
+   * see — a foreign or invisible venue reads as if it doesn't exist (400).
+   * `null`/`undefined` pass through: unlinking and untouched updates are fine.
+   */
+  private requireLinkablePlace(tripId: string, placeId: number | null | undefined, user: User): void {
+    if (placeId == null) return;
+    if (!Number.isInteger(placeId) || !this.budget.canLinkPlace(tripId, placeId, user.id)) {
+      throw new HttpException({ error: 'Venue not found' }, 400);
+    }
+  }
+
   @Get()
   list(@CurrentUser() user: User, @Param('tripId') tripId: string) {
     this.requireTrip(tripId, user);
@@ -220,7 +232,7 @@ export class BudgetController {
   async create(
     @CurrentUser() user: User,
     @Param('tripId') tripId: string,
-    @Body() body: { name?: string; category?: string; total_price?: number; persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null; reservation_id?: number; is_private?: boolean; receipt_file_id?: number | null },
+    @Body() body: { name?: string; category?: string; total_price?: number; persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null; reservation_id?: number; is_private?: boolean; receipt_file_id?: number | null; place_id?: number | null },
     @Headers('x-socket-id') socketId?: string,
   ) {
     const trip = this.requireTrip(tripId, user);
@@ -228,6 +240,7 @@ export class BudgetController {
     if (!body.name) {
       throw new HttpException({ error: 'Name is required' }, 400);
     }
+    this.requireLinkablePlace(tripId, body.place_id, user);
     const item = await this.budget.create(tripId, body as { name: string }, user.id);
     // A personal expense (custom) is only its creator's business — scope the event.
     this.budget.broadcast(tripId, 'budget:created', { item }, socketId, item.is_private ? user.id : undefined);
@@ -276,6 +289,7 @@ export class BudgetController {
     if (!before) {
       throw new HttpException({ error: 'Budget item not found' }, 404);
     }
+    this.requireLinkablePlace(tripId, body.place_id as number | null | undefined, user);
     const updated = await this.budget.update(id, tripId, body, user.id);
     if (!updated) {
       throw new HttpException({ error: 'Budget item not found' }, 404);

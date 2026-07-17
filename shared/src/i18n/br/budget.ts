@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} em {to}',
   'costs.category': 'Categoria',
   'costs.whoPaid': 'Quem pagou?',
+  'costs.venue': 'Local',
+  'costs.noVenue': 'Sem local',
+  'costs.privateVenue': 'Local privado',
   'costs.splitBetween': 'Dividir igualmente entre',
   'costs.pickSomeone': 'Escolha pelo menos uma pessoa para dividir.',
   'costs.splitSummary': 'Dividido entre {count} · {amount} cada',
@@ -191,5 +194,65 @@ const budget: TranslationStrings = {
     'Isso exclui permanentemente todas as despesas, acertos e links públicos de comanda desta viagem. Membros e convidados permanecem. Isso não pode ser desfeito.',
   'costs.resetConfirm': 'Excluir tudo',
   'costs.resetDone': 'Despesas redefinidas',
+
+  'costs.sharesSummary': 'Resumo das partes individuais',
+  'costs.excluded': 'Excluído',
+  'costs.splitMatches': 'A divisão bate com o total',
+  'costs.splitProgress': 'Soma das partes: {sum} de {total} ({diff} {direction})',
+  'costs.splitUnder': 'a menos',
+  'costs.splitOver': 'a mais',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Dividindo uma conta',
+  'costs.info.splitBody':
+    '“Equally” divide o total igualmente entre todas as pessoas selecionadas. “Custom” permite digitar a parte de cada um. “Ticket” detalha a conta linha por linha — defina quantidade e preço unitário por linha, toque nos membros que dividiram aquela linha e cada um paga apenas o que consumiu.',
+  'costs.info.personalTitle': 'Despesas pessoais',
+  'costs.info.personalBody':
+    'Uma despesa pessoal é só sua: ela é registrada como gasto seu, fica invisível para o resto do grupo e nunca entra no acerto do grupo. Use-a para acompanhar seus próprios custos junto com os compartilhados.',
+  'costs.info.venueTitle': 'Locais nas despesas',
+  'costs.info.venueBody':
+    'Fixe uma despesa em um dos locais da viagem e ela aparece no cartão daquele local com um total acumulado — assim você vê de relance quanto um local custou. Adicione uma despesa direto do cartão de um local e ela já chega fixada.',
+  'costs.info.tabsTitle': 'Comandas e links de compartilhamento',
+  'costs.info.tabsBody':
+    'Uma comanda dá a uma pessoa uma visão ao vivo do que ela deve a você, compartilhada como um link que não exige conta. Vincule uma comanda a um membro (ou a um convidado adicionado pelo nome) e ela segue o registro da viagem: as partes nas divisões, a quem a pessoa deve e os pagamentos — incluindo seus dados de pagamento, para ela saber exatamente como acertar.',
+  'costs.info.settleTitle': 'Acertando as contas',
+  'costs.info.settleBody':
+    'O acerto calcula quem deve quanto a quem com o menor número de transferências, usando a taxa de câmbio congelada quando cada despesa foi lançada. Registre um pagamento quando o dinheiro realmente mudar de mãos; os saldos de todos são atualizados ao vivo.',
+  'costs.info.scanTitle': 'Escaneando recibos',
+  'costs.info.scanBody':
+    'Escaneie um cupom com a câmera, escolha fotos da galeria ou um arquivo — incluindo digitalizações de documentos salvas do app Notas do iOS. Um recibo longo pode chegar em várias fotos, e cada linha entra com quantidade e preço unitário, pronta para atribuir aos membros.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Guia',
+  'costs.guide.title': 'Guia de despesas',
+  'costs.guide.intro':
+    'Tudo o que o grupo gasta nesta viagem vive aqui — lançado, dividido, fixado em locais e acertado sem planilhas. É assim que funciona, e é assim que os outros veem.',
+  'costs.guide.lodgeTitle': 'Lançando uma despesa',
+  'costs.guide.lodgeBody':
+    'Toque em “Adicionar despesa”, dê um nome, um valor e uma categoria e diga quem pagou. As despesas podem estar em qualquer moeda — a taxa é congelada no momento em que você salva, para que os valores acertados nunca mudem.',
+  'costs.guide.splitTitle': 'Dividindo',
+  'costs.guide.splitBody':
+    'Divida igualmente, digite partes personalizadas ou detalhe o cupom linha por linha e atribua cada linha aos membros que a dividiram. Quem não está em uma linha não paga nada por ela.',
+  'costs.guide.scanTitle': 'Escaneamento de recibos',
+  'costs.guide.scanBody':
+    'Fotografe um cupom (ou escolha nos Arquivos uma digitalização feita no Notas do iOS) e as linhas são lidas para você — quantidades, preços unitários e o total. Recibos longos podem ser fotografados em até seis partes.',
+  'costs.guide.personalTitle': 'Gastos pessoais',
+  'costs.guide.personalBody':
+    'Marque uma despesa como “Pessoal (só eu)” para acompanhar seus próprios custos. Ela fica invisível para o resto do grupo e nunca entra no acerto do grupo.',
+  'costs.guide.venuesTitle': 'Locais',
+  'costs.guide.venuesBody':
+    'Fixe despesas nos locais da viagem. Cada cartão de local mostra os gastos vinculados e o total, e o botão “Adicionar despesa” dele lança uma despesa já fixada.',
+  'costs.guide.tabsTitle': 'Comandas e links de compartilhamento',
+  'costs.guide.tabsBody':
+    'Dê a qualquer pessoa um link ao vivo do saldo dela — sem precisar de conta. Comandas vinculadas seguem o registro automaticamente; comandas avulsas carregam apenas o que você lançar nelas. Seus dados de pagamento aparecem no link para as pessoas saberem como pagar você.',
+  'costs.guide.settleTitle': 'Acertando as contas',
+  'costs.guide.settleBody':
+    'Acertar contas mostra quem deve a quem com o menor número de transferências. Registre os pagamentos conforme acontecem; desfazer um acerto reabre os saldos.',
+  'costs.guide.guestsTitle': 'Pessoas sem conta',
+  'costs.guide.guestsBody':
+    'Adicione alguém a uma conta pelo nome — sem cadastro. A pessoa entra nas divisões como qualquer outra, pode ter o próprio link de comanda e depois assumir o lugar dela com o link de convite da viagem.',
+  'costs.guide.viewsTitle': 'O que os outros veem',
+  'costs.guide.viewsBody':
+    'Cada membro vê o registro compartilhado, o próprio saldo e o que emprestou ou deve em cada despesa. Despesas pessoais ficam privadas para o dono; locais privados nunca revelam o nome por meio de uma despesa; e links de comanda mostram a quem é de fora apenas os próprios lançamentos, pagamentos e como pagar — nunca o registro inteiro.',
 };
 export default budget;

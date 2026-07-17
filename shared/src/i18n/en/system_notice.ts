@@ -3,11 +3,11 @@ import type { TranslationStrings } from '../types';
 const system_notice: TranslationStrings = {
   'system_notice.v3_photos.title': 'Photos have moved in 3.0',
   'system_notice.v3_photos.body':
-    '**Photos** in the Trip Planner have been removed. Your photos are safe — Travla never modified your Immich or Synology library.\n\nPhotos now live in the **Journey** addon. Journey is optional — if it is not yet available, ask your admin to enable it under Admin → Addons.',
-  'system_notice.v3_journey.title': 'Meet Journey — travel journal',
+    '**Photos** in the Event Planner have been removed. Your photos are safe — Travla never modified your Immich or Synology library.\n\nPhotos now live in the **Tour** addon. Tour is optional — if it is not yet available, ask your admin to enable it under Admin → Addons.',
+  'system_notice.v3_journey.title': 'Meet Tour — the tour journal',
   'system_notice.v3_journey.body':
-    'Document your trips as rich travel stories with timelines, photo galleries, and interactive maps.',
-  'system_notice.v3_journey.cta_label': 'Open Journey',
+    'Document your events as rich tour stories with timelines, photo galleries, and interactive maps.',
+  'system_notice.v3_journey.cta_label': 'Open Tour',
   'system_notice.v3_journey.highlight_timeline': 'Day-by-day timeline & gallery',
   'system_notice.v3_journey.highlight_photos': 'Import from Immich or Synology',
   'system_notice.v3_journey.highlight_share': 'Share publicly — no login needed',
@@ -16,8 +16,8 @@ const system_notice: TranslationStrings = {
   'system_notice.v3_features.body': 'A few more things worth knowing about this release.',
   'system_notice.v3_features.highlight_dashboard': 'Mobile-first dashboard redesign',
   'system_notice.v3_features.highlight_offline': 'Full offline mode as a PWA',
-  'system_notice.v3_features.highlight_search': 'Real-time place search autocomplete',
-  'system_notice.v3_features.highlight_import': 'Import places from KMZ/KML files',
+  'system_notice.v3_features.highlight_search': 'Real-time venue search autocomplete',
+  'system_notice.v3_features.highlight_import': 'Import venues from KMZ/KML files',
   'system_notice.v3_mcp.title': 'MCP: OAuth 2.1 upgrade',
   'system_notice.v3_mcp.body':
     'The MCP integration has been fully overhauled. OAuth 2.1 is now the recommended auth method. Legacy static tokens (trek_…) are deprecated and will be removed in a future release.',
@@ -30,11 +30,11 @@ const system_notice: TranslationStrings = {
     'The 3.0.14 upgrade detected one or more username or email collisions caused by leading/trailing whitespace in stored accounts. Affected accounts were renamed automatically. Check the server logs for lines starting with **[migration] WHITESPACE COLLISION** to identify which accounts need review.',
   'system_notice.welcome_v1.title': 'Welcome to Travla',
   'system_notice.welcome_v1.body':
-    'Your all-in-one travel planner. Build itineraries, share trips with friends, and stay organized — online or offline.',
-  'system_notice.welcome_v1.cta_label': 'Plan a trip',
-  'system_notice.welcome_v1.hero_alt': 'A scenic travel destination with Travla planning UI overlay',
-  'system_notice.welcome_v1.highlight_plan': 'Day-by-day itineraries for any trip',
-  'system_notice.welcome_v1.highlight_share': 'Collaborate with travel partners',
+    'Your all-in-one live event & production planner. Build schedules, share events with your crew, and stay organized — online or offline.',
+  'system_notice.welcome_v1.cta_label': 'Plan an event',
+  'system_notice.welcome_v1.hero_alt': 'A live event venue with Travla planning UI overlay',
+  'system_notice.welcome_v1.highlight_plan': 'Day-by-day schedules for any event',
+  'system_notice.welcome_v1.highlight_share': 'Collaborate with your whole crew',
   'system_notice.welcome_v1.highlight_offline': 'Works offline on mobile',
   'system_notice.dev_test_modal.title': '[Dev] Test notice',
   'system_notice.dev_test_modal.body': 'This is a dev-only test notice.',

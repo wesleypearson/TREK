@@ -35,7 +35,7 @@ export const tripRepo = {
       async () => {
         const cached = await offlineDb.trips.get(Number(tripId))
         if (cached) return { trip: cached }
-        throw new Error('No cached trip data available offline')
+        throw new Error('No cached event data available offline')
       },
     )
   },

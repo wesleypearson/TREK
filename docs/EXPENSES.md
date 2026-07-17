@@ -122,15 +122,47 @@ stable shape for feeding AU accounting tools (Xero/MYOB CSV import works
 as-is; direct OAuth integrations would need app credentials registered with
 those providers).
 
+## Venue-linked expenses
+
+An expense can be pinned to one of the event's venues (a `places` row) via
+`budget_items.place_id` (`ON DELETE SET NULL` — deleting the venue keeps the
+expense). Both directions are first-class:
+
+- **Expense side**: the expense modal has a searchable Venue picker; expense
+  rows show a venue chip; `place_name` is hydrated by the server per viewer.
+- **Venue side**: the venue card (PlaceInspector) shows a "Spend at this
+  venue" section — every linked expense, a total in the event currency
+  (frozen-rate conversion, same maths as the ledger), and an Add-expense
+  button that opens the modal pre-pinned (`ExpensePrefill.placeId`).
+
+Visibility follows the places rules: only venues the acting user can see are
+linkable (a foreign or invisible venue 400s as unknown), and a private
+venue's name hydrates as `null` for everyone else, so it never leaks through
+a group expense. The client only re-sends a changed pin, so editing an
+expense that carries someone else's private-venue link still saves.
+
+## In-app guide and (i) popups
+
+The Costs header has a **Guide** button (mobile too) opening
+`ExpensesGuideModal` — nine sections covering lodging, splitting, scanning,
+personal spend, venues, tabs/share links, settling, guests, and "What the
+crew sees" (the visibility rules members ask about). Feature-scoped `(i)`
+info dots (`client/src/components/shared/InfoDot.tsx`, popup-modal pattern)
+sit next to the split selector, personal toggle, venue picker, scan button,
+settle-up header, tabs modal and the venue spend section. All copy lives in
+`shared/src/i18n/*/budget.ts` under `costs.info.*` and `costs.guide.*`,
+translated across all 22 locales.
+
 ## API summary
 
 - `POST /api/trips/:tripId/budget/receipt-scan` — multipart `file`; 200 →
   `{ file, receipt: { merchant, date, currency, total, items[] }, warnings }`;
   409/502 with a human-readable `error` (and the stored `file`) when no
   capable AI is configured or extraction fails.
-- `POST/PUT /api/trips/:tripId/budget[/:id]` — accepts `is_private: boolean`
-  and `receipt_file_id: number|null`; non-creator `is_private` changes are
-  ignored.
+- `POST/PUT /api/trips/:tripId/budget[/:id]` — accepts `is_private: boolean`,
+  `receipt_file_id: number|null` and `place_id: number|null` (must be a
+  visible venue of the same event, else 400); non-creator `is_private`
+  changes are ignored.
 - `GET/POST /api/trips/:tripId/expense-tabs` — list/create tabs (create body:
   `{ first_name, last_name?, currency? }`). Tabs are strictly per-owner.
 - `POST /:id/items` `{ budget_item_id?, label?, amount, share_receipt? }`,

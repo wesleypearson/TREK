@@ -4,7 +4,7 @@ const budget: TranslationStrings = {
   'budget.title': 'Budget',
   'budget.exportCsv': 'Export CSV',
   'budget.emptyTitle': 'No budget created yet',
-  'budget.emptyText': 'Create categories and entries to plan your travel budget',
+  'budget.emptyText': 'Create categories and entries to plan your event budget',
   'budget.emptyPlaceholder': 'Enter category name...',
   'budget.createCategory': 'Create Category',
   'budget.category': 'Category',
@@ -31,10 +31,10 @@ const budget: TranslationStrings = {
   'budget.perPerson': 'Per Person',
   'budget.paid': 'Paid',
   'budget.open': 'Open',
-  'budget.noMembers': 'No members assigned',
+  'budget.noMembers': 'No crew members assigned',
   'budget.settlement': 'Settlement',
   'budget.settlementInfo':
-    'Click a member avatar on a budget item to mark them green — this means they paid. The settlement then shows who owes whom and how much.',
+    'Click a crew member avatar on a budget item to mark them green — this means they paid. The settlement then shows who owes whom and how much.',
   'budget.netBalances': 'Net Balances',
   'budget.categoriesLabel': 'categories',
   'costs.you': 'You',
@@ -44,8 +44,8 @@ const budget: TranslationStrings = {
   'costs.youOweSub': 'You should pay others',
   'costs.youreOwed': "You're owed",
   'costs.youreOwedSub': 'Others should pay you',
-  'costs.totalSpend': 'Total trip spend',
-  'costs.totalSpendSub': 'Across all travelers',
+  'costs.totalSpend': 'Total event spend',
+  'costs.totalSpendSub': 'Across the whole crew',
   'costs.to': 'To',
   'costs.from': 'From',
   'costs.allSettled': "You're all settled up",
@@ -101,6 +101,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} in {to}',
   'costs.category': 'Category',
   'costs.whoPaid': 'Who paid?',
+  'costs.venue': 'Venue',
+  'costs.noVenue': 'No venue',
+  'costs.privateVenue': 'Private venue',
   'costs.splitBetween': 'Split equally between',
   'costs.split': 'Split',
   'costs.splitEqually': 'Equally',
@@ -121,7 +124,7 @@ const budget: TranslationStrings = {
   'costs.cat.tips': 'Tips',
   'costs.cat.other': 'Other',
   'costs.daysCount': '{count} days',
-  'costs.travelers': '{count} travelers',
+  'costs.travelers': '{count} crew members',
   'costs.liveRate': 'live rate',
   'costs.settleAll': 'Settle all',
   'costs.payment': 'Payment',
@@ -171,11 +174,11 @@ const budget: TranslationStrings = {
   'costs.personalHint': 'Not split or settled — just recorded as your own spend.',
   'costs.tabLinkNewGuest': 'New temp guest — joins every split',
   'costs.tabLinkMember': 'Link to {name}',
-  'costs.tabLinkNone': 'Name only (no member link)',
+  'costs.tabLinkNone': 'Name only (no crew member link)',
   'costs.tabLinkHint':
-    'Linked tabs follow the trip ledger: share a bill by assigning this person in the expense split.',
+    'Linked tabs follow the event ledger: share a bill by assigning this person in the expense split.',
   'costs.tabLinked': 'Linked',
-  'costs.tabLiveHint': 'Follows the trip ledger — share bills with {name} by assigning them in the expense split.',
+  'costs.tabLiveHint': 'Follows the event ledger — share bills with {name} by assigning them in the expense split.',
   'costs.tabOwedTo': 'Owes',
   'costs.tabPaidTo': 'Paid {name}',
   'costs.tabNoLinkedCharge': 'Linked tabs follow the split — assign the person in the expense instead.',
@@ -186,9 +189,69 @@ const budget: TranslationStrings = {
   'costs.reset': 'Reset',
   'costs.resetTitle': 'Reset all expenses',
   'costs.resetWarning':
-    'This permanently deletes every expense, settlement and public tab link in this trip. Members and guests stay. This cannot be undone.',
+    'This permanently deletes every expense, settlement and public tab link in this event. Crew members and guests stay. This cannot be undone.',
   'costs.resetConfirm': 'Delete everything',
   'costs.resetDone': 'Expenses reset',
+
+  'costs.sharesSummary': 'Individual shares summary',
+  'costs.excluded': 'Excluded',
+  'costs.splitMatches': 'Split matches total',
+  'costs.splitProgress': 'Sum of splits: {sum} of {total} ({direction} by {diff})',
+  'costs.splitUnder': 'under',
+  'costs.splitOver': 'over',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Splitting a bill',
+  'costs.info.splitBody':
+    'Equally divides the total between everyone you select. Custom lets you type each person’s share. Ticket itemizes the bill line by line — set a quantity and unit price per line, then tap the crew members who shared that line, and everyone is billed only for what they had.',
+  'costs.info.personalTitle': 'Personal expenses',
+  'costs.info.personalBody':
+    'A personal expense is only yours: it is recorded against your own spend, stays invisible to the rest of the crew, and never enters the group settlement. Use it to track your own costs alongside the shared ones.',
+  'costs.info.venueTitle': 'Venues on expenses',
+  'costs.info.venueBody':
+    'Pin an expense to one of the event’s venues and it shows up on that venue’s card with a running total — so you can see what a venue has cost at a glance. Add an expense straight from a venue card and it arrives pre-pinned.',
+  'costs.info.tabsTitle': 'Tabs & share links',
+  'costs.info.tabsBody':
+    'A tab gives one person a live view of what they owe, shared as a link that needs no account. Link a tab to a crew member (or a guest you added by name) and it follows the event ledger: their split shares, who they owe, and any payments — including your payment details, so they know exactly how to square up.',
+  'costs.info.settleTitle': 'Settling up',
+  'costs.info.settleBody':
+    'The settlement works out who owes whom with the fewest transfers, using the exchange rate frozen when each expense was entered. Record a payment when money actually changes hands; everyone’s balances update live.',
+  'costs.info.scanTitle': 'Scanning receipts',
+  'costs.info.scanBody':
+    'Scan a docket with your camera, pick photos from your library, or choose a file — including document scans saved from the iOS Notes app. A long receipt can arrive as several photos, and each line comes in with its quantity and unit price, ready to assign to the crew.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Guide',
+  'costs.guide.title': 'Expenses guide',
+  'costs.guide.intro':
+    'Everything the crew spends on this event lives here — lodged, split, pinned to venues, and settled without spreadsheets. This is how it works, and how it looks to everyone else.',
+  'costs.guide.lodgeTitle': 'Lodging an expense',
+  'costs.guide.lodgeBody':
+    'Tap Add expense, give it a name, an amount and a category, and say who paid. Expenses can be in any currency — the rate is frozen the moment you save, so settled numbers never drift.',
+  'costs.guide.splitTitle': 'Splitting',
+  'costs.guide.splitBody':
+    'Split equally, type custom shares, or itemize the ticket line by line and assign each line to the crew members who shared it. Anyone not on a line pays nothing for it.',
+  'costs.guide.scanTitle': 'Receipt scanning',
+  'costs.guide.scanBody':
+    'Photograph a docket (or pick an iOS Notes document scan from Files) and the lines are read for you — quantities, unit prices and the total. Long receipts can be shot in up to six parts.',
+  'costs.guide.personalTitle': 'Personal spend',
+  'costs.guide.personalBody':
+    'Mark an expense “Personal (only me)” to track your own costs. It is invisible to the rest of the crew and never touches the group settlement.',
+  'costs.guide.venuesTitle': 'Venues',
+  'costs.guide.venuesBody':
+    'Pin expenses to the event’s venues. Each venue card shows its linked spend and total, and its Add expense button lodges a pre-pinned expense.',
+  'costs.guide.tabsTitle': 'Tabs & share links',
+  'costs.guide.tabsBody':
+    'Give anyone a live link to their running balance — no account needed. Linked tabs follow the ledger automatically; standalone tabs carry only what you charge to them. Your payment details show on the link so people know how to pay you.',
+  'costs.guide.settleTitle': 'Settling up',
+  'costs.guide.settleBody':
+    'Settle up shows who owes whom with the fewest transfers. Record payments as they happen; undoing a settlement reopens the balances.',
+  'costs.guide.guestsTitle': 'People without accounts',
+  'costs.guide.guestsBody':
+    'Add someone to a bill by name — no signup needed. They join splits like anyone else, can get their own tab link, and can claim their spot with the event join link later.',
+  'costs.guide.viewsTitle': 'What the crew sees',
+  'costs.guide.viewsBody':
+    'Every crew member sees the shared ledger, their own balance, and what they lent or borrowed per expense. Personal expenses stay private to their owner; private venues never reveal their name through an expense; and tab links show outsiders only their own charges, payments and how to pay — never the whole ledger.',
 };
 
 export default budget;

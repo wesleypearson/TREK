@@ -32,7 +32,7 @@ export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => 
       set(state => ({ places: [data.place, ...state.places] }))
       return data.place
     } catch (err: unknown) {
-      throw new Error(getApiErrorMessage(err, 'Error adding place'))
+      throw new Error(getApiErrorMessage(err, 'Error adding venue'))
     }
   },
 
@@ -57,7 +57,7 @@ export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => 
       })
       return data.place
     } catch (err: unknown) {
-      throw new Error(getApiErrorMessage(err, 'Error updating place'))
+      throw new Error(getApiErrorMessage(err, 'Error updating venue'))
     }
   },
 
@@ -79,7 +79,7 @@ export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => 
         }
       })
     } catch (err: unknown) {
-      throw new Error(getApiErrorMessage(err, 'Error deleting place'))
+      throw new Error(getApiErrorMessage(err, 'Error deleting venue'))
     }
   },
 
@@ -103,7 +103,7 @@ export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => 
         }
       })
     } catch (err: unknown) {
-      throw new Error(getApiErrorMessage(err, 'Error deleting places'))
+      throw new Error(getApiErrorMessage(err, 'Error deleting venues'))
     }
   },
 
@@ -132,7 +132,7 @@ export const createPlacesSlice = (set: SetState, get: GetState): PlacesSlice => 
         }
       })
     } catch (err: unknown) {
-      throw new Error(getApiErrorMessage(err, 'Error updating places'))
+      throw new Error(getApiErrorMessage(err, 'Error updating venues'))
     }
   },
 })

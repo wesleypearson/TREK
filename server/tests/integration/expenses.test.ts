@@ -484,3 +484,83 @@ describe('Receipt scanning (EXP)', () => {
     expect(item.receipt_file_id).toBe(fileId);
   });
 });
+
+describe('Venue-linked expenses (EXP)', () => {
+  /** Insert a venue (places row) directly; visibility mirrors the places feature. */
+  const seedVenue = (name: string, opts: { tripId?: number; createdBy?: number; isPrivate?: boolean } = {}) =>
+    testDb.prepare('INSERT INTO places (trip_id, name, created_by, is_private) VALUES (?, ?, ?, ?)')
+      .run(opts.tripId ?? tripId, name, opts.createdBy ?? null, opts.isPrivate ? 1 : 0).lastInsertRowid as number;
+
+  it('EXP-019: an expense pinned to a venue carries the venue name for the whole crew', async () => {
+    const venueId = seedVenue('Rooftop Bar');
+    const create = await createItemAs(owner.id, { name: 'Bar tab', total_price: 80, place_id: venueId });
+    expect(create.status).toBe(201);
+    expect(create.body.item.place_id).toBe(venueId);
+    expect(create.body.item.place_name).toBe('Rooftop Bar');
+
+    const asMember = await listItemsAs(member.id);
+    const item = (asMember.body.items as any[]).find((i) => i.id === create.body.item.id);
+    expect(item.place_id).toBe(venueId);
+    expect(item.place_name).toBe('Rooftop Bar');
+  });
+
+  it('EXP-020: a venue from another event, or an invisible one, cannot be linked', async () => {
+    const otherTrip = createTrip(testDb, owner.id);
+    const foreign = seedVenue('Elsewhere', { tripId: otherTrip.id });
+    const foreignRes = await createItemAs(owner.id, { name: 'Nope', total_price: 5, place_id: foreign });
+    expect(foreignRes.status).toBe(400);
+
+    // The member's PRIVATE venue is indistinguishable from a missing one.
+    const hidden = seedVenue('Secret spot', { createdBy: member.id, isPrivate: true });
+    const hiddenRes = await createItemAs(owner.id, { name: 'Nope', total_price: 5, place_id: hidden });
+    expect(hiddenRes.status).toBe(400);
+    // ...but its creator can link it.
+    const ownRes = await createItemAs(member.id, { name: 'Mine', total_price: 5, place_id: hidden });
+    expect(ownRes.status).toBe(201);
+    expect(ownRes.body.item.place_name).toBe('Secret spot');
+  });
+
+  it('EXP-021: a private venue name never leaks through a group expense', async () => {
+    const hidden = seedVenue('Secret spot', { createdBy: member.id, isPrivate: true });
+    const create = await createItemAs(member.id, { name: 'Snacks', total_price: 12, place_id: hidden });
+    expect(create.status).toBe(201);
+
+    const asOwner = await listItemsAs(owner.id);
+    const item = (asOwner.body.items as any[]).find((i) => i.id === create.body.item.id);
+    expect(item).toBeDefined(); // the group expense itself is visible...
+    expect(item.place_name).toBeNull(); // ...the private venue's name is not.
+
+    const asCreator = await listItemsAs(member.id);
+    const own = (asCreator.body.items as any[]).find((i) => i.id === create.body.item.id);
+    expect(own.place_name).toBe('Secret spot');
+  });
+
+  it('EXP-022: an expense can be re-pinned and unpinned on update', async () => {
+    const venueA = seedVenue('Stage A');
+    const venueB = seedVenue('Stage B');
+    const create = await createItemAs(owner.id, { name: 'Crew lunch', total_price: 60, place_id: venueA });
+    expect(create.status).toBe(201);
+    const id = create.body.item.id;
+
+    const move = await request(app).put(`/api/trips/${tripId}/budget/${id}`)
+      .set('Cookie', authCookie(owner.id)).send({ place_id: venueB });
+    expect(move.status).toBe(200);
+    expect(move.body.item.place_id).toBe(venueB);
+    expect(move.body.item.place_name).toBe('Stage B');
+
+    const unpin = await request(app).put(`/api/trips/${tripId}/budget/${id}`)
+      .set('Cookie', authCookie(owner.id)).send({ place_id: null });
+    expect(unpin.status).toBe(200);
+    expect(unpin.body.item.place_id).toBeNull();
+
+    // An untouched update leaves the pin alone.
+    const repin = await request(app).put(`/api/trips/${tripId}/budget/${id}`)
+      .set('Cookie', authCookie(owner.id)).send({ place_id: venueA });
+    expect(repin.status).toBe(200);
+    const rename = await request(app).put(`/api/trips/${tripId}/budget/${id}`)
+      .set('Cookie', authCookie(owner.id)).send({ name: 'Crew dinner' });
+    expect(rename.status).toBe(200);
+    expect(rename.body.item.place_id).toBe(venueA);
+  });
+
+});

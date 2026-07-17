@@ -47,10 +47,10 @@ describe('TripMembersModal', () => {
     expect(document.body).toBeInTheDocument();
   });
 
-  it('FE-COMP-MEMBERS-002: shows Share Trip title', () => {
+  it('FE-COMP-MEMBERS-002: shows Share Event title', () => {
     render(<TripMembersModal {...defaultProps} />);
-    // members.shareTrip = "Share Trip"
-    expect(screen.getByText('Share Trip')).toBeInTheDocument();
+    // members.shareTrip = "Share Event"
+    expect(screen.getByText('Share Event')).toBeInTheDocument();
   });
 
   it('FE-COMP-MEMBERS-003: shows owner username after load', async () => {
@@ -171,7 +171,7 @@ describe('TripMembersModal', () => {
 
   it('FE-COMP-MEMBERS-015: modal renders when isOpen is true', () => {
     render(<TripMembersModal {...defaultProps} isOpen={true} />);
-    expect(screen.getByText('Share Trip')).toBeInTheDocument();
+    expect(screen.getByText('Share Event')).toBeInTheDocument();
   });
 
   // ── Share Link Section (016-021) ───────────────────────────────────────────
@@ -397,7 +397,7 @@ describe('TripMembersModal', () => {
     render(<TripMembersModal {...defaultProps} />);
     await screen.findByText('alice');
 
-    const leaveBtn = screen.getByTitle('Leave trip');
+    const leaveBtn = screen.getByTitle('Leave event');
     await user.click(leaveBtn);
 
     await waitFor(() => {

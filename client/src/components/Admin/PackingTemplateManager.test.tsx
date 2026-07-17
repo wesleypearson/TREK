@@ -55,7 +55,7 @@ describe('PackingTemplateManager', () => {
     await screen.findByText('No templates created yet');
     const createBtn = screen.getByRole('button', { name: /new template/i });
     await user.click(createBtn);
-    expect(screen.getByPlaceholderText('Template name (e.g. Beach Holiday)')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Template name (e.g. Festival Load-In)')).toBeInTheDocument();
   });
 
   it('FE-ADMIN-PKG-005: creates template on Enter and shows success toast', async () => {
@@ -70,7 +70,7 @@ describe('PackingTemplateManager', () => {
     render(<><ToastContainer /><PackingTemplateManager /></>);
     await screen.findByText('No templates created yet');
     await user.click(screen.getByRole('button', { name: /new template/i }));
-    const input = screen.getByPlaceholderText('Template name (e.g. Beach Holiday)');
+    const input = screen.getByPlaceholderText('Template name (e.g. Festival Load-In)');
     await user.type(input, 'New Template{Enter}');
     await waitFor(() => expect(postCalled).toBe(true));
     // "New Template" may appear both as the button label and the new list item
@@ -90,10 +90,10 @@ describe('PackingTemplateManager', () => {
     render(<PackingTemplateManager />);
     await screen.findByText('No templates created yet');
     await user.click(screen.getByRole('button', { name: /new template/i }));
-    const input = screen.getByPlaceholderText('Template name (e.g. Beach Holiday)');
+    const input = screen.getByPlaceholderText('Template name (e.g. Festival Load-In)');
     await user.type(input, 'Test{Escape}');
     await waitFor(() => {
-      expect(screen.queryByPlaceholderText('Template name (e.g. Beach Holiday)')).not.toBeInTheDocument();
+      expect(screen.queryByPlaceholderText('Template name (e.g. Festival Load-In)')).not.toBeInTheDocument();
     });
     expect(postCalled).toBe(false);
   });
@@ -496,16 +496,16 @@ describe('PackingTemplateManager', () => {
     render(<PackingTemplateManager />);
     await screen.findByText('No templates created yet');
     await user.click(screen.getByRole('button', { name: /new template/i }));
-    expect(screen.getByPlaceholderText('Template name (e.g. Beach Holiday)')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('Template name (e.g. Festival Load-In)')).toBeInTheDocument();
 
     // Find the X (cancel) button in the create row — it's the last button in the create row
-    const createRow = screen.getByPlaceholderText('Template name (e.g. Beach Holiday)').closest('div')!;
+    const createRow = screen.getByPlaceholderText('Template name (e.g. Festival Load-In)').closest('div')!;
     const createRowButtons = Array.from(createRow.querySelectorAll('button'));
     const cancelBtn = createRowButtons[createRowButtons.length - 1] as HTMLElement;
     await user.click(cancelBtn);
 
     await waitFor(() =>
-      expect(screen.queryByPlaceholderText('Template name (e.g. Beach Holiday)')).not.toBeInTheDocument()
+      expect(screen.queryByPlaceholderText('Template name (e.g. Festival Load-In)')).not.toBeInTheDocument()
     );
   });
 });

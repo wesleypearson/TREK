@@ -56,7 +56,7 @@ export default function DevNotificationsPanel(): React.ReactElement {
   const selectedTrip = trips.find(t => t.id === selectedTripId)
   const selectedUser = users.find(u => u.id === selectedUserId)
   const username = user?.username || 'Admin'
-  const tripTitle = selectedTrip?.title || 'Test Trip'
+  const tripTitle = selectedTrip?.title || 'Test Event'
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -171,9 +171,9 @@ export default function DevNotificationsPanel(): React.ReactElement {
       {/* ── Trip-Scoped Events ───────────────────────────────────────────── */}
       {trips.length > 0 && (
         <div>
-          <SectionTitle>Trip-Scoped Events</SectionTitle>
+          <SectionTitle>Event-Scoped Notifications</SectionTitle>
           <p className="text-xs mb-3 text-content-muted">
-            Fires each trip event to all members of the selected trip (excluding yourself).
+            Fires each notification to all crew members of the selected event (excluding yourself).
           </p>
           <TripSelector />
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">

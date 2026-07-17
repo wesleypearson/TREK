@@ -215,7 +215,7 @@ export const useTripStore = create<TripStoreState>((set, get) => ({
       set({ days: daysData.days, assignments: assignmentsMap, dayNotes: dayNotesMap })
       return result.trip
     } catch (err: unknown) {
-      throw new Error(getApiErrorMessage(err, 'Error updating trip'))
+      throw new Error(getApiErrorMessage(err, 'Error updating event'))
     }
   },
 

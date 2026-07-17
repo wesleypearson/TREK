@@ -144,6 +144,10 @@ export interface BudgetItem {
   is_private?: number;
   /** Scanned receipt / tax invoice stored in trip_files (custom). */
   receipt_file_id?: number | null;
+  /** Venue link (custom): the places row this expense belongs to. */
+  place_id?: number | null;
+  /** Venue name hydrated per viewer — null when the venue is invisible to them. */
+  place_name?: string | null;
   sort_order: number;
   created_at?: string;
   members?: BudgetItemMember[];

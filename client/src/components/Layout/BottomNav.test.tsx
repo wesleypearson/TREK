@@ -42,13 +42,13 @@ describe('BottomNav', () => {
 
   it('FE-COMP-BOTTOMNAV-002: shows the dashboard nav item', () => {
     render(<BottomNav />);
-    expect(screen.getByText('My Trips')).toBeInTheDocument();
+    expect(screen.getByText('My Events')).toBeInTheDocument();
   });
 
   it('FE-COMP-BOTTOMNAV-003: centre create button creates a new trip by default', async () => {
     const user = userEvent.setup();
     render(<BottomNav />);
-    await user.click(screen.getByRole('button', { name: 'New Trip' }));
+    await user.click(screen.getByRole('button', { name: 'New Event' }));
     expect(mockNavigate).toHaveBeenCalledWith('/dashboard?create=1');
   });
 
@@ -86,7 +86,7 @@ describe('BottomNav', () => {
     const user = userEvent.setup();
     sessionStorage.setItem('trip-tab-42', 'plan');
     render(<BottomNav />, { initialEntries: ['/trips/42'] });
-    await user.click(screen.getByRole('button', { name: 'Add Place/Activity' }));
+    await user.click(screen.getByRole('button', { name: 'Add Venue/Activity' }));
     expect(mockNavigate).toHaveBeenCalledWith('/trips/42?create=place');
   });
 

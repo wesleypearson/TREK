@@ -51,7 +51,7 @@ describe('DashboardPage', () => {
       seedStore(useAuthStore, { isAuthenticated: true, user: buildUser() });
       render(<DashboardPage />);
       // Dashboard content is present when authenticated
-      expect(screen.getByText(/my trips/i)).toBeInTheDocument();
+      expect(screen.getByText(/my events/i)).toBeInTheDocument();
     });
   });
 
@@ -91,7 +91,7 @@ describe('DashboardPage', () => {
 
       // With no trips the planned filter falls back to the "add trip" card
       await waitFor(() => {
-        expect(screen.getByText(/plan a new trip from scratch/i)).toBeInTheDocument();
+        expect(screen.getByText(/plan a new event from scratch/i)).toBeInTheDocument();
       });
     });
   });
@@ -102,14 +102,14 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: /new trip/i }).length).toBeGreaterThan(0);
+        expect(screen.getAllByRole('button', { name: /new event/i }).length).toBeGreaterThan(0);
       });
 
-      await user.click(screen.getAllByRole('button', { name: /new trip/i })[0]);
+      await user.click(screen.getAllByRole('button', { name: /new event/i })[0]);
 
       // TripFormModal opens — "Create New Trip" appears in heading and submit button
       await waitFor(() => {
-        expect(screen.getAllByText(/create new trip/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/create new event/i).length).toBeGreaterThan(0);
       });
     });
   });
@@ -127,13 +127,13 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       // Header renders immediately
-      expect(screen.getByText(/my trips/i)).toBeInTheDocument();
+      expect(screen.getByText(/my events/i)).toBeInTheDocument();
 
       // Loading is indicated by subtitle "Loading…" or skeleton cards
       // The subtitle during loading shows t('common.loading')
       await waitFor(() => {
         // After loading completes, no-trips state or trips appear
-        expect(screen.queryByText(/loading/i) === null || screen.getByText(/no trips yet/i)).toBeTruthy();
+        expect(screen.queryByText(/loading/i) === null || screen.getByText(/no events yet/i)).toBeTruthy();
       });
     });
   });
@@ -141,7 +141,7 @@ describe('DashboardPage', () => {
   describe('FE-PAGE-DASH-007: Dashboard title visible', () => {
     it('shows the dashboard title', async () => {
       render(<DashboardPage />);
-      expect(screen.getByText(/my trips/i)).toBeInTheDocument();
+      expect(screen.getByText(/my events/i)).toBeInTheDocument();
     });
   });
 
@@ -402,7 +402,7 @@ describe('DashboardPage', () => {
       await user.click(copyButtons[0]);
 
       // Confirm the copy dialog
-      const confirmButton = await screen.findByRole('button', { name: /copy trip/i });
+      const confirmButton = await screen.findByRole('button', { name: /copy event/i });
       await user.click(confirmButton);
 
       await waitFor(() => {
@@ -487,17 +487,17 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       await waitFor(() => {
-        expect(screen.getAllByRole('button', { name: /new trip/i }).length).toBeGreaterThan(0);
+        expect(screen.getAllByRole('button', { name: /new event/i }).length).toBeGreaterThan(0);
       });
 
-      await user.click(screen.getAllByRole('button', { name: /new trip/i })[0]);
+      await user.click(screen.getAllByRole('button', { name: /new event/i })[0]);
 
       await waitFor(() => {
-        expect(screen.getAllByText(/create new trip/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/create new event/i).length).toBeGreaterThan(0);
       });
 
       // Fill in the title
-      const titleInput = screen.getByPlaceholderText(/e\.g\. Summer in Japan/i);
+      const titleInput = screen.getByPlaceholderText(/e\.g\. Summer Festival Tour/i);
       await user.clear(titleInput);
       await user.type(titleInput, 'New Trip Test');
 
@@ -523,12 +523,12 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       // Page should still render header
-      expect(screen.getByText(/my trips/i)).toBeInTheDocument();
+      expect(screen.getByText(/my events/i)).toBeInTheDocument();
 
       // Wait for loading to complete (error path)
       await waitFor(() => {
         // After error, loading state resolves and empty state or the title remains
-        expect(screen.queryByText(/my trips/i)).toBeInTheDocument();
+        expect(screen.queryByText(/my events/i)).toBeInTheDocument();
       });
     });
   });
@@ -602,7 +602,7 @@ describe('DashboardPage', () => {
       // An upcoming trip is not "live", and the countdown cell counts down to the start
       expect(screen.queryByText(/live now/i)).not.toBeInTheDocument();
       await waitFor(() => {
-        expect(screen.getAllByText(/trip starts in/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/event starts in/i).length).toBeGreaterThan(0);
       });
     });
   });
@@ -617,7 +617,7 @@ describe('DashboardPage', () => {
 
       // Mobile Quick Actions: "New Trip" button rendered in the quick-actions grid
       // getAllByText because it appears in both mobile quick-actions and desktop header
-      const newTripButtons = screen.getAllByText(/new trip/i);
+      const newTripButtons = screen.getAllByText(/new event/i);
       expect(newTripButtons.length).toBeGreaterThan(0);
     });
   });
@@ -741,7 +741,7 @@ describe('DashboardPage', () => {
       await user.click(copyButtons[0]);
 
       // Confirm the copy dialog
-      const confirmButton = await screen.findByRole('button', { name: /copy trip/i });
+      const confirmButton = await screen.findByRole('button', { name: /copy event/i });
       await user.click(confirmButton);
 
       await waitFor(() => {
@@ -761,12 +761,12 @@ describe('DashboardPage', () => {
       render(<DashboardPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/plan a new trip from scratch/i)).toBeInTheDocument();
+        expect(screen.getByText(/plan a new event from scratch/i)).toBeInTheDocument();
       });
 
       // The add-trip card and the floating action button both offer a way to create a trip
       const createButtons = screen.getAllByRole('button');
-      const createBtn = createButtons.find(btn => btn.textContent?.toLowerCase().includes('trip'));
+      const createBtn = createButtons.find(btn => btn.textContent?.toLowerCase().includes('event'));
       expect(createBtn).toBeDefined();
     });
   });
@@ -801,8 +801,8 @@ describe('DashboardPage', () => {
       // Boarding pass summarises destinations and travelers for the spotlight trip
       await waitFor(() => {
         expect(screen.getByText(/5 destinations/i)).toBeInTheDocument();
-        // shared_count (2) + the owner = 3 travelers
-        expect(screen.getByText(/3 travelers/i)).toBeInTheDocument();
+        // shared_count (2) + the owner = 3 crew members
+        expect(screen.getByText(/3 crew members/i)).toBeInTheDocument();
       });
 
       // The countdown ring labels the remaining days of the ongoing trip
@@ -882,7 +882,7 @@ describe('DashboardPage', () => {
       });
 
       // Page renders successfully with dark_mode = 'auto'
-      expect(screen.getByText(/my trips/i)).toBeInTheDocument();
+      expect(screen.getByText(/my events/i)).toBeInTheDocument();
     });
   });
 

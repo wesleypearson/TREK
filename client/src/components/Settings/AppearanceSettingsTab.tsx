@@ -45,8 +45,8 @@ const WIDGET_LABELS: Record<string, string> = {
   timezones: 'Timezones',
   upcomingReservations: 'Upcoming reservations',
   atlas: 'Atlas / countries',
-  tripsTotal: 'Trips total',
-  daysTraveled: 'Days traveled',
+  tripsTotal: 'Events total',
+  daysTraveled: 'Days on tour',
   distanceFlown: 'Distance flown',
 }
 // Grouped by where the widgets actually sit on the dashboard. The right sidebar
@@ -329,7 +329,7 @@ export default function AppearanceSettingsTab(): React.ReactElement {
             <SizeRow
               sampleClass="text-body"
               name={tr('settings.appearance.size.normal', 'Normal')}
-              example={tr('settings.appearance.example.normal', 'Place names, descriptions')}
+              example={tr('settings.appearance.example.normal', 'Venue names, descriptions')}
               sample={tr('settings.appearance.preview.normal', 'Normal body text')}
               value={cfg.typeScale.body}
               onChange={(v) => update({ typeScale: { ...cfg.typeScale, body: v } })}

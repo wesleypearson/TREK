@@ -578,6 +578,7 @@ export default function TripPlannerPage(): React.ReactElement | null {
                   } catch (err: unknown) { toast.error(err instanceof Error ? err.message : t('common.unknownError')) }
                 }}
                 onUpdatePlace={async (placeId, data) => { try { await tripActions.updatePlace(tripId, placeId, data) } catch (err: unknown) { toast.error(err instanceof Error ? err.message : t('common.unknownError')) } }}
+                onAddExpense={enabledAddons.budget ? (placeId) => setBookingExpense({ editing: null, prefill: { placeId } }) : undefined}
                 leftWidth={(isMobile || window.innerWidth < 900) ? 0 : (leftCollapsed ? 0 : leftWidth)}
                 rightWidth={(isMobile || window.innerWidth < 900) ? 0 : (rightCollapsed ? 0 : rightWidth)}
               />
@@ -616,6 +617,7 @@ export default function TripPlannerPage(): React.ReactElement | null {
                       } catch (err: unknown) { toast.error(err instanceof Error ? err.message : t('common.unknownError')) }
                     }}
                     onUpdatePlace={async (placeId, data) => { try { await tripActions.updatePlace(tripId, placeId, data) } catch (err: unknown) { toast.error(err instanceof Error ? err.message : t('common.unknownError')) } }}
+                    onAddExpense={enabledAddons.budget ? (placeId) => { setBookingExpense({ editing: null, prefill: { placeId } }); setSelectedPlaceId(null) } : undefined}
                     leftWidth={0}
                     rightWidth={0}
                   />

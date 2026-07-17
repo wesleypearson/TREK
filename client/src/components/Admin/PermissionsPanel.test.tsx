@@ -75,19 +75,19 @@ describe('PermissionsPanel', () => {
     const spinner = document.querySelector('.animate-spin');
     expect(spinner).toBeInTheDocument();
     // The form content (category headings) should not be present
-    expect(screen.queryByText('Trip Management')).not.toBeInTheDocument();
+    expect(screen.queryByText('Event Management')).not.toBeInTheDocument();
   });
 
   it('FE-ADMIN-PERM-002: permission categories and actions render after load', async () => {
     renderPanel();
     // Wait until loading is done — a category heading appears
-    await screen.findByText('Trip Management');
-    expect(screen.getByText('Member Management')).toBeInTheDocument();
+    await screen.findByText('Event Management');
+    expect(screen.getByText('Crew Management')).toBeInTheDocument();
     expect(screen.getByText('Files')).toBeInTheDocument();
     expect(screen.getByText('Content & Schedule')).toBeInTheDocument();
     expect(screen.getByText('Budget, Packing & Collaboration')).toBeInTheDocument();
-    expect(screen.getByText('Create trips')).toBeInTheDocument();
-    expect(screen.getByText('Add / remove members')).toBeInTheDocument();
+    expect(screen.getByText('Create events')).toBeInTheDocument();
+    expect(screen.getByText('Add / remove crew members')).toBeInTheDocument();
   });
 
   it('FE-ADMIN-PERM-003: "customized" badge visible when value differs from default', async () => {
@@ -101,7 +101,7 @@ describe('PermissionsPanel', () => {
       ),
     );
     renderPanel();
-    await screen.findByText('Trip Management');
+    await screen.findByText('Event Management');
     // Badge should appear once (for trip_create)
     expect(screen.getByText('customized')).toBeInTheDocument();
     expect(screen.getAllByText('customized')).toHaveLength(1);
@@ -110,13 +110,13 @@ describe('PermissionsPanel', () => {
   it('FE-ADMIN-PERM-004: Save button is disabled until a value changes', async () => {
     const user = userEvent.setup();
     renderPanel();
-    await screen.findByText('Trip Management');
+    await screen.findByText('Event Management');
 
     const saveButton = screen.getByRole('button', { name: /^Save$/i });
     expect(saveButton).toBeDisabled();
 
     // Open the first CustomSelect trigger (shows current level "Trip members")
-    const triggers = screen.getAllByRole('button', { name: /Trip members/i });
+    const triggers = screen.getAllByRole('button', { name: /Event crew/i });
     await user.click(triggers[0]);
 
     // Pick an option different from the current one (current is trip_member → pick admin)
@@ -131,13 +131,13 @@ describe('PermissionsPanel', () => {
   it('FE-ADMIN-PERM-005: changing a value marks form dirty and enables Save', async () => {
     const user = userEvent.setup();
     renderPanel();
-    await screen.findByText('Trip Management');
+    await screen.findByText('Event Management');
 
     const saveButton = screen.getByRole('button', { name: /^Save$/i });
     expect(saveButton).toBeDisabled();
 
     // Open first CustomSelect dropdown and select a different option
-    const triggers = screen.getAllByRole('button', { name: /Trip members/i });
+    const triggers = screen.getAllByRole('button', { name: /Event crew/i });
     await user.click(triggers[0]);
     const adminOption = await screen.findByText('Admin only');
     await user.click(adminOption);
@@ -159,7 +159,7 @@ describe('PermissionsPanel', () => {
     );
     const user = userEvent.setup();
     renderPanel();
-    await screen.findByText('Trip Management');
+    await screen.findByText('Event Management');
 
     // Customized badge should be visible
     expect(screen.getByText('customized')).toBeInTheDocument();
@@ -186,10 +186,10 @@ describe('PermissionsPanel', () => {
     );
     const user = userEvent.setup();
     renderPanel();
-    await screen.findByText('Trip Management');
+    await screen.findByText('Event Management');
 
     // Dirty the form
-    const triggers = screen.getAllByRole('button', { name: /Trip members/i });
+    const triggers = screen.getAllByRole('button', { name: /Event crew/i });
     await user.click(triggers[0]);
     const adminOption = await screen.findByText('Admin only');
     await user.click(adminOption);
@@ -211,10 +211,10 @@ describe('PermissionsPanel', () => {
     );
     const user = userEvent.setup();
     renderPanel();
-    await screen.findByText('Trip Management');
+    await screen.findByText('Event Management');
 
     // Dirty the form
-    const triggers = screen.getAllByRole('button', { name: /Trip members/i });
+    const triggers = screen.getAllByRole('button', { name: /Event crew/i });
     await user.click(triggers[0]);
     const adminOption = await screen.findByText('Admin only');
     await user.click(adminOption);
@@ -240,10 +240,10 @@ describe('PermissionsPanel', () => {
     );
     const user = userEvent.setup();
     renderPanel();
-    await screen.findByText('Trip Management');
+    await screen.findByText('Event Management');
 
     // Dirty the form
-    const triggers = screen.getAllByRole('button', { name: /Trip members/i });
+    const triggers = screen.getAllByRole('button', { name: /Event crew/i });
     await user.click(triggers[0]);
     const adminOption = await screen.findByText('Admin only');
     await user.click(adminOption);

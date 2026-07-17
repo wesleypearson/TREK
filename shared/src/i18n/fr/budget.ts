@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} en {to}',
   'costs.category': 'Catégorie',
   'costs.whoPaid': 'Qui a payé ?',
+  'costs.venue': 'Lieu',
+  'costs.noVenue': 'Aucun lieu',
+  'costs.privateVenue': 'Lieu privé',
   'costs.splitBetween': 'Partager équitablement entre',
   'costs.pickSomeone': 'Choisissez au moins une personne avec qui partager.',
   'costs.splitSummary': 'Partagé en {count} · {amount} chacun',
@@ -192,5 +195,65 @@ const budget: TranslationStrings = {
     "Cette action supprime définitivement toutes les dépenses, tous les règlements et tous les liens d'ardoise publics de ce voyage. Les membres et les invités sont conservés. Elle ne peut pas être annulée.",
   'costs.resetConfirm': 'Tout supprimer',
   'costs.resetDone': 'Dépenses réinitialisées',
+
+  'costs.sharesSummary': 'Résumé des parts individuelles',
+  'costs.excluded': 'Exclu',
+  'costs.splitMatches': 'La répartition correspond au total',
+  'costs.splitProgress': 'Somme des parts : {sum} sur {total} ({diff} {direction})',
+  'costs.splitUnder': 'en moins',
+  'costs.splitOver': 'en trop',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Partager une addition',
+  'costs.info.splitBody':
+    "« Equally » divise le total à parts égales entre toutes les personnes sélectionnées. « Custom » vous laisse saisir la part de chacun. « Ticket » détaille l'addition ligne par ligne — indiquez une quantité et un prix unitaire par ligne, puis touchez les membres qui ont partagé cette ligne : chacun ne paie que ce qu'il a réellement consommé.",
+  'costs.info.personalTitle': 'Dépenses personnelles',
+  'costs.info.personalBody':
+    "Une dépense personnelle n'appartient qu'à vous : elle est enregistrée dans vos propres dépenses, reste invisible pour le reste du groupe et n'entre jamais dans le règlement commun. Utilisez-la pour suivre vos propres frais à côté des frais partagés.",
+  'costs.info.venueTitle': 'Lieux et dépenses',
+  'costs.info.venueBody':
+    "Épinglez une dépense à l'un des lieux du voyage : elle apparaît sur la fiche de ce lieu avec un total cumulé — vous voyez d'un coup d'œil ce qu'un lieu a coûté. Ajoutez une dépense directement depuis la fiche d'un lieu et elle arrive déjà épinglée.",
+  'costs.info.tabsTitle': 'Ardoises & liens de partage',
+  'costs.info.tabsBody':
+    "Une ardoise donne à une personne une vue en direct de ce qu'elle vous doit, partagée par un lien sans compte requis. Liez une ardoise à un membre (ou à un invité ajouté par son nom) et elle suit les comptes du voyage : ses parts dans les partages, ce qu'elle doit et les paiements — y compris vos informations de paiement, pour qu'elle sache exactement comment vous rembourser.",
+  'costs.info.settleTitle': 'Régler les comptes',
+  'costs.info.settleBody':
+    "Le règlement calcule qui doit combien à qui avec le moins de virements possible, au taux de change figé au moment de la saisie de chaque dépense. Enregistrez un paiement quand l'argent change réellement de mains ; les soldes de tous se mettent à jour en direct.",
+  'costs.info.scanTitle': 'Scanner les reçus',
+  'costs.info.scanBody':
+    "Scannez un ticket avec votre appareil photo, choisissez des photos de votre bibliothèque ou un fichier — y compris les scans de documents enregistrés depuis l'app Notes d'iOS. Un long reçu peut arriver en plusieurs photos, et chaque ligne est importée avec sa quantité et son prix unitaire, prête à être attribuée aux membres.",
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Guide',
+  'costs.guide.title': 'Guide des dépenses',
+  'costs.guide.intro':
+    'Tout ce que le groupe dépense pendant ce voyage vit ici — saisi, partagé, épinglé aux lieux et réglé sans tableur. Voici comment ça marche, et ce que voient les autres.',
+  'costs.guide.lodgeTitle': 'Saisir une dépense',
+  'costs.guide.lodgeBody':
+    "Touchez « Ajouter une dépense », donnez-lui un nom, un montant et une catégorie, puis indiquez qui a payé. Les dépenses peuvent être dans n'importe quelle devise — le taux est figé au moment de l'enregistrement, pour que les montants réglés ne bougent jamais.",
+  'costs.guide.splitTitle': 'Partager',
+  'costs.guide.splitBody':
+    "Partagez à parts égales, saisissez des parts personnalisées, ou détaillez le ticket ligne par ligne en attribuant chaque ligne aux membres qui l'ont partagée. Qui n'est sur aucune ligne ne paie rien pour celle-ci.",
+  'costs.guide.scanTitle': 'Scan de reçus',
+  'costs.guide.scanBody':
+    'Photographiez un ticket (ou choisissez un scan de document Notes iOS depuis Fichiers) et les lignes sont lues pour vous — quantités, prix unitaires et total. Les longs reçus peuvent être photographiés en six parties au maximum.',
+  'costs.guide.personalTitle': 'Dépenses personnelles',
+  'costs.guide.personalBody':
+    'Marquez une dépense « Personnelle (moi uniquement) » pour suivre vos propres frais. Elle est invisible pour le reste du groupe et ne touche jamais le règlement commun.',
+  'costs.guide.venuesTitle': 'Lieux',
+  'costs.guide.venuesBody':
+    'Épinglez des dépenses aux lieux du voyage. Chaque fiche de lieu affiche les dépenses liées et leur total, et son bouton « Ajouter une dépense » crée une dépense déjà épinglée.',
+  'costs.guide.tabsTitle': 'Ardoises & liens de partage',
+  'costs.guide.tabsBody':
+    "Donnez à qui vous voulez un lien en direct vers son solde — sans compte requis. Les ardoises liées suivent automatiquement les comptes ; les ardoises indépendantes ne contiennent que ce que vous y inscrivez. Vos informations de paiement figurent sur le lien pour qu'on sache comment vous payer.",
+  'costs.guide.settleTitle': 'Régler les comptes',
+  'costs.guide.settleBody':
+    '« Régler » montre qui doit combien à qui avec le moins de virements possible. Enregistrez les paiements au fur et à mesure ; annuler un règlement rouvre les soldes.',
+  'costs.guide.guestsTitle': 'Personnes sans compte',
+  'costs.guide.guestsBody':
+    "Ajoutez quelqu'un à une addition par son nom — sans inscription. La personne participe aux partages comme les autres, peut recevoir son propre lien d'ardoise et réclamer sa place plus tard avec le lien d'invitation du voyage.",
+  'costs.guide.viewsTitle': 'Ce que voient les autres',
+  'costs.guide.viewsBody':
+    "Chaque membre voit les comptes partagés, son propre solde et ce qu'il a prêté ou emprunté par dépense. Les dépenses personnelles restent privées pour leur propriétaire ; les lieux privés ne révèlent jamais leur nom via une dépense ; et les liens d'ardoise ne montrent aux personnes extérieures que leurs propres dépenses, paiements et comment payer — jamais l'ensemble des comptes.",
 };
 export default budget;

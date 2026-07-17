@@ -2,6 +2,7 @@ import { db } from '../db/database';
 import { BudgetItem, BudgetItemMember, BudgetItemPayer } from '../types';
 import { avatarUrl } from './avatarUrl';
 import { getRates } from './exchangeRateService';
+import { PLACE_VISIBILITY_SQL, canViewPlace } from './placeService';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -67,14 +68,21 @@ export function canViewBudgetItem(
 
 export function listBudgetItems(tripId: string | number, viewerId?: number) {
   let where = 'bi.trip_id = ?';
-  const params: (string | number)[] = [Number(tripId)];
+  // The venue join hydrates place_name; a venue the viewer can't see (someone
+  // else's private venue) hydrates as null so its name never leaks through an
+  // expense row. Join params precede WHERE params in the statement.
+  const placeJoin = viewerId != null
+    ? `LEFT JOIN places p ON p.id = bi.place_id AND ${PLACE_VISIBILITY_SQL}`
+    : 'LEFT JOIN places p ON p.id = bi.place_id';
+  const params: (string | number)[] = viewerId != null ? [viewerId, Number(tripId)] : [Number(tripId)];
   if (viewerId != null) {
     where += ` AND ${BUDGET_VISIBILITY_SQL}`;
     params.push(viewerId);
   }
   const items = db.prepare(`
-    SELECT bi.* FROM budget_items bi
+    SELECT bi.*, p.name AS place_name FROM budget_items bi
     LEFT JOIN budget_category_order bco ON bco.trip_id = bi.trip_id AND bco.category = bi.category
+    ${placeJoin}
     WHERE ${where}
     ORDER BY COALESCE(bco.sort_order, 999999) ASC, bi.sort_order ASC
   `).all(...params) as BudgetItem[];
@@ -197,6 +205,7 @@ export function createBudgetItem(
     persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null;
     reservation_id?: number | null;
     is_private?: boolean | number; receipt_file_id?: number | null;
+    place_id?: number | null;
   },
   createdBy?: number,
 ) {
@@ -222,7 +231,7 @@ export function createBudgetItem(
   const total = data.payers && data.payers.length > 0 ? payerTotal : (data.total_price || 0);
 
   const result = db.prepare(
-    'INSERT INTO budget_items (trip_id, category, name, total_price, currency, exchange_rate, persons, days, note, sort_order, expense_date, reservation_id, created_by, is_private, receipt_file_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO budget_items (trip_id, category, name, total_price, currency, exchange_rate, persons, days, note, sort_order, expense_date, reservation_id, created_by, is_private, receipt_file_id, place_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     tripId,
     cat,
@@ -240,6 +249,7 @@ export function createBudgetItem(
     // Expenses default to GROUP; is_private=1 marks a personal expense.
     data.is_private ? 1 : 0,
     data.receipt_file_id != null ? data.receipt_file_id : null,
+    data.place_id != null ? data.place_id : null,
   );
 
   const itemId = result.lastInsertRowid as number;
@@ -255,6 +265,7 @@ export function createBudgetItem(
   const item = db.prepare('SELECT * FROM budget_items WHERE id = ?').get(itemId) as BudgetItem;
   item.members = loadItemMembers(itemId);
   item.payers = loadItemPayers(itemId);
+  hydratePlaceName(item, createdBy);
   return item;
 }
 
@@ -266,7 +277,29 @@ export function getBudgetItem(id: string | number, tripId: string | number, view
   if (viewerId != null && !canViewBudgetItem(item, viewerId)) return null;
   item.members = loadItemMembers(id);
   item.payers = loadItemPayers(id);
+  hydratePlaceName(item, viewerId);
   return item;
+}
+
+/** Attach place_name for a venue-linked expense, hiding venues the viewer can't see. */
+function hydratePlaceName(item: BudgetItem & { place_id?: number | null; place_name?: string | null }, viewerId?: number) {
+  item.place_name = null;
+  if (item.place_id == null) return;
+  const place = db.prepare('SELECT name, is_private, created_by FROM places WHERE id = ?')
+    .get(item.place_id) as { name: string; is_private?: number; created_by?: number | null } | undefined;
+  if (place && (viewerId == null || canViewPlace(place, viewerId))) item.place_name = place.name;
+}
+
+/**
+ * A venue is linkable to an expense when it belongs to the same trip and the
+ * acting user can see it — someone else's private venue is indistinguishable
+ * from a missing one.
+ */
+export function canLinkPlace(tripId: string | number, placeId: number, userId?: number): boolean {
+  const place = db.prepare('SELECT trip_id, is_private, created_by FROM places WHERE id = ?')
+    .get(placeId) as { trip_id: number; is_private?: number; created_by?: number | null } | undefined;
+  if (!place || place.trip_id !== Number(tripId)) return false;
+  return userId == null || canViewPlace(place, userId);
 }
 
 export function linkBudgetItemToReservation(
@@ -290,6 +323,7 @@ export function updateBudgetItem(
     members?: { user_id: number; amount?: number | null }[];
     persons?: number | null; days?: number | null; note?: string | null; sort_order?: number; expense_date?: string | null;
     is_private?: boolean | number; receipt_file_id?: number | null;
+    place_id?: number | null;
   },
   actingUserId?: number,
 ) {
@@ -337,6 +371,9 @@ export function updateBudgetItem(
   if (data.receipt_file_id !== undefined) {
     db.prepare('UPDATE budget_items SET receipt_file_id = ? WHERE id = ?').run(data.receipt_file_id, id);
   }
+  if (data.place_id !== undefined) {
+    db.prepare('UPDATE budget_items SET place_id = ? WHERE id = ?').run(data.place_id, id);
+  }
 
   // Personal expenses carry no split — force owner-only payers/members, and
   // purge anyone attached while the item was still a group expense (the flip
@@ -383,6 +420,7 @@ export function updateBudgetItem(
   const updated = db.prepare('SELECT * FROM budget_items WHERE id = ?').get(id) as BudgetItem;
   updated.members = loadItemMembers(id);
   updated.payers = loadItemPayers(id);
+  hydratePlaceName(updated, actingUserId);
   return updated;
 }
 

@@ -70,9 +70,9 @@ describe('AddonManager', () => {
     );
     render(<AddonManager />);
     await screen.findByText('Todo List');
-    // Section header contains "Trip" and "Available as a tab within each trip"
-    expect(screen.getAllByText(/Trip/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Available as a tab within each trip/)).toBeInTheDocument();
+    // Section header contains "Event" and "Available as a tab within each event"
+    expect(screen.getAllByText(/Event/).length).toBeGreaterThan(0);
+    expect(screen.getByText(/Available as a tab within each event/)).toBeInTheDocument();
   });
 
   it('FE-ADMIN-ADDON-004: global and integration sections render when present', async () => {
@@ -209,8 +209,8 @@ describe('AddonManager', () => {
     await screen.findByText('Unsplash');
     expect(screen.getByText('Pexels')).toBeInTheDocument();
 
-    // Journey addon is rendered
-    expect(screen.getByText('Journey')).toBeInTheDocument();
+    // Journey addon is rendered (presents as 'Tour' via en catalog locale)
+    expect(screen.getByText('Tour')).toBeInTheDocument();
 
     // Toggle buttons: journey toggle + 2 provider toggles
     const toggleBtns = screen.getAllByRole('button').filter(b => b.classList.contains('rounded-full'));

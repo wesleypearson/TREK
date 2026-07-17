@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} v {to}',
   'costs.category': 'Kategorie',
   'costs.whoPaid': 'Kdo zaplatil?',
+  'costs.venue': 'Místo konání',
+  'costs.noVenue': 'Bez místa konání',
+  'costs.privateVenue': 'Soukromé místo',
   'costs.splitBetween': 'Rozdělit rovným dílem mezi',
   'costs.pickSomeone': 'Vyberte alespoň jednu osobu pro rozdělení.',
   'costs.splitSummary': 'Rozděleno na {count} dílů · {amount} každý',
@@ -189,5 +192,65 @@ const budget: TranslationStrings = {
     'Tímto trvale smažete všechny výdaje, vyrovnání a veřejné odkazy na účty v této cestě. Členové a hosté zůstanou. Tuto akci nelze vrátit zpět.',
   'costs.resetConfirm': 'Smazat vše',
   'costs.resetDone': 'Výdaje byly resetovány',
+
+  'costs.sharesSummary': 'Přehled jednotlivých podílů',
+  'costs.excluded': 'Vyloučeno',
+  'costs.splitMatches': 'Rozdělení odpovídá celkové částce',
+  'costs.splitProgress': 'Součet podílů: {sum} z {total} ({direction} o {diff})',
+  'costs.splitUnder': 'méně',
+  'costs.splitOver': 'více',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Rozdělení účtu',
+  'costs.info.splitBody':
+    '„Equally“ rozdělí celkovou částku rovným dílem mezi všechny vybrané osoby. „Custom“ vám umožní zadat podíl každého ručně. „Ticket“ rozepíše účet řádek po řádku — u každého řádku nastavte množství a jednotkovou cenu, poté klepněte na členy, kteří si řádek dělili, a každý zaplatí jen to, co skutečně měl.',
+  'costs.info.personalTitle': 'Osobní výdaje',
+  'costs.info.personalBody':
+    'Osobní výdaj je jen váš: zaznamená se do vašich vlastních útrat, zůstane pro zbytek skupiny neviditelný a nikdy nevstoupí do společného vyúčtování. Použijte ho ke sledování vlastních nákladů vedle těch sdílených.',
+  'costs.info.venueTitle': 'Místa u výdajů',
+  'costs.info.venueBody':
+    'Připněte výdaj k jednomu z míst cesty a zobrazí se na kartě daného místa s průběžným součtem — na první pohled tak vidíte, kolik místo stálo. Přidejte výdaj přímo z karty místa a dorazí už připnutý.',
+  'costs.info.tabsTitle': 'Účty a odkazy ke sdílení',
+  'costs.info.tabsBody':
+    'Účet dává jedné osobě živý přehled o tom, kolik vám dluží, sdílený odkazem bez nutnosti registrace. Propojte účet se členem (nebo hostem přidaným jménem) a bude sledovat vyúčtování cesty: podíly z dělení, komu daná osoba dluží i všechny platby — včetně vašich platebních údajů, aby přesně věděla, jak se vyrovnat.',
+  'costs.info.settleTitle': 'Vyrovnání',
+  'costs.info.settleBody':
+    'Vyúčtování spočítá, kdo komu kolik dluží, s co nejmenším počtem převodů a s kurzem zmrazeným v okamžiku zadání každého výdaje. Zaznamenejte platbu, když peníze skutečně změní majitele; zůstatky všech se aktualizují živě.',
+  'costs.info.scanTitle': 'Skenování účtenek',
+  'costs.info.scanBody':
+    'Naskenujte účtenku fotoaparátem, vyberte fotky z knihovny nebo zvolte soubor — včetně skenů dokumentů uložených z aplikace Poznámky v iOS. Dlouhá účtenka může dorazit jako několik fotek a každý řádek se načte s množstvím a jednotkovou cenou, připravený k přiřazení členům.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Průvodce',
+  'costs.guide.title': 'Průvodce výdaji',
+  'costs.guide.intro':
+    'Vše, co skupina na této cestě utratí, žije tady — zadané, rozdělené, připnuté k místům a vyrovnané bez tabulek. Takhle to funguje a takhle to vidí ostatní.',
+  'costs.guide.lodgeTitle': 'Zadání výdaje',
+  'costs.guide.lodgeBody':
+    'Klepněte na Přidat výdaj, zadejte název, částku a kategorii a uveďte, kdo zaplatil. Výdaje mohou být v jakékoli měně — kurz se zmrazí v okamžiku uložení, takže vyrovnané částky se nikdy nezmění.',
+  'costs.guide.splitTitle': 'Rozdělení',
+  'costs.guide.splitBody':
+    'Rozdělte rovným dílem, zadejte vlastní podíly, nebo rozepište účtenku řádek po řádku a přiřaďte každý řádek členům, kteří si ho dělili. Kdo na řádku není, neplatí za něj nic.',
+  'costs.guide.scanTitle': 'Skenování účtenek',
+  'costs.guide.scanBody':
+    'Vyfoťte účtenku (nebo vyberte v Souborech sken dokumentu z Poznámek iOS) a řádky se načtou za vás — množství, jednotkové ceny i celková částka. Dlouhé účtenky lze vyfotit až na šest částí.',
+  'costs.guide.personalTitle': 'Osobní útraty',
+  'costs.guide.personalBody':
+    'Označte výdaj jako „Osobní (jen já)“ a sledujte své vlastní náklady. Pro zbytek skupiny je neviditelný a společného vyúčtování se nikdy nedotkne.',
+  'costs.guide.venuesTitle': 'Místa konání',
+  'costs.guide.venuesBody':
+    'Připínejte výdaje k místům cesty. Karta každého místa ukazuje propojené útraty a celkový součet a její tlačítko Přidat výdaj zadá výdaj už připnutý.',
+  'costs.guide.tabsTitle': 'Účty a odkazy ke sdílení',
+  'costs.guide.tabsBody':
+    'Dejte komukoli živý odkaz na jeho průběžný zůstatek — bez nutnosti registrace. Propojené účty sledují vyúčtování automaticky; samostatné účty obsahují jen to, co na ně připíšete. V odkazu se zobrazují vaše platební údaje, aby lidé věděli, jak vám zaplatit.',
+  'costs.guide.settleTitle': 'Vyrovnání',
+  'costs.guide.settleBody':
+    'Vyrovnání ukáže, kdo komu dluží, s co nejmenším počtem převodů. Zaznamenávejte platby, jakmile proběhnou; vrácení vyrovnání zpět zůstatky znovu otevře.',
+  'costs.guide.guestsTitle': 'Lidé bez registrace',
+  'costs.guide.guestsBody':
+    'Přidejte někoho k útratě jen jménem — bez registrace. Do dělení se zapojí jako kdokoli jiný, může dostat vlastní odkaz na účet a později si své místo převzít pomocí odkazu pro připojení k cestě.',
+  'costs.guide.viewsTitle': 'Co vidí ostatní',
+  'costs.guide.viewsBody':
+    'Každý člen vidí společné vyúčtování, svůj zůstatek a co u jednotlivých výdajů půjčil nebo dluží. Osobní výdaje zůstávají soukromé pro svého majitele; soukromá místa nikdy neprozradí své jméno přes výdaj; a odkazy na účty ukazují lidem zvenčí jen jejich vlastní položky, platby a způsob platby — nikdy celé vyúčtování.',
 };
 export default budget;

@@ -3,8 +3,8 @@ import type { TranslationStrings } from '../types';
 const stats: TranslationStrings = {
   'stats.countries': 'Countries',
   'stats.cities': 'Cities',
-  'stats.trips': 'Trips',
-  'stats.places': 'Places',
+  'stats.trips': 'Events',
+  'stats.places': 'Venues',
   'stats.worldProgress': 'World Progress',
   'stats.visited': 'visited',
   'stats.remaining': 'remaining',

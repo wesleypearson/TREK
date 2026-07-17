@@ -290,7 +290,7 @@ describe('CostsPanel — settlements in the ledger', () => {
 
     expect(screen.getByDisplayValue('100.00')).toBeDisabled()
 
-    expect(screen.getByText('Individual Shares Summary')).toBeInTheDocument()
+    expect(screen.getByText('Individual shares summary')).toBeInTheDocument()
     expect(screen.getByText(/75\.00/)).toBeInTheDocument()
     expect(screen.getByText(/25\.00/)).toBeInTheDocument()
 

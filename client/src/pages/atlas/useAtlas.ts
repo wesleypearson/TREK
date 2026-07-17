@@ -569,7 +569,7 @@ export function useAtlas() {
             tt.style.left = e.originalEvent.clientX + 12 + 'px'
             tt.style.top = e.originalEvent.clientY - 10 + 'px'
             tt.innerHTML = visited
-              ? `<div style="font-weight:600;margin-bottom:3px">${regionName}</div><div style="opacity:0.5;font-size:10px">${countryName}</div><div style="margin-top:5px;font-size:11px"><b>${count}</b> ${count === 1 ? 'place' : 'places'}</div>`
+              ? `<div style="font-weight:600;margin-bottom:3px">${regionName}</div><div style="opacity:0.5;font-size:10px">${countryName}</div><div style="margin-top:5px;font-size:11px"><b>${count}</b> ${count === 1 ? 'venue' : 'venues'}</div>`
               : `<div style="font-weight:600;margin-bottom:3px">${regionName}</div><div style="opacity:0.5;font-size:10px">${countryName}</div>`
           }
         })

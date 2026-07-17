@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} = {to}',
   'costs.category': 'カテゴリ',
   'costs.whoPaid': '誰が支払いましたか？',
+  'costs.venue': '会場',
+  'costs.noVenue': '会場なし',
+  'costs.privateVenue': 'プライベート会場',
   'costs.splitBetween': '均等に分割する相手',
   'costs.pickSomeone': '分割する相手を少なくとも1人選んでください。',
   'costs.splitSummary': '{count}人で分割 · 各{amount}',
@@ -190,5 +193,65 @@ const budget: TranslationStrings = {
     'この旅のすべての支出、精算、公開ツケリンクを完全に削除します。メンバーとゲストは残ります。この操作は取り消せません。',
   'costs.resetConfirm': 'すべて削除',
   'costs.resetDone': '支出をリセットしました',
+
+  'costs.sharesSummary': '一人ひとりの負担額まとめ',
+  'costs.excluded': '対象外',
+  'costs.splitMatches': '分割の合計が総額と一致しています',
+  'costs.splitProgress': '分割の合計: {sum} / {total}（{diff}{direction}）',
+  'costs.splitUnder': '不足',
+  'costs.splitOver': '超過',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': '割り勘の方法',
+  'costs.info.splitBody':
+    '「Equally」は選んだ全員で総額を均等に分けます。「Custom」は一人ひとりの負担額を自分で入力できます。「Ticket」はレシートを行ごとに分けます — 行ごとに数量と単価を設定し、その行を共有したメンバーをタップすれば、各自は自分が使った分だけを負担します。',
+  'costs.info.personalTitle': '個人的な支出',
+  'costs.info.personalBody':
+    '個人的な支出はあなただけのものです。自分の支出として記録され、他のメンバーには表示されず、グループの精算にも含まれません。共有の支出と並行して、自分の出費を管理するのに使えます。',
+  'costs.info.venueTitle': '支出と会場',
+  'costs.info.venueBody':
+    '支出を旅の会場に紐付けると、その会場のカードに累計額とともに表示され、会場ごとの費用がひと目で分かります。会場カードから直接支出を追加すると、最初から紐付いた状態で登録されます。',
+  'costs.info.tabsTitle': 'ツケと共有リンク',
+  'costs.info.tabsBody':
+    'ツケは、相手が自分の未払い額をリアルタイムで確認できる仕組みで、アカウント不要のリンクとして共有できます。ツケをメンバー（または名前で追加したゲスト）にリンクすると旅の精算と連動します。分割での負担分、誰にいくら借りているか、支払い — あなたの支払い情報も含めて表示されるので、相手は精算の方法が正確に分かります。',
+  'costs.info.settleTitle': '精算',
+  'costs.info.settleBody':
+    '精算は、できるだけ少ない送金回数で誰が誰にいくら支払うべきかを計算します。為替レートは各支出を入力した時点で固定されます。実際にお金が動いたら支払いを記録しましょう。全員の残高がリアルタイムで更新されます。',
+  'costs.info.scanTitle': 'レシートのスキャン',
+  'costs.info.scanBody':
+    'カメラでレシートをスキャンするか、ライブラリから写真を選ぶか、ファイルを選択します — iOSのメモアプリで保存した書類スキャンも使えます。長いレシートは複数の写真に分けて読み込め、各行は数量と単価付きで取り込まれるので、そのままメンバーに割り当てられます。',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'ガイド',
+  'costs.guide.title': '支出ガイド',
+  'costs.guide.intro':
+    'この旅でみんなが使ったお金はすべてここに集まります — 記録し、分割し、会場に紐付けて、表計算なしで精算。仕組みと、他のメンバーからの見え方を紹介します。',
+  'costs.guide.lodgeTitle': '支出の記録',
+  'costs.guide.lodgeBody':
+    '「支出を追加」をタップして、名前・金額・カテゴリを入力し、誰が支払ったかを指定します。支出はどの通貨でも構いません — レートは保存した瞬間に固定されるので、精算済みの金額がずれることはありません。',
+  'costs.guide.splitTitle': '分割',
+  'costs.guide.splitBody':
+    '均等に分ける、金額を個別に入力する、またはレシートを行ごとに分けて、各行を共有したメンバーに割り当てられます。行に含まれていない人は、その行の支払いは発生しません。',
+  'costs.guide.scanTitle': 'レシートスキャン',
+  'costs.guide.scanBody':
+    'レシートを撮影する（またはファイルからiOSメモの書類スキャンを選ぶ）と、行が自動で読み取られます — 数量、単価、合計まで。長いレシートは最大6枚に分けて撮影できます。',
+  'costs.guide.personalTitle': '個人の支出',
+  'costs.guide.personalBody':
+    '支出を「個人的な支出（自分のみ）」にすると、自分の出費を記録できます。他のメンバーには表示されず、グループの精算にも影響しません。',
+  'costs.guide.venuesTitle': '会場',
+  'costs.guide.venuesBody':
+    '支出を旅の会場に紐付けましょう。各会場カードには紐付いた支出と合計が表示され、カードの「支出を追加」ボタンからは最初から紐付いた支出を登録できます。',
+  'costs.guide.tabsTitle': 'ツケと共有リンク',
+  'costs.guide.tabsBody':
+    '誰にでも、その人の残高をリアルタイムで見られるリンクを渡せます — アカウントは不要です。リンク済みのツケは精算と自動的に連動し、独立したツケにはあなたが記入した分だけが載ります。リンクにはあなたの支払い情報が表示されるので、相手は支払い方法が分かります。',
+  'costs.guide.settleTitle': '精算',
+  'costs.guide.settleBody':
+    '「精算する」は、できるだけ少ない送金回数で誰が誰に支払うべきかを表示します。支払いが行われたらその都度記録しましょう。精算を取り消すと残高が再び開きます。',
+  'costs.guide.guestsTitle': 'アカウントのない人',
+  'costs.guide.guestsBody':
+    '名前だけで誰かを支払いに追加できます — 登録は不要です。他のメンバーと同じように分割に参加でき、専用のツケリンクを受け取れて、後から旅の参加リンクで自分の枠を引き継げます。',
+  'costs.guide.viewsTitle': '他のメンバーからの見え方',
+  'costs.guide.viewsBody':
+    '各メンバーには、共有の精算記録、自分の残高、支出ごとの貸し借りが表示されます。個人的な支出は本人にしか見えません。プライベートな会場の名前が支出から漏れることはありません。ツケのリンクでは、外部の人には本人分の請求・支払い・支払い方法だけが表示され、全体の記録が見えることはありません。',
 };
 export default budget;

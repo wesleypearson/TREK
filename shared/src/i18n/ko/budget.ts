@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} = {to}',
   'costs.category': '카테고리',
   'costs.whoPaid': '누가 지불했나요?',
+  'costs.venue': '장소',
+  'costs.noVenue': '장소 없음',
+  'costs.privateVenue': '개인 장소',
   'costs.splitBetween': '균등 분할 대상',
   'costs.pickSomeone': '분할할 사람을 한 명 이상 선택하세요.',
   'costs.splitSummary': '{count}명 분할 · 각 {amount}',
@@ -189,5 +192,65 @@ const budget: TranslationStrings = {
     '이 여행의 모든 지출, 정산, 공개 장부 링크가 영구적으로 삭제됩니다. 멤버와 게스트는 유지됩니다. 이 작업은 되돌릴 수 없습니다.',
   'costs.resetConfirm': '전부 삭제',
   'costs.resetDone': '지출이 초기화되었습니다',
+
+  'costs.sharesSummary': '개인별 부담액 요약',
+  'costs.excluded': '제외됨',
+  'costs.splitMatches': '분할 금액이 총액과 일치합니다',
+  'costs.splitProgress': '분할 합계: {sum} / {total} ({diff} {direction})',
+  'costs.splitUnder': '부족',
+  'costs.splitOver': '초과',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': '비용 나누기',
+  'costs.info.splitBody':
+    '‘Equally’는 선택한 모든 사람에게 총액을 똑같이 나눕니다. ‘Custom’은 각자의 부담액을 직접 입력할 수 있습니다. ‘Ticket’은 영수증을 항목별로 나눕니다 — 항목마다 수량과 단가를 정하고 그 항목을 함께한 멤버를 탭하면, 각자 실제로 쓴 만큼만 부담합니다.',
+  'costs.info.personalTitle': '개인 지출',
+  'costs.info.personalBody':
+    '개인 지출은 오직 나만의 것입니다. 내 지출로만 기록되고 다른 멤버에게는 보이지 않으며 그룹 정산에 절대 포함되지 않습니다. 공동 비용과 나란히 내 비용을 관리할 때 사용하세요.',
+  'costs.info.venueTitle': '지출과 장소',
+  'costs.info.venueBody':
+    '지출을 여행 장소에 고정하면 해당 장소 카드에 누적 합계와 함께 표시되어, 장소별 비용을 한눈에 볼 수 있습니다. 장소 카드에서 바로 지출을 추가하면 처음부터 고정된 상태로 등록됩니다.',
+  'costs.info.tabsTitle': '장부와 공유 링크',
+  'costs.info.tabsBody':
+    '장부는 한 사람이 나에게 얼마를 빚졌는지 실시간으로 보여 주며, 계정이 필요 없는 링크로 공유됩니다. 장부를 멤버(또는 이름으로 추가한 게스트)와 연결하면 여행 정산과 연동됩니다. 분할 부담액, 누구에게 빚졌는지, 입금 내역까지 — 내 결제 정보도 함께 표시되어 상대가 정확히 어떻게 갚을지 알 수 있습니다.',
+  'costs.info.settleTitle': '정산하기',
+  'costs.info.settleBody':
+    '정산은 각 지출을 입력한 시점에 고정된 환율을 사용해, 최소한의 송금 횟수로 누가 누구에게 얼마를 줘야 하는지 계산합니다. 실제로 돈이 오가면 지불을 기록하세요. 모두의 잔액이 실시간으로 갱신됩니다.',
+  'costs.info.scanTitle': '영수증 스캔',
+  'costs.info.scanBody':
+    '카메라로 영수증을 스캔하거나, 보관함에서 사진을 고르거나, 파일을 선택하세요 — iOS 메모 앱에서 저장한 문서 스캔도 가능합니다. 긴 영수증은 여러 장의 사진으로 나눠 올릴 수 있고, 각 항목은 수량과 단가가 함께 인식되어 바로 멤버에게 배정할 수 있습니다.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': '가이드',
+  'costs.guide.title': '지출 가이드',
+  'costs.guide.intro':
+    '이 여행에서 모두가 쓰는 돈은 전부 여기에 모입니다 — 기록하고, 나누고, 장소에 고정하고, 스프레드시트 없이 정산합니다. 어떻게 작동하는지, 다른 사람에게는 어떻게 보이는지 알려 드립니다.',
+  'costs.guide.lodgeTitle': '지출 기록하기',
+  'costs.guide.lodgeBody':
+    '지출 추가를 탭해 이름, 금액, 카테고리를 입력하고 누가 지불했는지 지정하세요. 지출은 어떤 통화든 가능합니다 — 저장하는 순간 환율이 고정되므로 정산된 금액이 달라지지 않습니다.',
+  'costs.guide.splitTitle': '나누기',
+  'costs.guide.splitBody':
+    '똑같이 나누거나, 각자 부담액을 입력하거나, 영수증을 항목별로 나눠 각 항목을 함께한 멤버에게 배정하세요. 항목에 없는 사람은 그 항목에 대해 아무것도 내지 않습니다.',
+  'costs.guide.scanTitle': '영수증 스캔',
+  'costs.guide.scanBody':
+    '영수증을 촬영하면(또는 파일에서 iOS 메모 문서 스캔을 선택하면) 항목이 자동으로 인식됩니다 — 수량, 단가, 총액까지. 긴 영수증은 최대 여섯 장으로 나눠 찍을 수 있습니다.',
+  'costs.guide.personalTitle': '개인 지출',
+  'costs.guide.personalBody':
+    '지출을 ‘개인 지출 (나만)’으로 표시하면 내 비용을 따로 관리할 수 있습니다. 다른 멤버에게는 보이지 않으며 그룹 정산에 전혀 영향을 주지 않습니다.',
+  'costs.guide.venuesTitle': '장소',
+  'costs.guide.venuesBody':
+    '지출을 여행 장소에 고정하세요. 각 장소 카드에는 연결된 지출과 합계가 표시되며, 카드의 지출 추가 버튼을 누르면 처음부터 고정된 지출이 기록됩니다.',
+  'costs.guide.tabsTitle': '장부와 공유 링크',
+  'costs.guide.tabsBody':
+    '누구에게나 실시간 잔액 링크를 줄 수 있습니다 — 계정이 없어도 됩니다. 연결된 장부는 정산과 자동으로 연동되고, 독립 장부에는 내가 기록한 것만 담깁니다. 링크에 내 결제 정보가 표시되어 상대가 어떻게 갚을지 알 수 있습니다.',
+  'costs.guide.settleTitle': '정산하기',
+  'costs.guide.settleBody':
+    '정산하기는 최소한의 송금 횟수로 누가 누구에게 줘야 하는지 보여 줍니다. 지불이 이루어질 때마다 기록하세요. 정산을 취소하면 잔액이 다시 열립니다.',
+  'costs.guide.guestsTitle': '계정이 없는 사람',
+  'costs.guide.guestsBody':
+    '이름만으로 누군가를 비용에 추가하세요 — 가입이 필요 없습니다. 다른 사람과 똑같이 분할에 참여하고, 자신만의 장부 링크를 받을 수 있으며, 나중에 여행 참여 링크로 자기 자리를 이어받을 수 있습니다.',
+  'costs.guide.viewsTitle': '다른 멤버에게 보이는 것',
+  'costs.guide.viewsBody':
+    '모든 멤버는 공동 정산 내역, 자신의 잔액, 지출별로 빌려주거나 빌린 금액을 봅니다. 개인 지출은 주인에게만 보이고, 비공개 장소의 이름은 지출을 통해 절대 드러나지 않으며, 장부 링크는 외부인에게 본인의 청구 내역과 입금 내역, 갚는 방법만 보여 줍니다 — 전체 장부는 절대 보이지 않습니다.',
 };
 export default budget;

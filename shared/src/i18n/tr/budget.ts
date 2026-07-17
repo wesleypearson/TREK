@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '{to} cinsinden 1 {from}',
   'costs.category': 'Kategori',
   'costs.whoPaid': 'Kim ödedi?',
+  'costs.venue': 'Mekan',
+  'costs.noVenue': 'Mekan yok',
+  'costs.privateVenue': 'Özel mekan',
   'costs.splitBetween': 'Eşit olarak böl',
   'costs.pickSomeone': 'Paylaşmak için en az bir kişi seçin.',
   'costs.splitSummary': '{count} kişiye bölündü · her biri {amount}',
@@ -192,5 +195,65 @@ const budget: TranslationStrings = {
     'Bu işlem, bu gezideki tüm harcamaları, hesaplaşmaları ve herkese açık hesap bağlantılarını kalıcı olarak siler. Üyeler ve misafirler kalır. Bu işlem geri alınamaz.',
   'costs.resetConfirm': 'Her şeyi sil',
   'costs.resetDone': 'Harcamalar sıfırlandı',
+
+  'costs.sharesSummary': 'Kişi başı payların özeti',
+  'costs.excluded': 'Hariç tutuldu',
+  'costs.splitMatches': 'Bölüşüm toplamla eşleşiyor',
+  'costs.splitProgress': 'Bölüşüm toplamı: {sum} / {total} ({diff} {direction})',
+  'costs.splitUnder': 'eksik',
+  'costs.splitOver': 'fazla',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Hesap bölüşme',
+  'costs.info.splitBody':
+    '“Equally” toplamı seçtiğiniz herkes arasında eşit olarak böler. “Custom” her kişinin payını elle girmenizi sağlar. “Ticket” hesabı satır satır döker — her satır için adet ve birim fiyat girin, ardından o satırı paylaşan üyelere dokunun; herkes yalnızca aldığı şey için ödeme yapar.',
+  'costs.info.personalTitle': 'Kişisel harcamalar',
+  'costs.info.personalBody':
+    'Kişisel harcama yalnızca sizindir: kendi harcamanız olarak kaydedilir, grubun geri kalanına görünmez ve grup hesaplaşmasına asla girmez. Kendi masraflarınızı ortak olanların yanında takip etmek için kullanın.',
+  'costs.info.venueTitle': 'Harcamalarda mekanlar',
+  'costs.info.venueBody':
+    'Bir harcamayı gezinin mekanlarından birine sabitleyin; o mekanın kartında güncel toplamla görünür — böylece bir mekanın ne kadara mal olduğunu bir bakışta görürsünüz. Harcamayı doğrudan mekan kartından ekleyin, sabitlenmiş olarak gelir.',
+  'costs.info.tabsTitle': 'Hesaplar ve paylaşım bağlantıları',
+  'costs.info.tabsBody':
+    'Hesap, bir kişiye size ne kadar borçlu olduğunu canlı olarak gösterir; üyelik gerektirmeyen bir bağlantı olarak paylaşılır. Hesabı bir üyeye (veya adıyla eklediğiniz bir misafire) bağlayın; gezi defterini takip eder: bölüşümlerdeki payları, kime borçlu olduğu ve ödemeler — ödeme bilgileriniz de dahil, böylece borcunu nasıl kapatacağını tam olarak bilir.',
+  'costs.info.settleTitle': 'Hesaplaşma',
+  'costs.info.settleBody':
+    'Hesaplaşma, kimin kime ne kadar borçlu olduğunu en az transferle hesaplar; her harcama girildiği anda dondurulan döviz kurunu kullanır. Para gerçekten el değiştirdiğinde ödemeyi kaydedin; herkesin bakiyesi anında güncellenir.',
+  'costs.info.scanTitle': 'Fiş tarama',
+  'costs.info.scanBody':
+    'Fişi kameranızla tarayın, galerinizden fotoğraf seçin veya bir dosya seçin — iOS Notlar uygulamasından kaydedilen belge taramaları dahil. Uzun bir fiş birkaç fotoğraf halinde gelebilir; her satır adet ve birim fiyatıyla içe aktarılır, üyelere atanmaya hazırdır.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Rehber',
+  'costs.guide.title': 'Harcama rehberi',
+  'costs.guide.intro':
+    'Grubun bu gezide harcadığı her şey burada yaşar — girilir, bölüşülür, mekanlara sabitlenir ve tablo dosyaları olmadan hesaplaşılır. İşte böyle çalışır ve diğerleri bunu böyle görür.',
+  'costs.guide.lodgeTitle': 'Harcama girme',
+  'costs.guide.lodgeBody':
+    "Harcama ekle'ye dokunun; ad, tutar ve kategori verin, kimin ödediğini belirtin. Harcamalar herhangi bir para biriminde olabilir — kur, kaydettiğiniz anda dondurulur; böylece hesaplaşılan tutarlar asla kaymaz.",
+  'costs.guide.splitTitle': 'Bölüşüm',
+  'costs.guide.splitBody':
+    'Eşit bölüşün, özel paylar girin veya fişi satır satır dökerek her satırı onu paylaşan üyelere atayın. Bir satırda olmayan kişi o satır için hiçbir şey ödemez.',
+  'costs.guide.scanTitle': 'Fiş tarama',
+  'costs.guide.scanBody':
+    "Fişin fotoğrafını çekin (veya Dosyalar'dan bir iOS Notlar belge taraması seçin); satırlar sizin için okunur — adetler, birim fiyatlar ve toplam. Uzun fişler en fazla altı parça halinde çekilebilir.",
+  'costs.guide.personalTitle': 'Kişisel harcama',
+  'costs.guide.personalBody':
+    'Kendi masraflarınızı takip etmek için bir harcamayı “Kişisel (sadece ben)” olarak işaretleyin. Grubun geri kalanına görünmez ve grup hesaplaşmasına asla dokunmaz.',
+  'costs.guide.venuesTitle': 'Mekanlar',
+  'costs.guide.venuesBody':
+    'Harcamaları gezinin mekanlarına sabitleyin. Her mekan kartı bağlı harcamaları ve toplamı gösterir; kartın Harcama ekle düğmesi, sabitlenmiş bir harcama girer.',
+  'costs.guide.tabsTitle': 'Hesaplar ve paylaşım bağlantıları',
+  'costs.guide.tabsBody':
+    'Dilediğiniz kişiye güncel bakiyesini gösteren canlı bir bağlantı verin — üyelik gerekmez. Bağlı hesaplar defteri otomatik takip eder; bağımsız hesaplar yalnızca onlara yazdıklarınızı taşır. Ödeme bilgileriniz bağlantıda görünür; böylece insanlar size nasıl ödeyeceklerini bilir.',
+  'costs.guide.settleTitle': 'Hesaplaşma',
+  'costs.guide.settleBody':
+    'Hesaplaş, kimin kime borçlu olduğunu en az transferle gösterir. Ödemeleri gerçekleştikçe kaydedin; bir hesaplaşmayı geri almak bakiyeleri yeniden açar.',
+  'costs.guide.guestsTitle': 'Üyeliği olmayan kişiler',
+  'costs.guide.guestsBody':
+    'Birini bir hesaba adıyla ekleyin — kayıt gerekmez. Bölüşümlere herkes gibi katılır, kendi hesap bağlantısını alabilir ve daha sonra gezinin katılım bağlantısıyla yerini üstlenebilir.',
+  'costs.guide.viewsTitle': 'Diğerleri ne görür',
+  'costs.guide.viewsBody':
+    'Her üye ortak defteri, kendi bakiyesini ve her harcamada ne borç verdiğini ya da aldığını görür. Kişisel harcamalar sahibine özel kalır; özel mekanlar adını bir harcama üzerinden asla açık etmez; hesap bağlantıları ise dışarıdan bakanlara yalnızca kendi kalemlerini, ödemelerini ve nasıl ödeyeceklerini gösterir — asla defterin tamamını değil.',
 };
 export default budget;

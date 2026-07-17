@@ -30,7 +30,7 @@ const notifications: TranslationStrings = {
   'notifications.test.goThere': 'Go there',
   'notifications.test.adminTitle': 'Admin broadcast',
   'notifications.test.adminText': '{actor} sent a test notification to all admins.',
-  'notifications.test.tripTitle': '{actor} posted in your trip',
-  'notifications.test.tripText': 'Test notification for trip "{trip}".',
+  'notifications.test.tripTitle': '{actor} posted in your event',
+  'notifications.test.tripText': 'Test notification for event "{trip}".',
 };
 export default notifications;

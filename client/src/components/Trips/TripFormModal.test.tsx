@@ -29,20 +29,20 @@ describe('TripFormModal', () => {
     expect(document.body).toBeInTheDocument();
   });
 
-  it('FE-COMP-TRIPFORM-002: shows Create New Trip title for new trip', () => {
+  it('FE-COMP-TRIPFORM-002: shows Create New Event title for new trip', () => {
     render(<TripFormModal {...defaultProps} trip={null} />);
-    expect(screen.getAllByText('Create New Trip').length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Create New Event').length).toBeGreaterThan(0);
   });
 
-  it('FE-COMP-TRIPFORM-003: shows Edit Trip title when editing', () => {
+  it('FE-COMP-TRIPFORM-003: shows Edit Event title when editing', () => {
     const trip = buildTrip({ id: 1, title: 'Japan 2025' });
     render(<TripFormModal {...defaultProps} trip={trip} />);
-    expect(screen.getByText('Edit Trip')).toBeInTheDocument();
+    expect(screen.getByText('Edit Event')).toBeInTheDocument();
   });
 
   it('FE-COMP-TRIPFORM-004: shows trip title input field', () => {
     render(<TripFormModal {...defaultProps} />);
-    expect(screen.getByPlaceholderText(/Summer in Japan/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Summer Festival Tour/i)).toBeInTheDocument();
   });
 
   it('FE-COMP-TRIPFORM-005: Cancel button is present', () => {
@@ -58,10 +58,10 @@ describe('TripFormModal', () => {
     expect(onClose).toHaveBeenCalled();
   });
 
-  it('FE-COMP-TRIPFORM-007: Create New Trip submit button is present', () => {
+  it('FE-COMP-TRIPFORM-007: Create New Event submit button is present', () => {
     render(<TripFormModal {...defaultProps} trip={null} />);
-    // Submit button text is "Create New Trip" for new trips
-    const createBtns = screen.getAllByText('Create New Trip');
+    // Submit button text is "Create New Event" for new trips
+    const createBtns = screen.getAllByText('Create New Event');
     expect(createBtns.length).toBeGreaterThan(0);
   });
 
@@ -75,7 +75,7 @@ describe('TripFormModal', () => {
     const user = userEvent.setup();
     render(<TripFormModal {...defaultProps} />);
     // Click submit without filling title
-    const submitBtn = screen.getAllByText('Create New Trip').find(
+    const submitBtn = screen.getAllByText('Create New Event').find(
       el => el.tagName === 'BUTTON' || el.closest('button')
     );
     if (submitBtn) {
@@ -89,8 +89,8 @@ describe('TripFormModal', () => {
     const user = userEvent.setup();
     const onSave = vi.fn().mockResolvedValue({ trip: buildTrip({ id: 99 }) });
     render(<TripFormModal {...defaultProps} onSave={onSave} />);
-    await user.type(screen.getByPlaceholderText(/Summer in Japan/i), 'Paris 2026');
-    const submitBtns = screen.getAllByText('Create New Trip');
+    await user.type(screen.getByPlaceholderText(/Summer Festival Tour/i), 'Paris 2026');
+    const submitBtns = screen.getAllByText('Create New Event');
     const submitBtn = submitBtns.find(el => el.closest('button'));
     await user.click(submitBtn!.closest('button')!);
     await waitFor(() => expect(onSave).toHaveBeenCalled());
@@ -168,7 +168,7 @@ describe('TripFormModal', () => {
   it('FE-COMP-TRIPFORM-020: reminder section shows disabled hint when tripRemindersEnabled=false', () => {
     seedStore(useAuthStore, { tripRemindersEnabled: false });
     render(<TripFormModal {...defaultProps} trip={null} />);
-    expect(screen.getByText(/Trip reminders are disabled/i)).toBeInTheDocument();
+    expect(screen.getByText(/Event reminders are disabled/i)).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'None' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Custom' })).not.toBeInTheDocument();
   });
@@ -189,7 +189,7 @@ describe('TripFormModal', () => {
   it('FE-COMP-TRIPFORM-022: member selector not visible when editing existing trip', () => {
     const trip = buildTrip({ id: 1 });
     render(<TripFormModal {...defaultProps} trip={trip} />);
-    expect(screen.queryByText('Travel buddies')).not.toBeInTheDocument();
+    expect(screen.queryByText('Event crew')).not.toBeInTheDocument();
   });
 
   it('FE-COMP-TRIPFORM-023: member selector appears when creating and other users exist', async () => {
@@ -199,7 +199,7 @@ describe('TripFormModal', () => {
       )
     );
     render(<TripFormModal {...defaultProps} trip={null} />);
-    await screen.findByText('Travel buddies');
+    await screen.findByText('Event crew');
   });
 
   it('FE-COMP-TRIPFORM-024: selecting a member adds a chip', async () => {
@@ -212,9 +212,9 @@ describe('TripFormModal', () => {
     );
     render(<TripFormModal {...defaultProps} trip={null} />);
     // Wait for member section to load
-    await screen.findByText('Travel buddies');
+    await screen.findByText('Event crew');
     // Click the CustomSelect trigger (placeholder "Add member")
-    const selectTrigger = screen.getByText('Add member').closest('button')!;
+    const selectTrigger = screen.getByText('Add crew member').closest('button')!;
     await user.click(selectTrigger);
     // alice option appears in portal (document.body)
     const aliceOption = await screen.findByRole('button', { name: 'alice' });
@@ -232,9 +232,9 @@ describe('TripFormModal', () => {
       )
     );
     render(<TripFormModal {...defaultProps} trip={null} />);
-    await screen.findByText('Travel buddies');
+    await screen.findByText('Event crew');
     // Select alice
-    const selectTrigger = screen.getByText('Add member').closest('button')!;
+    const selectTrigger = screen.getByText('Add crew member').closest('button')!;
     await user.click(selectTrigger);
     const aliceOption = await screen.findByRole('button', { name: 'alice' });
     await user.click(aliceOption);
@@ -271,8 +271,8 @@ describe('TripFormModal', () => {
     const user = userEvent.setup();
     const onSave = vi.fn().mockRejectedValue(new Error('Server error'));
     render(<TripFormModal {...defaultProps} onSave={onSave} trip={null} />);
-    await user.type(screen.getByPlaceholderText(/Summer in Japan/i), 'My Trip');
-    const submitBtns = screen.getAllByText('Create New Trip');
+    await user.type(screen.getByPlaceholderText(/Summer Festival Tour/i), 'My Trip');
+    const submitBtns = screen.getAllByText('Create New Event');
     const submitBtn = submitBtns.find(el => el.closest('button'))!;
     await user.click(submitBtn.closest('button')!);
     await screen.findByText('Server error');
@@ -282,8 +282,8 @@ describe('TripFormModal', () => {
     const user = userEvent.setup();
     const onSave = vi.fn().mockImplementation(() => new Promise(() => {}));
     render(<TripFormModal {...defaultProps} onSave={onSave} trip={null} />);
-    await user.type(screen.getByPlaceholderText(/Summer in Japan/i), 'My Trip');
-    const submitBtns = screen.getAllByText('Create New Trip');
+    await user.type(screen.getByPlaceholderText(/Summer Festival Tour/i), 'My Trip');
+    const submitBtns = screen.getAllByText('Create New Event');
     const submitBtn = submitBtns.find(el => el.closest('button'))!;
     await user.click(submitBtn.closest('button')!);
     await waitFor(() => expect(screen.getByText('Saving...')).toBeInTheDocument());
@@ -302,10 +302,10 @@ describe('TripFormModal', () => {
     const user = userEvent.setup();
     const onSave = vi.fn();
     render(<TripFormModal {...defaultProps} trip={null} onSave={onSave} />);
-    await user.type(screen.getByPlaceholderText(/Summer in Japan/i), 'No-date Trip');
+    await user.type(screen.getByPlaceholderText(/Summer Festival Tour/i), 'No-date Trip');
     const dayInput = document.querySelector('input[max="365"]') as HTMLInputElement;
     fireEvent.change(dayInput, { target: { value: '' } });
-    const submitBtn = screen.getAllByText('Create New Trip').find(el => el.closest('button'))!;
+    const submitBtn = screen.getAllByText('Create New Event').find(el => el.closest('button'))!;
     await user.click(submitBtn.closest('button')!);
     await screen.findByText('Number of days is required');
     expect(onSave).not.toHaveBeenCalled();
@@ -335,12 +335,12 @@ describe('TripFormModal', () => {
     );
 
     render(<TripFormModal {...defaultProps} trip={null} onSave={onSave} />);
-    await user.type(screen.getByPlaceholderText(/Summer in Japan/i), 'Alpine Trip');
-    await user.type(screen.getByPlaceholderText('Search destination photos'), 'alps');
+    await user.type(screen.getByPlaceholderText(/Summer Festival Tour/i), 'Alpine Trip');
+    await user.type(screen.getByPlaceholderText('Search venue photos'), 'alps');
     await user.click(screen.getByRole('button', { name: /Search Unsplash/i }));
     await user.click(await screen.findByRole('button', { name: /Use Unsplash photo by Alice/i }));
 
-    const submitBtn = screen.getAllByText('Create New Trip').find(el => el.closest('button'))!;
+    const submitBtn = screen.getAllByText('Create New Event').find(el => el.closest('button'))!;
     await user.click(submitBtn.closest('button')!);
 
     await waitFor(() => {

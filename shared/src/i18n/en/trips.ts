@@ -11,6 +11,6 @@ const trips: TranslationStrings = {
   'trips.reminderDays': 'days',
   'trips.reminderCustom': 'Custom',
   'trips.reminderDaysBefore': 'days before departure',
-  'trips.reminderDisabledHint': 'Trip reminders are disabled. Enable them in Admin > Settings > Notifications.',
+  'trips.reminderDisabledHint': 'Event reminders are disabled. Enable them in Admin > Settings > Notifications.',
 };
 export default trips;

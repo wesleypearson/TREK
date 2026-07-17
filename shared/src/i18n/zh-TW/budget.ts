@@ -97,6 +97,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} 兌 {to}',
   'costs.category': '分類',
   'costs.whoPaid': '誰付的款？',
+  'costs.venue': '場地',
+  'costs.noVenue': '無場地',
+  'costs.privateVenue': '私人場地',
   'costs.splitBetween': '平均分攤給',
   'costs.pickSomeone': '至少選擇一人來分攤。',
   'costs.splitSummary': '分 {count} 份 · 每份 {amount}',
@@ -186,5 +189,65 @@ const budget: TranslationStrings = {
   'costs.resetWarning': '這會永久刪除此旅程中的所有支出、結算與公開帳單連結。成員和訪客會保留。此操作無法復原。',
   'costs.resetConfirm': '刪除全部',
   'costs.resetDone': '支出已重設',
+
+  'costs.sharesSummary': '每人分攤金額摘要',
+  'costs.excluded': '不列入分攤',
+  'costs.splitMatches': '分攤金額與總額相符',
+  'costs.splitProgress': '分攤合計：{sum} / {total}（{direction} {diff}）',
+  'costs.splitUnder': '少',
+  'costs.splitOver': '多',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': '分攤帳單',
+  'costs.info.splitBody':
+    '「Equally」將總額平均分給所選的每個人。「Custom」可為每個人手動輸入分攤金額。「Ticket」逐行拆分帳單 — 為每行設定數量與單價，再點選共享該行的成員，每個人只需支付自己消費的部分。',
+  'costs.info.personalTitle': '個人支出',
+  'costs.info.personalBody':
+    '個人支出只屬於您自己：它記入您的個人花費，對其他成員不可見，也絕不會進入團體結算。用它在共同支出之外記錄自己的開銷。',
+  'costs.info.venueTitle': '支出關聯場地',
+  'costs.info.venueBody':
+    '將支出釘選到旅程的某個場地，它就會連同累計金額一起顯示在該場地卡片上 — 讓您一眼看出一個場地花了多少錢。直接從場地卡片新增支出，則會自動關聯好。',
+  'costs.info.tabsTitle': '帳單與分享連結',
+  'costs.info.tabsBody':
+    '帳單讓一個人即時看到自己欠您多少錢，透過無需帳號的連結分享。將帳單連結到某位成員（或以姓名新增的訪客），它就會跟隨旅程帳目：此人在分攤中的份額、欠誰的錢以及各筆付款 — 還包括您的收款資訊，讓對方清楚該如何結清。',
+  'costs.info.settleTitle': '結清',
+  'costs.info.settleBody':
+    '結算以最少的轉帳次數算出誰該付給誰多少錢，並使用每筆支出輸入時鎖定的匯率。錢真正入帳時記錄一筆付款，所有人的餘額都會即時更新。',
+  'costs.info.scanTitle': '掃描收據',
+  'costs.info.scanBody':
+    '用相機掃描收據、從圖庫選擇照片或選擇檔案 — 包括從 iOS 備忘錄 App 儲存的文件掃描檔。較長的收據可以分成多張照片，每一行都會帶著數量與單價匯入，隨時可以指派給成員。',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': '指南',
+  'costs.guide.title': '支出指南',
+  'costs.guide.intro':
+    '這趟旅程的所有共同開銷都匯集在這裡 — 輸入、分攤、關聯場地，並且不需要試算表即可結算。以下介紹它的運作方式，以及其他人看到的樣子。',
+  'costs.guide.lodgeTitle': '輸入支出',
+  'costs.guide.lodgeBody':
+    '點按「新增支出」，填寫名稱、金額與類別，並註明誰付了款。支出可以使用任何貨幣 — 匯率在儲存那一刻鎖定，結算後的數字永遠不會變動。',
+  'costs.guide.splitTitle': '分攤',
+  'costs.guide.splitBody':
+    '可以平均分攤、輸入自訂金額，或逐行拆分收據，並把每一行指派給共享它的成員。不在某一行上的人不需為該行付款。',
+  'costs.guide.scanTitle': '收據掃描',
+  'costs.guide.scanBody':
+    '拍下收據（或從「檔案」選擇 iOS 備忘錄的文件掃描檔），各行內容會自動辨識 — 數量、單價與總額。較長的收據最多可分六次拍攝。',
+  'costs.guide.personalTitle': '個人花費',
+  'costs.guide.personalBody':
+    '將支出標記為「個人支出（僅自己）」即可記錄自己的開銷。它對其他成員不可見，也絕不影響團體結算。',
+  'costs.guide.venuesTitle': '場地',
+  'costs.guide.venuesBody':
+    '將支出釘選到旅程的各個場地。每張場地卡片都顯示關聯支出及其總額，卡片上的「新增支出」按鈕會直接輸入已關聯好的支出。',
+  'costs.guide.tabsTitle': '帳單與分享連結',
+  'costs.guide.tabsBody':
+    '給任何人一個即時查看其欠款餘額的連結 — 無需註冊帳號。連結的帳單會自動跟隨帳目；獨立帳單只包含您記到上面的內容。您的收款資訊會顯示在連結中，讓對方知道如何付款給您。',
+  'costs.guide.settleTitle': '結清',
+  'costs.guide.settleBody':
+    '「結清」以最少的轉帳次數顯示誰該付給誰。付款發生時隨手記錄；復原一筆結算會重新開啟相應餘額。',
+  'costs.guide.guestsTitle': '沒有帳號的人',
+  'costs.guide.guestsBody':
+    '以姓名將某人加入帳單 — 無需註冊。此人可以像其他人一樣參與分攤，擁有自己的帳單連結，之後還能透過旅程邀請連結認領自己的位置。',
+  'costs.guide.viewsTitle': '其他成員看到的內容',
+  'costs.guide.viewsBody':
+    '每位成員都能看到共享帳目、自己的餘額，以及每筆支出中借出或欠下的金額。個人支出只有本人可見；私人場地的名稱絕不會透過支出洩露；帳單連結只向外部人員顯示他們自己的消費、付款與付款方式 — 絕不會顯示整本帳目。',
 };
 export default budget;

@@ -57,6 +57,10 @@ export class BudgetService {
     return svc.updateBudgetItem(id, tripId, data, actingUserId);
   }
 
+  canLinkPlace(tripId: string, placeId: number, userId?: number): boolean {
+    return svc.canLinkPlace(tripId, placeId, userId);
+  }
+
   remove(id: string, tripId: string, viewerId?: number): boolean {
     return svc.deleteBudgetItem(id, tripId, viewerId);
   }

@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} dalam {to}',
   'costs.category': 'Kategori',
   'costs.whoPaid': 'Siapa yang membayar?',
+  'costs.venue': 'Tempat',
+  'costs.noVenue': 'Tanpa tempat',
+  'costs.privateVenue': 'Tempat pribadi',
   'costs.splitBetween': 'Bagi rata antara',
   'costs.pickSomeone': 'Pilih setidaknya satu orang untuk berbagi.',
   'costs.splitSummary': 'Dibagi {count} cara · {amount} masing-masing',
@@ -192,5 +195,65 @@ const budget: TranslationStrings = {
     'Ini akan menghapus secara permanen semua pengeluaran, pelunasan, dan tautan tagihan publik di perjalanan ini. Anggota dan tamu tetap ada. Tindakan ini tidak dapat dibatalkan.',
   'costs.resetConfirm': 'Hapus semuanya',
   'costs.resetDone': 'Pengeluaran direset',
+
+  'costs.sharesSummary': 'Ringkasan bagian per orang',
+  'costs.excluded': 'Dikecualikan',
+  'costs.splitMatches': 'Pembagian cocok dengan total',
+  'costs.splitProgress': 'Jumlah pembagian: {sum} dari {total} ({direction} {diff})',
+  'costs.splitUnder': 'kurang',
+  'costs.splitOver': 'lebih',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Membagi tagihan',
+  'costs.info.splitBody':
+    '“Equally” membagi total sama rata di antara semua orang yang Anda pilih. “Custom” memungkinkan Anda mengetik bagian setiap orang. “Ticket” merinci tagihan baris demi baris — atur jumlah dan harga satuan per baris, lalu ketuk anggota yang berbagi baris itu, dan setiap orang hanya ditagih untuk yang ia ambil.',
+  'costs.info.personalTitle': 'Pengeluaran pribadi',
+  'costs.info.personalBody':
+    'Pengeluaran pribadi hanya milik Anda: dicatat sebagai pengeluaran Anda sendiri, tidak terlihat oleh anggota lain, dan tidak pernah masuk ke penyelesaian kelompok. Gunakan untuk melacak biaya Anda sendiri di samping biaya bersama.',
+  'costs.info.venueTitle': 'Tempat pada pengeluaran',
+  'costs.info.venueBody':
+    'Sematkan pengeluaran ke salah satu tempat perjalanan, dan pengeluaran itu muncul di kartu tempat tersebut dengan total berjalan — sehingga Anda bisa melihat sekilas berapa biaya sebuah tempat. Tambahkan pengeluaran langsung dari kartu tempat dan pengeluaran itu tiba sudah tersemat.',
+  'costs.info.tabsTitle': 'Tagihan & tautan berbagi',
+  'costs.info.tabsBody':
+    'Tagihan memberi satu orang tampilan langsung tentang utangnya, dibagikan sebagai tautan tanpa perlu akun. Tautkan tagihan ke seorang anggota (atau tamu yang Anda tambahkan dengan nama) dan tagihan itu mengikuti pembukuan perjalanan: bagiannya dalam pembagian, kepada siapa ia berutang, dan pembayaran — termasuk detail pembayaran Anda, sehingga ia tahu persis cara melunasinya.',
+  'costs.info.settleTitle': 'Penyelesaian',
+  'costs.info.settleBody':
+    'Penyelesaian menghitung siapa berutang kepada siapa dengan transfer sesedikit mungkin, memakai kurs yang dibekukan saat setiap pengeluaran dicatat. Catat pembayaran saat uang benar-benar berpindah tangan; saldo semua orang diperbarui langsung.',
+  'costs.info.scanTitle': 'Memindai struk',
+  'costs.info.scanBody':
+    'Pindai struk dengan kamera, pilih foto dari galeri, atau pilih file — termasuk hasil pindaian dokumen yang disimpan dari aplikasi Catatan iOS. Struk panjang bisa datang dalam beberapa foto, dan setiap baris masuk dengan jumlah dan harga satuannya, siap ditetapkan ke anggota.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Panduan',
+  'costs.guide.title': 'Panduan pengeluaran',
+  'costs.guide.intro':
+    'Semua yang dibelanjakan kelompok dalam perjalanan ini ada di sini — dicatat, dibagi, disematkan ke tempat, dan diselesaikan tanpa spreadsheet. Beginilah cara kerjanya, dan beginilah tampilannya bagi yang lain.',
+  'costs.guide.lodgeTitle': 'Mencatat pengeluaran',
+  'costs.guide.lodgeBody':
+    'Ketuk Tambah pengeluaran, beri nama, jumlah, dan kategori, lalu sebutkan siapa yang membayar. Pengeluaran bisa dalam mata uang apa pun — kursnya dibekukan saat Anda menyimpan, sehingga angka yang sudah diselesaikan tidak pernah bergeser.',
+  'costs.guide.splitTitle': 'Pembagian',
+  'costs.guide.splitBody':
+    'Bagi sama rata, ketik bagian khusus, atau rinci struk baris demi baris dan tetapkan setiap baris ke anggota yang berbagi. Siapa pun yang tidak ada di suatu baris tidak membayar apa pun untuk baris itu.',
+  'costs.guide.scanTitle': 'Pemindaian struk',
+  'costs.guide.scanBody':
+    'Foto struk (atau pilih pindaian dokumen Catatan iOS dari Files) dan barisnya dibaca untuk Anda — jumlah, harga satuan, dan totalnya. Struk panjang dapat difoto hingga enam bagian.',
+  'costs.guide.personalTitle': 'Pengeluaran pribadi',
+  'costs.guide.personalBody':
+    'Tandai pengeluaran sebagai “Pribadi (hanya saya)” untuk melacak biaya Anda sendiri. Pengeluaran itu tidak terlihat oleh anggota lain dan tidak pernah menyentuh penyelesaian kelompok.',
+  'costs.guide.venuesTitle': 'Tempat',
+  'costs.guide.venuesBody':
+    'Sematkan pengeluaran ke tempat-tempat perjalanan. Setiap kartu tempat menampilkan pengeluaran yang tertaut beserta totalnya, dan tombol Tambah pengeluaran di kartu itu mencatat pengeluaran yang sudah tersemat.',
+  'costs.guide.tabsTitle': 'Tagihan & tautan berbagi',
+  'costs.guide.tabsBody':
+    'Beri siapa pun tautan langsung ke saldo berjalannya — tanpa perlu akun. Tagihan tertaut mengikuti pembukuan secara otomatis; tagihan mandiri hanya memuat yang Anda bebankan padanya. Detail pembayaran Anda tampil di tautan sehingga orang tahu cara membayar Anda.',
+  'costs.guide.settleTitle': 'Penyelesaian',
+  'costs.guide.settleBody':
+    'Lunasi menampilkan siapa berutang kepada siapa dengan transfer sesedikit mungkin. Catat pembayaran saat terjadi; membatalkan penyelesaian membuka kembali saldo.',
+  'costs.guide.guestsTitle': 'Orang tanpa akun',
+  'costs.guide.guestsBody':
+    'Tambahkan seseorang ke tagihan dengan nama — tanpa perlu mendaftar. Ia ikut pembagian seperti yang lain, bisa mendapat tautan tagihan sendiri, dan nantinya dapat mengambil tempatnya dengan tautan gabung perjalanan.',
+  'costs.guide.viewsTitle': 'Yang dilihat anggota lain',
+  'costs.guide.viewsBody':
+    'Setiap anggota melihat pembukuan bersama, saldonya sendiri, dan apa yang ia pinjamkan atau pinjam per pengeluaran. Pengeluaran pribadi tetap privat bagi pemiliknya; tempat privat tidak pernah mengungkap namanya lewat pengeluaran; dan tautan tagihan hanya menunjukkan kepada orang luar biaya, pembayaran, dan cara membayar milik mereka sendiri — tidak pernah seluruh pembukuan.',
 };
 export default budget;

@@ -603,7 +603,7 @@ export async function downloadTripPDF({ trip, days, places, assignments, categor
       ? `<div class="cover-circle"><img src="${escHtml(coverImg)}" /></div>`
       : `<div class="cover-circle-ph"></div>`}
     <div class="cover-label">${escHtml(tr('pdf.travelPlan'))}</div>
-    <div class="cover-title">${escHtml(trip?.title || 'My Trip')}</div>
+    <div class="cover-title">${escHtml(trip?.title || 'My Event')}</div>
     ${trip?.description ? `<div class="cover-desc">${escHtml(trip.description)}</div>` : ''}
     ${range ? `<div class="cover-dates">${range}</div>` : ''}
     <div class="cover-line"></div>

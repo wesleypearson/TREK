@@ -5,6 +5,7 @@ const common: TranslationStrings = {
   'common.showMore': 'Továbbiak',
   'common.showLess': 'Kevesebb',
   'common.cancel': 'Mégse',
+  'common.moreInfo': 'További információ',
   'common.clear': 'Törlés',
   'common.delete': 'Törlés',
   'common.preview': 'Előnézet',

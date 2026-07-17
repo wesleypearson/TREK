@@ -106,7 +106,7 @@ describe('CollectionPlaceDetail', () => {
   it('FE-COMP-COLDETAIL-006: hides Edit and Remove buttons when canEdit=false && canDelete=false', async () => {
     renderDetail({ canEdit: false, canDelete: false });
     // Wait for the async photo effect to settle before asserting absence.
-    expect(await screen.findByRole('button', { name: 'Copy to trip' })).toBeInTheDocument();
+    expect(await screen.findByRole('button', { name: 'Copy to event' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Remove from list' })).not.toBeInTheDocument();
   });
@@ -129,14 +129,14 @@ describe('CollectionPlaceDetail', () => {
   it('FE-COMP-COLDETAIL-009: Copy to trip button fires onCopyToTrip (editor)', async () => {
     const user = userEvent.setup();
     const props = renderDetail({ canEdit: true, canDelete: true });
-    await user.click(await screen.findByRole('button', { name: 'Copy to trip' }));
+    await user.click(await screen.findByRole('button', { name: 'Copy to event' }));
     expect(props.onCopyToTrip).toHaveBeenCalledTimes(1);
   });
 
   it('FE-COMP-COLDETAIL-010: Copy to trip button fires onCopyToTrip (viewer)', async () => {
     const user = userEvent.setup();
     const props = renderDetail({ canEdit: false, canDelete: false });
-    await user.click(await screen.findByRole('button', { name: 'Copy to trip' }));
+    await user.click(await screen.findByRole('button', { name: 'Copy to event' }));
     expect(props.onCopyToTrip).toHaveBeenCalledTimes(1);
   });
 });

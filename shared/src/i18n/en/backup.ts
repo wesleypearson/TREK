@@ -65,7 +65,7 @@ const backup: TranslationStrings = {
   'backup.keep.forever': 'Keep forever',
   'backup.restoreConfirmTitle': 'Restore Backup?',
   'backup.restoreWarning':
-    'All current data (trips, places, users, uploads) will be permanently replaced by the backup. This action cannot be undone.',
+    'All current data (events, venues, users, uploads) will be permanently replaced by the backup. This action cannot be undone.',
   'backup.restoreTip': 'Tip: Create a backup of the current state before restoring.',
   'backup.restoreConfirm': 'Yes, restore',
 };

@@ -98,6 +98,9 @@ const budget: TranslationStrings = {
   'costs.rateLabel': '1 {from} en {to}',
   'costs.category': 'Categoría',
   'costs.whoPaid': '¿Quién pagó?',
+  'costs.venue': 'Lugar',
+  'costs.noVenue': 'Sin lugar',
+  'costs.privateVenue': 'Lugar privado',
   'costs.splitBetween': 'Dividir a partes iguales entre',
   'costs.pickSomeone': 'Elige al menos una persona con quien dividir.',
   'costs.splitSummary': 'Dividido entre {count} · {amount} cada uno',
@@ -190,5 +193,65 @@ const budget: TranslationStrings = {
     'Esto elimina permanentemente todos los gastos, pagos saldados y enlaces públicos de cuentas de este viaje. Los miembros e invitados se conservan. No se puede deshacer.',
   'costs.resetConfirm': 'Eliminar todo',
   'costs.resetDone': 'Gastos restablecidos',
+
+  'costs.sharesSummary': 'Resumen de las partes individuales',
+  'costs.excluded': 'Excluido',
+  'costs.splitMatches': 'El reparto coincide con el total',
+  'costs.splitProgress': 'Suma del reparto: {sum} de {total} ({diff} {direction})',
+  'costs.splitUnder': 'de menos',
+  'costs.splitOver': 'de más',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Repartir una cuenta',
+  'costs.info.splitBody':
+    '«Equally» divide el total a partes iguales entre todas las personas que selecciones. «Custom» te permite escribir la parte de cada uno. «Ticket» desglosa la cuenta línea por línea — define cantidad y precio unitario por línea, toca a los miembros que compartieron esa línea y cada uno paga solo lo que consumió.',
+  'costs.info.personalTitle': 'Gastos personales',
+  'costs.info.personalBody':
+    'Un gasto personal es solo tuyo: se registra en tu propio gasto, permanece invisible para el resto del grupo y nunca entra en la liquidación común. Úsalo para llevar tus propios costes junto a los compartidos.',
+  'costs.info.venueTitle': 'Lugares en los gastos',
+  'costs.info.venueBody':
+    'Fija un gasto a uno de los lugares del viaje y aparecerá en la ficha de ese lugar con un total acumulado — así ves de un vistazo lo que ha costado un lugar. Añade un gasto directamente desde la ficha de un lugar y llegará ya fijado.',
+  'costs.info.tabsTitle': 'Cuentas y enlaces para compartir',
+  'costs.info.tabsBody':
+    'Una cuenta da a una persona una vista en vivo de lo que te debe, compartida como un enlace que no requiere registro. Vincula una cuenta a un miembro (o a un invitado añadido por su nombre) y seguirá el registro del viaje: sus partes en los repartos, a quién debe y los pagos — incluidos tus datos de pago, para que sepa exactamente cómo saldar.',
+  'costs.info.settleTitle': 'Saldar cuentas',
+  'costs.info.settleBody':
+    'La liquidación calcula quién debe a quién con el menor número de transferencias, usando el tipo de cambio congelado al registrar cada gasto. Registra un pago cuando el dinero cambie de manos de verdad; los saldos de todos se actualizan en vivo.',
+  'costs.info.scanTitle': 'Escanear recibos',
+  'costs.info.scanBody':
+    'Escanea un tique con la cámara, elige fotos de tu galería o un archivo — incluidos los escaneos de documentos guardados desde la app Notas de iOS. Un recibo largo puede llegar en varias fotos, y cada línea entra con su cantidad y precio unitario, lista para asignarse a los miembros.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Guía',
+  'costs.guide.title': 'Guía de gastos',
+  'costs.guide.intro':
+    'Todo lo que el grupo gasta en este viaje vive aquí — registrado, repartido, fijado a lugares y saldado sin hojas de cálculo. Así funciona, y así lo ven los demás.',
+  'costs.guide.lodgeTitle': 'Registrar un gasto',
+  'costs.guide.lodgeBody':
+    'Toca «Añadir gasto», ponle nombre, importe y categoría, e indica quién pagó. Los gastos pueden estar en cualquier moneda — el tipo de cambio se congela al guardar, para que las cifras saldadas nunca cambien.',
+  'costs.guide.splitTitle': 'Repartir',
+  'costs.guide.splitBody':
+    'Reparte a partes iguales, escribe partes personalizadas o desglosa el tique línea por línea y asigna cada línea a los miembros que la compartieron. Quien no esté en una línea no paga nada por ella.',
+  'costs.guide.scanTitle': 'Escaneo de recibos',
+  'costs.guide.scanBody':
+    'Fotografía un tique (o elige un escaneo de documento de Notas de iOS desde Archivos) y las líneas se leen por ti — cantidades, precios unitarios y el total. Los recibos largos pueden fotografiarse en hasta seis partes.',
+  'costs.guide.personalTitle': 'Gasto personal',
+  'costs.guide.personalBody':
+    'Marca un gasto como «Personal (solo yo)» para llevar tus propios costes. Es invisible para el resto del grupo y nunca toca la liquidación común.',
+  'costs.guide.venuesTitle': 'Lugares',
+  'costs.guide.venuesBody':
+    'Fija gastos a los lugares del viaje. Cada ficha de lugar muestra su gasto vinculado y el total, y su botón «Añadir gasto» crea un gasto ya fijado.',
+  'costs.guide.tabsTitle': 'Cuentas y enlaces para compartir',
+  'costs.guide.tabsBody':
+    'Da a cualquiera un enlace en vivo a su saldo — sin necesidad de cuenta de usuario. Las cuentas vinculadas siguen el registro automáticamente; las independientes solo contienen lo que les cargues. Tus datos de pago aparecen en el enlace para que sepan cómo pagarte.',
+  'costs.guide.settleTitle': 'Saldar cuentas',
+  'costs.guide.settleBody':
+    'Saldar cuentas muestra quién debe a quién con el menor número de transferencias. Registra los pagos cuando ocurran; deshacer una liquidación reabre los saldos.',
+  'costs.guide.guestsTitle': 'Personas sin cuenta de usuario',
+  'costs.guide.guestsBody':
+    'Añade a alguien a una cuenta por su nombre — sin registro. Participa en los repartos como cualquiera, puede tener su propio enlace de cuenta y reclamar su sitio más tarde con el enlace de invitación al viaje.',
+  'costs.guide.viewsTitle': 'Lo que ven los demás',
+  'costs.guide.viewsBody':
+    'Cada miembro ve el registro compartido, su propio saldo y lo que prestó o debe por gasto. Los gastos personales son privados de su dueño; los lugares privados nunca revelan su nombre a través de un gasto; y los enlaces de cuenta muestran a los de fuera solo sus propios cargos, pagos y cómo pagar — nunca el registro completo.',
 };
 export default budget;
