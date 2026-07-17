@@ -380,7 +380,7 @@ describe('JourneyDetailPage', () => {
       expect(screen.getAllByText('Days').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('Entries').length).toBeGreaterThanOrEqual(1);
       expect(screen.getAllByText('Photos').length).toBeGreaterThanOrEqual(1);
-      expect(screen.getAllByText('Places').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Venues').length).toBeGreaterThanOrEqual(1);
     });
 
     it('renders stat values', async () => {
@@ -475,7 +475,7 @@ describe('JourneyDetailPage', () => {
   describe('FE-PAGE-JOURNEYDETAIL-016: Shows "Back to Journey" link', () => {
     it('renders a back navigation button (icon-only with aria-label)', async () => {
       await renderAndWait();
-      expect(screen.getByLabelText('Back to Journey')).toBeInTheDocument();
+      expect(screen.getByLabelText('Back to Tour')).toBeInTheDocument();
     });
   });
 
@@ -508,7 +508,7 @@ describe('JourneyDetailPage', () => {
 
       await waitFor(() => {
         expect(
-          screen.getByText('Add a trip to get started with skeleton entries'),
+          screen.getByText('Add an event to get started with skeleton entries'),
         ).toBeInTheDocument();
       });
     });
@@ -769,8 +769,8 @@ describe('JourneyDetailPage', () => {
 
     it('shows the place count in the sidebar map', async () => {
       await renderAndWait();
-      // The sidebar map shows "N Places" text
-      expect(screen.getAllByText(/Places/).length).toBeGreaterThanOrEqual(1);
+      // The sidebar map shows "N venues" text
+      expect(screen.getAllByText(/venues/i).length).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -786,8 +786,8 @@ describe('JourneyDetailPage', () => {
   describe('FE-PAGE-JOURNEYDETAIL-035: Day group shows place count', () => {
     it('shows the number of entries per day group', async () => {
       await renderAndWait();
-      // Each day header shows "N places"
-      const placesTexts = screen.getAllByText(/places/i);
+      // Each day header shows "N venues"
+      const placesTexts = screen.getAllByText(/venues/i);
       expect(placesTexts.length).toBeGreaterThanOrEqual(1);
     });
   });
@@ -970,7 +970,7 @@ describe('JourneyDetailPage', () => {
     await user.click(heroButtons[heroButtons.length - 1] as HTMLElement);
 
     await waitFor(() => {
-      expect(screen.getByText('Journey Settings')).toBeInTheDocument();
+      expect(screen.getByText('Tour Settings')).toBeInTheDocument();
     });
   }
 
@@ -981,7 +981,7 @@ describe('JourneyDetailPage', () => {
       await renderAndWait();
       await openSettingsDialog(user);
       // If we reach here, the dialog opened successfully (openSettingsDialog asserts it)
-      expect(screen.getByText('Journey Settings')).toBeInTheDocument();
+      expect(screen.getByText('Tour Settings')).toBeInTheDocument();
     });
   });
 
@@ -1043,7 +1043,7 @@ describe('JourneyDetailPage', () => {
       await user.click(settingsCancel!);
 
       await waitFor(() => {
-        expect(screen.queryByText('Journey Settings')).not.toBeInTheDocument();
+        expect(screen.queryByText('Tour Settings')).not.toBeInTheDocument();
       });
     });
   });
@@ -1378,7 +1378,7 @@ describe('JourneyDetailPage', () => {
 
       // Click Save in the settings dialog footer
       // The settings dialog footer has [Delete, Cancel, Save] buttons
-      const settingsDialog = screen.getByText('Journey Settings').closest('[class*="fixed"]')!;
+      const settingsDialog = screen.getByText('Tour Settings').closest('[class*="fixed"]')!;
       const saveBtns = settingsDialog.querySelectorAll('button');
       const saveBtn = Array.from(saveBtns).find(b => b.textContent === 'Save')!;
       await user.click(saveBtn as HTMLElement);
@@ -2163,7 +2163,7 @@ describe('JourneyDetailPage', () => {
       const pickerModal = screen.getByText('Add to').closest('[class*="fixed"]')!;
       expect(pickerModal).toBeTruthy();
       // The filter bar inside picker has 4 tab buttons
-      expect(screen.getByText('Trip Period')).toBeInTheDocument();
+      expect(screen.getByText('Event Period')).toBeInTheDocument();
       expect(screen.getByText('Albums')).toBeInTheDocument();
       expect(screen.getByText('Add to')).toBeInTheDocument();
     });
@@ -2616,8 +2616,8 @@ describe('JourneyDetailPage', () => {
       await renderAndWait();
       await openSettingsDialog(user);
 
-      // Settings dialog has its own "Synced Trips" section
-      const syncedTripsLabels = screen.getAllByText('Synced Trips');
+      // Settings dialog has its own "Synced Events" section
+      const syncedTripsLabels = screen.getAllByText('Synced Events');
       expect(syncedTripsLabels.length).toBeGreaterThanOrEqual(1);
 
       // The trip "Italy Trip" should appear inside settings
@@ -2991,9 +2991,9 @@ describe('JourneyDetailPage', () => {
       await openSettingsDialog(user);
 
       // The settings dialog shows trips with unlink buttons (Trash2 icon buttons)
-      const settingsDialog = screen.getByText('Journey Settings').closest('[class*="fixed"]')!;
+      const settingsDialog = screen.getByText('Tour Settings').closest('[class*="fixed"]')!;
       // Find the unlink button (it's a red trash button next to Italy Trip)
-      const trashBtns = settingsDialog.querySelectorAll('button[title="Unlink trip"]');
+      const trashBtns = settingsDialog.querySelectorAll('button[title="Unlink event"]');
       expect(trashBtns.length).toBeGreaterThanOrEqual(1);
       await user.click(trashBtns[0] as HTMLElement);
 
@@ -3018,13 +3018,13 @@ describe('JourneyDetailPage', () => {
       await renderAndWait();
       await openSettingsDialog(user);
 
-      // Click the "Add Trip" button in settings
-      const addTripBtn = screen.getByText('Add Trip');
+      // Click the "Add Event" button in settings
+      const addTripBtn = screen.getByText('Add Event');
       await user.click(addTripBtn);
 
       // The nested AddTripDialog should open
       await waitFor(() => {
-        expect(screen.getByText('Link Trip')).toBeInTheDocument();
+        expect(screen.getByText('Link Event')).toBeInTheDocument();
       });
     });
   });
@@ -3057,7 +3057,7 @@ describe('JourneyDetailPage', () => {
 
       await openSettingsDialog(user);
 
-      expect(screen.getByText('No trips linked')).toBeInTheDocument();
+      expect(screen.getByText('No events linked')).toBeInTheDocument();
     });
   });
 

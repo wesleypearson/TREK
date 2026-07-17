@@ -490,7 +490,7 @@ describe('DayPlanSidebar', () => {
   it('FE-PLANNER-DAYPLAN-029: day with no assignments shows empty state', () => {
     const day = buildDay({ id: 10, date: '2025-06-01', title: 'Empty Day' })
     render(<DayPlanSidebar {...makeDefaultProps({ days: [day], assignments: {} })} />)
-    expect(screen.getByText(/No places planned for this day/i)).toBeInTheDocument()
+    expect(screen.getByText(/No venues planned for this day/i)).toBeInTheDocument()
   })
 
   // ── Transport items ─────────────────────────────────────────────────────

@@ -29,7 +29,7 @@ describe('DevNotificationsPanel', () => {
   it('FE-ADMIN-DEVNOTIF-002: four section titles render after data loads', async () => {
     render(<><ToastContainer /><DevNotificationsPanel /></>);
     // Wait for async data to populate conditional sections
-    await screen.findByText('Trip-Scoped Events');
+    await screen.findByText('Event-Scoped Notifications');
     await screen.findByText('User-Scoped Events');
     expect(screen.getByText('Type Testing')).toBeInTheDocument();
     expect(screen.getByText('Admin-Scoped Events')).toBeInTheDocument();
@@ -37,7 +37,7 @@ describe('DevNotificationsPanel', () => {
 
   it('FE-ADMIN-DEVNOTIF-003: trip selector populated from API', async () => {
     render(<><ToastContainer /><DevNotificationsPanel /></>);
-    await screen.findByText('Trip-Scoped Events');
+    await screen.findByText('Event-Scoped Notifications');
     const [tripSelect] = screen.getAllByRole('combobox');
     const options = Array.from(tripSelect.querySelectorAll('option'));
     const labels = options.map(o => o.textContent);
@@ -133,7 +133,7 @@ describe('DevNotificationsPanel', () => {
     );
     const user = userEvent.setup();
     render(<><ToastContainer /><DevNotificationsPanel /></>);
-    await screen.findByText('Trip-Scoped Events');
+    await screen.findByText('Event-Scoped Notifications');
 
     const [tripSelect] = screen.getAllByRole('combobox');
     const tokyoOption = Array.from(tripSelect.querySelectorAll('option')).find(
@@ -155,6 +155,6 @@ describe('DevNotificationsPanel', () => {
     render(<><ToastContainer /><DevNotificationsPanel /></>);
     // Wait for user data to confirm async effects have settled
     await screen.findByText('User-Scoped Events');
-    expect(screen.queryByText('Trip-Scoped Events')).not.toBeInTheDocument();
+    expect(screen.queryByText('Event-Scoped Notifications')).not.toBeInTheDocument();
   });
 });

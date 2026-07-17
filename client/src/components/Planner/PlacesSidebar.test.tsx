@@ -57,7 +57,7 @@ describe('PlacesSidebar', () => {
 
   it('FE-COMP-PLACES-002: shows search input', () => {
     render(<PlacesSidebar {...defaultProps} />);
-    const searchInput = screen.getByPlaceholderText(/Search places/i);
+    const searchInput = screen.getByPlaceholderText(/Search venues/i);
     expect(searchInput).toBeInTheDocument();
   });
 
@@ -74,7 +74,7 @@ describe('PlacesSidebar', () => {
   it('FE-COMP-PLACES-004: shows Add Place button', () => {
     render(<PlacesSidebar {...defaultProps} />);
     // Multiple "Add Place/Activity" buttons may exist (top toolbar + empty state)
-    const addBtns = screen.getAllByText(/Add Place\/Activity/i);
+    const addBtns = screen.getAllByText(/Add Venue\/Activity/i);
     expect(addBtns.length).toBeGreaterThan(0);
   });
 
@@ -82,7 +82,7 @@ describe('PlacesSidebar', () => {
     const user = userEvent.setup();
     const onAddPlace = vi.fn();
     render(<PlacesSidebar {...defaultProps} onAddPlace={onAddPlace} />);
-    const addBtns = screen.getAllByText(/Add Place\/Activity/i);
+    const addBtns = screen.getAllByText(/Add Venue\/Activity/i);
     await user.click(addBtns[0]);
     expect(onAddPlace).toHaveBeenCalled();
   });
@@ -103,7 +103,7 @@ describe('PlacesSidebar', () => {
       buildPlace({ name: 'Sacre Coeur' }),
     ];
     render(<PlacesSidebar {...defaultProps} places={places} />);
-    const searchInput = screen.getByPlaceholderText(/Search places/i);
+    const searchInput = screen.getByPlaceholderText(/Search venues/i);
     await user.type(searchInput, 'Arc');
     expect(screen.getByText('Arc de Triomphe')).toBeInTheDocument();
     expect(screen.queryByText('Sacre Coeur')).not.toBeInTheDocument();
@@ -113,7 +113,7 @@ describe('PlacesSidebar', () => {
     const user = userEvent.setup();
     const places = [buildPlace({ name: 'Museum of Art' })];
     render(<PlacesSidebar {...defaultProps} places={places} />);
-    const searchInput = screen.getByPlaceholderText(/Search places/i);
+    const searchInput = screen.getByPlaceholderText(/Search venues/i);
     await user.type(searchInput, 'museum');
     expect(screen.getByText('Museum of Art')).toBeInTheDocument();
   });
@@ -150,7 +150,7 @@ describe('PlacesSidebar', () => {
     ];
     const { rerender } = render(<PlacesSidebar {...defaultProps} places={places} selectedPlaceId={null} />);
 
-    await user.type(screen.getByPlaceholderText(/Search places/i), 'Visible');
+    await user.type(screen.getByPlaceholderText(/Search venues/i), 'Visible');
     scrollIntoView.mockClear();
     rerender(<PlacesSidebar {...defaultProps} places={places} selectedPlaceId={42} />);
 
@@ -161,8 +161,8 @@ describe('PlacesSidebar', () => {
   it('FE-COMP-PLACES-010: shows place count', () => {
     const places = [buildPlace({ name: 'P1' }), buildPlace({ name: 'P2' }), buildPlace({ name: 'P3' })];
     render(<PlacesSidebar {...defaultProps} places={places} />);
-    // i18n: places.count = "{count} places"
-    expect(screen.getByText(/3 places/i)).toBeInTheDocument();
+    // i18n: places.count = '{count} venues'
+    expect(screen.getByText(/3 venues/i)).toBeInTheDocument();
   });
 
   it('FE-COMP-PLACES-011: empty list shows no place names', () => {
@@ -180,7 +180,7 @@ describe('PlacesSidebar', () => {
     const user = userEvent.setup();
     const places = [buildPlace({ name: 'Place A' }), buildPlace({ name: 'Place B' })];
     render(<PlacesSidebar {...defaultProps} places={places} />);
-    const searchInput = screen.getByPlaceholderText(/Search places/i);
+    const searchInput = screen.getByPlaceholderText(/Search venues/i);
     await user.type(searchInput, 'Place A');
     expect(screen.queryByText('Place B')).not.toBeInTheDocument();
     await user.clear(searchInput);
@@ -234,13 +234,13 @@ describe('Filter tabs', () => {
     expect(screen.getByText('Unplanned Place')).toBeInTheDocument();
   });
 
-  it('FE-PLANNER-SIDEBAR-019: unplanned empty state shows "All places are planned"', async () => {
+  it('FE-PLANNER-SIDEBAR-019: unplanned empty state shows "All venues are planned"', async () => {
     const user = userEvent.setup();
     const place = buildPlace({ name: 'Assigned Place' });
     const assignments = { '1': [buildAssignment({ place, day_id: 1 })] };
     render(<PlacesSidebar {...defaultProps} places={[place]} assignments={assignments} />);
     await user.click(screen.getByRole('button', { name: /Unplanned/i }));
-    expect(screen.getByText(/All places are planned/i)).toBeInTheDocument();
+    expect(screen.getByText(/All venues are planned/i)).toBeInTheDocument();
   });
 });
 
@@ -252,7 +252,7 @@ describe('Search', () => {
     const place = buildPlace({ name: 'UK Office', address: '10 Downing Street' });
     const other = buildPlace({ name: 'Other Place', address: null });
     render(<PlacesSidebar {...defaultProps} places={[place, other]} />);
-    await user.type(screen.getByPlaceholderText(/Search places/i), 'Downing');
+    await user.type(screen.getByPlaceholderText(/Search venues/i), 'Downing');
     expect(screen.getByText('UK Office')).toBeInTheDocument();
     expect(screen.queryByText('Other Place')).not.toBeInTheDocument();
   });
@@ -261,7 +261,7 @@ describe('Search', () => {
     const user = userEvent.setup();
     const places = [buildPlace({ name: 'Paris Hotel' }), buildPlace({ name: 'Rome Cafe' })];
     render(<PlacesSidebar {...defaultProps} places={places} />);
-    const searchInput = screen.getByPlaceholderText(/Search places/i);
+    const searchInput = screen.getByPlaceholderText(/Search venues/i);
     await user.type(searchInput, 'Paris');
     expect(screen.queryByText('Rome Cafe')).not.toBeInTheDocument();
     // X clear button should appear
@@ -382,7 +382,7 @@ describe('Place list interaction', () => {
   it('FE-PLANNER-SIDEBAR-031: no edit buttons shown when canEditPlaces=false', () => {
     seedStore(usePermissionsStore, { permissions: { place_edit: 'admin' } });
     render(<PlacesSidebar {...defaultProps} />);
-    expect(screen.queryByText(/Add Place\/Activity/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Add Venue\/Activity/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/GPX/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/Google List/i)).not.toBeInTheDocument();
   });
@@ -390,7 +390,7 @@ describe('Place list interaction', () => {
   it('FE-PLANNER-SIDEBAR-032: place count shows singular form for 1 place', () => {
     const place = buildPlace({ name: 'Solo Place' });
     render(<PlacesSidebar {...defaultProps} places={[place]} />);
-    expect(screen.getByText('1 place')).toBeInTheDocument();
+    expect(screen.getByText('1 venue')).toBeInTheDocument();
   });
 });
 

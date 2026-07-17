@@ -171,7 +171,7 @@ describe('RegisterPage', () => {
     it('renders feature list items in the DOM', () => {
       render(<RegisterPage />);
       // Features are always in the DOM (hidden via CSS on mobile)
-      expect(screen.getByText(/Unlimited trip plans/i)).toBeInTheDocument();
+      expect(screen.getByText(/Unlimited event plans/i)).toBeInTheDocument();
       expect(screen.getByText(/Interactive map view/i)).toBeInTheDocument();
       expect(screen.getByText(/Track reservations/i)).toBeInTheDocument();
     });

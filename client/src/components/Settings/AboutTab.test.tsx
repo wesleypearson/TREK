@@ -38,7 +38,7 @@ describe('AboutTab', () => {
 
   it('FE-COMP-ABOUT-006: displays the about description', () => {
     render(<AboutTab appVersion="2.9.10" />);
-    expect(screen.getByText(/self-hosted travel planner/i)).toBeInTheDocument();
+    expect(screen.getByText(/self-hosted production planner/i)).toBeInTheDocument();
   });
 
   it('FE-COMP-ABOUT-011: version prop change is reflected', () => {

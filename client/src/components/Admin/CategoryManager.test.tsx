@@ -129,7 +129,7 @@ describe('CategoryManager', () => {
 
   it('FE-COMP-CAT-010: shows subtitle text', async () => {
     render(<CategoryManager />);
-    await screen.findByText('Manage categories for places');
+    await screen.findByText('Manage categories for venues');
   });
 
   it('FE-COMP-CAT-011: category count is shown', async () => {

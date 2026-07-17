@@ -51,8 +51,8 @@ describe('MoveToListModal', () => {
   it('FE-COMP-MOVETOLIST-004: shows the place count subtitle per list', () => {
     renderModal();
     // collections.placeCount = '{count} places'
-    expect(screen.getByText('3 places')).toBeInTheDocument();
-    expect(screen.getByText('7 places')).toBeInTheDocument();
+    expect(screen.getByText('3 venues')).toBeInTheDocument();
+    expect(screen.getByText('7 venues')).toBeInTheDocument();
   });
 
   it('FE-COMP-MOVETOLIST-005: clicking a row calls onPick with that list id', async () => {

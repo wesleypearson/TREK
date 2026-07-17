@@ -255,7 +255,7 @@ describe('AtlasPage', () => {
       await waitFor(() => {
         // Both "Countries" labels (mobile + desktop) should be present
         expect(screen.getAllByText(/countries/i).length).toBeGreaterThan(0);
-        expect(screen.getAllByText(/trips/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/events/i).length).toBeGreaterThan(0);
       });
     });
   });
@@ -273,7 +273,7 @@ describe('AtlasPage', () => {
       await user.click(screen.getByText('Bucket List'));
 
       await waitFor(() => {
-        expect(screen.getByText(/add places you dream of visiting/i)).toBeInTheDocument();
+        expect(screen.getByText(/add venues you dream of playing/i)).toBeInTheDocument();
       });
     });
   });
@@ -293,7 +293,7 @@ describe('AtlasPage', () => {
 
       // Bucket empty state appears
       await waitFor(() => {
-        expect(screen.getByText(/add places you dream of visiting/i)).toBeInTheDocument();
+        expect(screen.getByText(/add venues you dream of playing/i)).toBeInTheDocument();
       });
 
       // Switch back to stats
@@ -355,7 +355,7 @@ describe('AtlasPage', () => {
       render(<AtlasPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/trips in/i)).toBeInTheDocument();
+        expect(screen.getByText(/events in/i)).toBeInTheDocument();
       });
     });
   });
@@ -369,8 +369,8 @@ describe('AtlasPage', () => {
       render(<AtlasPage />);
 
       await waitFor(() => {
-        expect(screen.getByText(/no travel data yet/i)).toBeInTheDocument();
-        expect(screen.getByText(/create a trip and add places/i)).toBeInTheDocument();
+        expect(screen.getByText(/no tour data yet/i)).toBeInTheDocument();
+        expect(screen.getByText(/create an event and add venues/i)).toBeInTheDocument();
       });
     });
   });
@@ -386,14 +386,14 @@ describe('AtlasPage', () => {
       await user.click(screen.getAllByText('Bucket List')[0]);
 
       // Find the "+ Add place" button — use exact text to avoid matching the hint "Add places..."
-      await waitFor(() => expect(screen.getAllByRole('button', { name: /add place/i }).length).toBeGreaterThan(0));
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /add venue/i }).length).toBeGreaterThan(0));
 
       // Click the Add place button
-      await user.click(screen.getAllByRole('button', { name: /add place/i })[0]);
+      await user.click(screen.getAllByRole('button', { name: /add venue/i })[0]);
 
       // Form appears with name/search input
       await waitFor(() => {
-        expect(screen.getByPlaceholderText(/name \(country, city, place\.\.\.\)/i)).toBeInTheDocument();
+        expect(screen.getByPlaceholderText(/name \(country, city, venue\.\.\.\)/i)).toBeInTheDocument();
       });
     });
   });
@@ -405,11 +405,11 @@ describe('AtlasPage', () => {
 
       await waitFor(() => expect(screen.getAllByText('Bucket List').length).toBeGreaterThan(0));
       await user.click(screen.getAllByText('Bucket List')[0]);
-      await waitFor(() => expect(screen.getAllByRole('button', { name: /add place/i }).length).toBeGreaterThan(0));
-      await user.click(screen.getAllByRole('button', { name: /add place/i })[0]);
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /add venue/i }).length).toBeGreaterThan(0));
+      await user.click(screen.getAllByRole('button', { name: /add venue/i })[0]);
 
       await waitFor(() =>
-        expect(screen.getByPlaceholderText(/name \(country, city, place\.\.\.\)/i)).toBeInTheDocument(),
+        expect(screen.getByPlaceholderText(/name \(country, city, venue\.\.\.\)/i)).toBeInTheDocument(),
       );
 
       // Click Cancel
@@ -417,7 +417,7 @@ describe('AtlasPage', () => {
       await user.click(cancelBtn);
 
       await waitFor(() =>
-        expect(screen.queryByPlaceholderText(/name \(country, city, place\.\.\.\)/i)).not.toBeInTheDocument(),
+        expect(screen.queryByPlaceholderText(/name \(country, city, venue\.\.\.\)/i)).not.toBeInTheDocument(),
       );
     });
   });
@@ -904,8 +904,8 @@ describe('AtlasPage', () => {
 
       await waitFor(() => {
         expect(screen.getAllByText(/countries/i).length).toBeGreaterThan(0);
-        expect(screen.getAllByText(/trips/i).length).toBeGreaterThan(0);
-        expect(screen.getAllByText(/places/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/events/i).length).toBeGreaterThan(0);
+        expect(screen.getAllByText(/venues/i).length).toBeGreaterThan(0);
         expect(screen.getAllByText(/days/i).length).toBeGreaterThan(0);
       });
     });
@@ -918,10 +918,10 @@ describe('AtlasPage', () => {
 
       await waitFor(() => expect(screen.getAllByText('Bucket List').length).toBeGreaterThan(0));
       await user.click(screen.getAllByText('Bucket List')[0]);
-      await waitFor(() => expect(screen.getAllByRole('button', { name: /add place/i }).length).toBeGreaterThan(0));
-      await user.click(screen.getAllByRole('button', { name: /add place/i })[0]);
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /add venue/i }).length).toBeGreaterThan(0));
+      await user.click(screen.getAllByRole('button', { name: /add venue/i })[0]);
 
-      const nameInput = await screen.findByPlaceholderText(/name \(country, city, place\.\.\.\)/i);
+      const nameInput = await screen.findByPlaceholderText(/name \(country, city, venue\.\.\.\)/i);
       await user.type(nameInput, 'Tokyo');
 
       // The input has the typed value
@@ -1189,11 +1189,11 @@ describe('AtlasPage', () => {
       await user.click(screen.getByText('Bucket List'));
 
       // Open add form
-      await waitFor(() => expect(screen.getAllByRole('button', { name: /add place/i }).length).toBeGreaterThan(0));
-      await user.click(screen.getAllByRole('button', { name: /add place/i })[0]);
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /add venue/i }).length).toBeGreaterThan(0));
+      await user.click(screen.getAllByRole('button', { name: /add venue/i })[0]);
 
       // Type in search field
-      const nameInput = await screen.findByPlaceholderText(/name \(country, city, place\.\.\.\)/i);
+      const nameInput = await screen.findByPlaceholderText(/name \(country, city, venue\.\.\.\)/i);
       await user.type(nameInput, 'Tokyo');
 
       // Press Enter to trigger search (or click search button)
@@ -1309,10 +1309,10 @@ describe('AtlasPage', () => {
       await user.click(screen.getByText('Bucket List'));
 
       // Open add form
-      await waitFor(() => expect(screen.getAllByRole('button', { name: /add place/i }).length).toBeGreaterThan(0));
-      await user.click(screen.getAllByRole('button', { name: /add place/i })[0]);
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /add venue/i }).length).toBeGreaterThan(0));
+      await user.click(screen.getAllByRole('button', { name: /add venue/i })[0]);
 
-      const nameInput = await screen.findByPlaceholderText(/name \(country, city, place\.\.\.\)/i);
+      const nameInput = await screen.findByPlaceholderText(/name \(country, city, venue\.\.\.\)/i);
 
       // Type "Bali" — goes to setBucketSearch since bucketForm.name is initially empty
       await user.type(nameInput, 'Bali');
@@ -1476,11 +1476,11 @@ describe('AtlasPage', () => {
       await user.click(screen.getByText('Bucket List'));
 
       // Open add form
-      await waitFor(() => expect(screen.getAllByRole('button', { name: /add place/i }).length).toBeGreaterThan(0));
-      await user.click(screen.getAllByRole('button', { name: /add place/i })[0]);
+      await waitFor(() => expect(screen.getAllByRole('button', { name: /add venue/i }).length).toBeGreaterThan(0));
+      await user.click(screen.getAllByRole('button', { name: /add venue/i })[0]);
 
       // Type and press Enter to trigger handleBucketPoiSearch
-      const nameInput = await screen.findByPlaceholderText(/name \(country, city, place\.\.\.\)/i);
+      const nameInput = await screen.findByPlaceholderText(/name \(country, city, venue\.\.\.\)/i);
       await user.type(nameInput, 'Paris');
       fireEvent.keyDown(nameInput, { key: 'Enter' });
 

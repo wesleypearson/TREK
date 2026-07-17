@@ -50,14 +50,14 @@ describe('PlaceFormModal', () => {
 
   it('FE-COMP-PLACEFORM-002: shows Add Place title for new place', () => {
     render(<PlaceFormModal {...defaultProps} place={null} />);
-    // places.addPlace = "Add Place/Activity"
-    expect(screen.getAllByText(/Add Place\/Activity/i).length).toBeGreaterThan(0);
+    // places.addPlace = 'Add Venue/Activity'
+    expect(screen.getAllByText(/Add Venue\/Activity/i).length).toBeGreaterThan(0);
   });
 
   it('FE-COMP-PLACEFORM-003: shows Edit Place title when editing', () => {
     const place = buildPlace({ name: 'Eiffel Tower' });
     render(<PlaceFormModal {...defaultProps} place={place} />);
-    expect(screen.getByText('Edit Place')).toBeInTheDocument();
+    expect(screen.getByText('Edit Venue')).toBeInTheDocument();
   });
 
   it('FE-COMP-PLACEFORM-004: shows Name field with placeholder', () => {
@@ -174,7 +174,7 @@ describe('PlaceFormModal', () => {
     );
 
     render(<PlaceFormModal {...defaultProps} />);
-    const searchInput = screen.getByPlaceholderText('Search places...');
+    const searchInput = screen.getByPlaceholderText('Search venues...');
     await user.type(searchInput, 'Eiffel Tower');
 
     // The search button is the sibling button of the search input
@@ -196,7 +196,7 @@ describe('PlaceFormModal', () => {
     );
 
     render(<PlaceFormModal {...defaultProps} />);
-    const searchInput = screen.getByPlaceholderText('Search places...');
+    const searchInput = screen.getByPlaceholderText('Search venues...');
     await user.type(searchInput, 'Eiffel Tower');
     await user.keyboard('{Enter}');
 
@@ -214,7 +214,7 @@ describe('PlaceFormModal', () => {
     );
 
     render(<PlaceFormModal {...defaultProps} />);
-    const searchInput = screen.getByPlaceholderText('Search places...');
+    const searchInput = screen.getByPlaceholderText('Search venues...');
     await user.type(searchInput, 'Eiffel Tower');
     await user.keyboard('{Enter}');
 
@@ -238,7 +238,7 @@ describe('PlaceFormModal', () => {
     );
 
     render(<PlaceFormModal {...defaultProps} />);
-    const searchInput = screen.getByPlaceholderText('Search places...');
+    const searchInput = screen.getByPlaceholderText('Search venues...');
     await user.type(searchInput, 'someplace');
     await user.keyboard('{Enter}');
 
@@ -257,10 +257,10 @@ describe('PlaceFormModal', () => {
   // Selecting a dropdown suggestion does a second `details` lookup which is fragile
   // (details kill-switch, an overloaded OSM Overpass mirror, upstream errors). When
   // it yields no usable place the modal must fall back to the reliable text search
-  // instead of dead-ending on "Place search failed".
+  // instead of dead-ending on "Venue search failed".
 
   async function openSuggestion(user: ReturnType<typeof userEvent.setup>) {
-    const searchInput = screen.getByPlaceholderText('Search places...');
+    const searchInput = screen.getByPlaceholderText('Search venues...');
     await user.type(searchInput, 'Eiffel');
     // Debounced autocomplete (300ms) then the dropdown renders the suggestion.
     return screen.findByText('Paris, France');
@@ -343,7 +343,7 @@ describe('PlaceFormModal', () => {
     await user.click(suggestion);
 
     await waitFor(() => {
-      expect(addToast).toHaveBeenCalledWith('Place search failed.', 'error', undefined);
+      expect(addToast).toHaveBeenCalledWith('Venue search failed.', 'error', undefined);
     });
     delete window.__addToast;
   });

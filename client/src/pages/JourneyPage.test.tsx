@@ -136,7 +136,7 @@ describe('JourneyPage', () => {
   it('FE-PAGE-JOURNEY-005: create journey button exists', async () => {
     render(<JourneyPage />);
     await waitFor(() => {
-      expect(screen.getAllByText(/Create Journey|Create a new Journey/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByText(/Create Tour|Create a new Tour/i).length).toBeGreaterThan(0);
     });
   });
 
@@ -158,12 +158,12 @@ describe('JourneyPage', () => {
     });
 
     // Find and click a create button (mobile or desktop)
-    const createButtons = screen.getAllByText(/Create Journey|Create a new Journey/i);
+    const createButtons = screen.getAllByText(/Create Tour|Create a new Tour/i);
     await user.click(createButtons[0]);
 
     // Modal should now show the journey name input
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Southeast Asia 2026/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/Southeast Asia Tour 2026/i)).toBeInTheDocument();
     });
   });
 
@@ -190,7 +190,7 @@ describe('JourneyPage', () => {
       // The suggestion banner shows the trip title embedded via dangerouslySetInnerHTML
       // The translation key is journey.frontpage.suggestionText with {title}
       // Look for the suggestion label
-      expect(screen.getByText(/Trip just ended/i)).toBeInTheDocument();
+      expect(screen.getByText(/Event just wrapped/i)).toBeInTheDocument();
     });
   });
 
@@ -218,7 +218,7 @@ describe('JourneyPage', () => {
 
     render(<JourneyPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Trip just ended/i)).toBeInTheDocument();
+      expect(screen.getByText(/Event just wrapped/i)).toBeInTheDocument();
     });
 
     // The script tag must not survive the sanitiser anywhere in the rendered DOM.
@@ -239,7 +239,7 @@ describe('JourneyPage', () => {
       expect(screen.getByText('Active Trip')).toBeInTheDocument();
     });
     // Active journey section label
-    expect(screen.getByText(/Active Journey/i)).toBeInTheDocument();
+    expect(screen.getByText(/Active Tour/i)).toBeInTheDocument();
   });
 
   // FE-PAGE-JOURNEY-009
@@ -263,14 +263,14 @@ describe('JourneyPage', () => {
 
     render(<JourneyPage />);
     await waitFor(() => {
-      expect(screen.getByText(/Trip just ended/i)).toBeInTheDocument();
+      expect(screen.getByText(/Event just wrapped/i)).toBeInTheDocument();
     });
 
     // Click dismiss
     await user.click(screen.getByText(/Dismiss/i));
 
     await waitFor(() => {
-      expect(screen.queryByText(/Trip just ended/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/Event just wrapped/i)).not.toBeInTheDocument();
     });
   });
 
@@ -285,8 +285,8 @@ describe('JourneyPage', () => {
     await waitFor(() => {
       expect(screen.getByText('Trip A')).toBeInTheDocument();
     });
-    // The count "3 journeys" text is displayed
-    expect(screen.getByText(/3 journeys/i)).toBeInTheDocument();
+    // The count "3 tours" text is displayed
+    expect(screen.getByText(/3 tours/i)).toBeInTheDocument();
   });
 
   // FE-PAGE-JOURNEY-011
@@ -326,14 +326,14 @@ describe('JourneyPage', () => {
     });
 
     // Open the create modal
-    const createButtons = screen.getAllByText(/Create Journey/i);
+    const createButtons = screen.getAllByText(/Create Tour/i);
     await user.click(createButtons[0]);
 
     // Fill name
     await waitFor(() => {
-      expect(screen.getByPlaceholderText(/Southeast Asia 2026/i)).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/Southeast Asia Tour 2026/i)).toBeInTheDocument();
     });
-    await user.type(screen.getByPlaceholderText(/Southeast Asia 2026/i), 'My New Journey');
+    await user.type(screen.getByPlaceholderText(/Southeast Asia Tour 2026/i), 'My New Journey');
 
     // Select a trip
     await waitFor(() => {
