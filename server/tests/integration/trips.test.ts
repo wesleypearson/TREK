@@ -877,6 +877,106 @@ describe('Trip members', () => {
     expect(testDb.prepare('SELECT id FROM users WHERE id = ?').get(guestId)).toBeUndefined();
   });
 
+  it('TRIP-GUEST-005 — deleting a guest who is recorded as an expense payer succeeds and clears the payer', async () => {
+    const { user: owner } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Festival' });
+    const created = await request(app)
+      .post(`/api/trips/${trip.id}/guests`).set('Cookie', authCookie(owner.id)).send({ name: 'Runner' });
+    const guestId = created.body.member.id;
+
+    const item = testDb.prepare(
+      'INSERT INTO budget_items (trip_id, name, category, total_price, paid_by_user_id) VALUES (?, ?, ?, ?, ?)'
+    ).run(trip.id, 'Fuel', 'transport', 80, guestId);
+    const itemId = Number(item.lastInsertRowid);
+    testDb.prepare('INSERT INTO budget_item_members (budget_item_id, user_id) VALUES (?, ?)').run(itemId, guestId);
+
+    // Previously 500: paid_by_user_id has no ON DELETE action, so the users
+    // delete hit the FK check. Now the payer is nulled and the delete lands.
+    const removed = await request(app)
+      .delete(`/api/trips/${trip.id}/guests/${guestId}`).set('Cookie', authCookie(owner.id));
+    expect(removed.status).toBe(200);
+    expect(testDb.prepare('SELECT id FROM users WHERE id = ?').get(guestId)).toBeUndefined();
+    expect((testDb.prepare('SELECT paid_by_user_id FROM budget_items WHERE id = ?').get(itemId) as any).paid_by_user_id).toBeNull();
+  });
+
+  it('TRIP-GUEST-006 — promoting a guest merges their money trail into the full account', async () => {
+    const { user: owner } = createUser(testDb);
+    const { user: account } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Tour leg' });
+    addTripMember(testDb, trip.id, account.id);
+    const created = await request(app)
+      .post(`/api/trips/${trip.id}/guests`).set('Cookie', authCookie(owner.id)).send({ name: 'Roadie' });
+    const guestId = created.body.member.id;
+
+    // One expense the guest paid; one line where guest AND account both hold
+    // custom shares (the overlap must SUM, not drop).
+    const paidBy = testDb.prepare(
+      'INSERT INTO budget_items (trip_id, name, category, total_price, paid_by_user_id) VALUES (?, ?, ?, ?, ?)'
+    ).run(trip.id, 'Catering', 'food', 120, guestId);
+    const paidById = Number(paidBy.lastInsertRowid);
+    testDb.prepare('INSERT INTO budget_item_members (budget_item_id, user_id, amount) VALUES (?, ?, ?)').run(paidById, guestId, 70);
+    testDb.prepare('INSERT INTO budget_item_members (budget_item_id, user_id, amount, paid) VALUES (?, ?, ?, 1)').run(paidById, account.id, 50);
+    // A settlement guest → account collapses to self after the merge and must vanish.
+    testDb.prepare(
+      'INSERT INTO budget_settlements (trip_id, from_user_id, to_user_id, amount, currency) VALUES (?, ?, ?, ?, ?)'
+    ).run(trip.id, guestId, account.id, 25, 'AUD');
+
+    const res = await request(app)
+      .post(`/api/trips/${trip.id}/guests/${guestId}/promote`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ user_id: account.id });
+    expect(res.status).toBe(201);
+    expect(res.body.merged).toBe(true);
+
+    // Guest row gone; account owns the payer record and the merged 120 share
+    // with the paid flag preserved; the self-settlement is gone.
+    expect(testDb.prepare('SELECT id FROM users WHERE id = ?').get(guestId)).toBeUndefined();
+    expect((testDb.prepare('SELECT paid_by_user_id FROM budget_items WHERE id = ?').get(paidById) as any).paid_by_user_id).toBe(account.id);
+    const share = testDb.prepare('SELECT amount, paid FROM budget_item_members WHERE budget_item_id = ? AND user_id = ?').get(paidById, account.id) as any;
+    expect(share.amount).toBe(120);
+    expect(share.paid).toBe(1);
+    expect(testDb.prepare('SELECT COUNT(*) AS n FROM budget_item_members WHERE budget_item_id = ?').get(paidById)).toEqual({ n: 1 });
+    expect(testDb.prepare('SELECT COUNT(*) AS n FROM budget_settlements WHERE trip_id = ?').get(trip.id)).toEqual({ n: 0 });
+  });
+
+  it('TRIP-GUEST-007 — promote adds an off-crew account to the event; permission and target rules hold', async () => {
+    const { user: owner } = createUser(testDb);
+    const { user: member } = createUser(testDb);
+    const { user: outsider } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'One-off show' });
+    addTripMember(testDb, trip.id, member.id);
+    const created = await request(app)
+      .post(`/api/trips/${trip.id}/guests`).set('Cookie', authCookie(owner.id)).send({ name: 'Newbie' });
+    const guestId = created.body.member.id;
+    const created2 = await request(app)
+      .post(`/api/trips/${trip.id}/guests`).set('Cookie', authCookie(owner.id)).send({ name: 'Other guest' });
+    const guest2Id = created2.body.member.id;
+
+    // member_manage defaults to the event owner — a plain crew member is refused.
+    const denied = await request(app)
+      .post(`/api/trips/${trip.id}/guests/${guestId}/promote`)
+      .set('Cookie', authCookie(member.id))
+      .send({ user_id: outsider.id });
+    expect(denied.status).toBe(403);
+
+    // Merging one guest into another guest is meaningless.
+    const guestTarget = await request(app)
+      .post(`/api/trips/${trip.id}/guests/${guestId}/promote`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ user_id: guest2Id });
+    expect(guestTarget.status).toBe(400);
+
+    // Promoting to an account that never joined pulls it onto the crew.
+    const res = await request(app)
+      .post(`/api/trips/${trip.id}/guests/${guestId}/promote`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ user_id: outsider.id });
+    expect(res.status).toBe(201);
+    const members = await request(app).get(`/api/trips/${trip.id}/members`).set('Cookie', authCookie(owner.id));
+    expect(members.body.members.some((m: any) => m.id === outsider.id)).toBe(true);
+    expect(members.body.members.some((m: any) => m.id === guestId)).toBe(false);
+  });
+
   it('TRIP-GUEST-003 — a guest cannot be invited as a member to any trip (#1362)', async () => {
     const { user: owner } = createUser(testDb);
     const trip = createTrip(testDb, owner.id, { title: 'Camping' });

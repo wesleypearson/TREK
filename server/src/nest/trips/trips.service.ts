@@ -107,6 +107,10 @@ export class TripsService {
     return tripSvc.renameGuest(tripId, guestUserId, name);
   }
 
+  promoteGuest(tripId: string, guestUserId: number, targetUserId: number) {
+    return tripSvc.promoteGuest(tripId, guestUserId, targetUserId);
+  }
+
   deleteGuest(tripId: string, guestUserId: number): boolean {
     return tripSvc.deleteGuest(tripId, guestUserId);
   }
