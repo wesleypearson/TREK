@@ -20,6 +20,8 @@ interface CustomSelectProps {
   options?: SelectOption[]
   placeholder?: string
   searchable?: boolean
+  /** Placeholder for the search input shown when `searchable` is set. */
+  searchPlaceholder?: string
   style?: React.CSSProperties
   size?: 'sm' | 'md'
   disabled?: boolean
@@ -31,6 +33,7 @@ export default function CustomSelect({
   options = [],
   placeholder = '',
   searchable = false,
+  searchPlaceholder = '...',
   style = {},
   size = 'md',
   disabled = false,
@@ -150,7 +153,7 @@ export default function CustomSelect({
                 type="text"
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                placeholder="..."
+                placeholder={searchPlaceholder}
                 style={{
                   width: '100%', border: '1px solid var(--border-secondary)', borderRadius: 6,
                   padding: '5px 8px', fontSize: 'calc(12px * var(--fs-scale-body, 1))', outline: 'none', fontFamily: 'inherit',

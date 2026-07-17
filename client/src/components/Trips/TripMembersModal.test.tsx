@@ -63,10 +63,10 @@ describe('TripMembersModal', () => {
     await screen.findByText('Owner');
   });
 
-  it('FE-COMP-MEMBERS-005: shows Access section heading', async () => {
+  it('FE-COMP-MEMBERS-005: shows crew section heading', async () => {
     render(<TripMembersModal {...defaultProps} />);
-    // Text is "Access (1 person)" so use regex
-    await screen.findByText(/Access/i);
+    // members.crewSection = "Event crew"
+    await screen.findByText('Event crew');
   });
 
   it('FE-COMP-MEMBERS-006: shows member when members are loaded', async () => {
@@ -143,11 +143,9 @@ describe('TripMembersModal', () => {
     expect(screen.getByTitle('Remove access')).toBeInTheDocument();
   });
 
-  it('FE-COMP-MEMBERS-014: remove member calls DELETE API', async () => {
+  it('FE-COMP-MEMBERS-014: remove member goes through the confirm dialog and calls DELETE API', async () => {
     const user = userEvent.setup();
     let deleteCalled = false;
-    // Mock window.confirm to return true so deletion proceeds
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
     server.use(
       http.get('/api/trips/1/members', () =>
         HttpResponse.json({
@@ -165,8 +163,11 @@ describe('TripMembersModal', () => {
     await screen.findByText('alice');
     const removeBtn = screen.getByTitle('Remove access');
     await user.click(removeBtn);
+    // A confirm dialog opens instead of window.confirm — nothing deleted yet.
+    await screen.findByText('Remove crew member');
+    expect(deleteCalled).toBe(false);
+    await user.click(screen.getByRole('button', { name: 'Remove' }));
     await waitFor(() => expect(deleteCalled).toBe(true));
-    vi.restoreAllMocks();
   });
 
   it('FE-COMP-MEMBERS-015: modal renders when isOpen is true', () => {
@@ -184,7 +185,7 @@ describe('TripMembersModal', () => {
 
     render(<TripMembersModal {...defaultProps} />);
     // Wait for members list to load so the component is fully rendered
-    await screen.findByText(/Access/i);
+    await screen.findByText('Event crew');
     expect(screen.queryByText('Public Link')).not.toBeInTheDocument();
   });
 
@@ -367,15 +368,8 @@ describe('TripMembersModal', () => {
     expect(inviteBtn).toBeDisabled();
   });
 
-  it('FE-COMP-MEMBERS-024: leave trip calls DELETE for current user', async () => {
+  it('FE-COMP-MEMBERS-024: leave trip confirms via dialog and calls DELETE for current user', async () => {
     const user = userEvent.setup();
-    vi.spyOn(window, 'confirm').mockReturnValue(true);
-    Object.defineProperty(window, 'location', {
-      value: { ...window.location, reload: vi.fn() },
-      writable: true,
-      configurable: true,
-    });
-
     seedStore(useAuthStore, { user: memberUser, isAuthenticated: true });
     seedStore(useTripStore, { trip: buildTrip({ id: 1, user_id: ownerUser.id }) });
 
@@ -400,11 +394,14 @@ describe('TripMembersModal', () => {
     const leaveBtn = screen.getByTitle('Leave event');
     await user.click(leaveBtn);
 
+    // Confirm dialog replaces window.confirm; confirm with the "Leave" button.
+    await screen.findByText('You will lose access to this event until someone adds you again.');
+    expect(deleteCalledForUserId).toBeNull();
+    await user.click(screen.getByRole('button', { name: 'Leave' }));
+
     await waitFor(() => {
       expect(deleteCalledForUserId).toBe(String(memberUser.id));
     });
-
-    vi.restoreAllMocks();
   });
 
   it('FE-COMP-MEMBERS-025: "all have access" message shown when all users are members', async () => {
@@ -459,7 +456,103 @@ describe('TripMembersModal', () => {
     await screen.findByText('Grandma');
     // The guest carries a "Guest" badge.
     expect(screen.getAllByText('Guest').length).toBeGreaterThan(0);
-    // Access count covers owner + the real member only (2), not the guest.
-    expect(screen.getByText(/Access \(2/)).toBeInTheDocument();
+    // Crew count covers owner + the real member only (2), not the guest.
+    expect(screen.getByText(/2 persons/)).toBeInTheDocument();
+  });
+
+  // ── Crew admin redesign (028-030) ──────────────────────────────────────────
+
+  it('FE-COMP-MEMBERS-028: promote flow posts the selected account id to the promote endpoint', async () => {
+    const user = userEvent.setup();
+    let promoteGuestId: string | null = null;
+    let promoteBody: Record<string, unknown> | null = null;
+    server.use(
+      http.get('/api/trips/1/members', () =>
+        HttpResponse.json({
+          owner: { id: ownerUser.id, username: ownerUser.username, avatar_url: null, is_guest: false },
+          members: [{ id: 7, username: 'Grandma', avatar_url: null, is_guest: true }],
+          current_user_id: ownerUser.id,
+        })
+      ),
+      http.post('/api/trips/1/guests/:gid/promote', async ({ params, request }) => {
+        promoteGuestId = params.gid as string;
+        promoteBody = (await request.json()) as Record<string, unknown>;
+        return HttpResponse.json({ merged: true });
+      }),
+    );
+
+    render(<TripMembersModal {...defaultProps} />);
+    await screen.findByText('Grandma');
+
+    // Open the promote dialog for the guest.
+    await user.click(screen.getByTitle('Promote'));
+    await screen.findByText('Promote guest to full account');
+
+    // Pick alice's account in the searchable select (trigger shows the label placeholder).
+    await user.click(screen.getByRole('button', { name: 'Their account' }));
+    const aliceOption = await screen.findByRole('button', { name: 'alice' });
+    await user.click(aliceOption);
+
+    // Confirm the merge.
+    await user.click(screen.getByRole('button', { name: 'Merge into account' }));
+
+    await waitFor(() => {
+      expect(promoteGuestId).toBe('7');
+      expect(promoteBody).toEqual({ user_id: memberUser.id });
+    });
+  });
+
+  it('FE-COMP-MEMBERS-029: guest delete goes through the confirm dialog before calling DELETE', async () => {
+    const user = userEvent.setup();
+    let deletedGuestId: string | null = null;
+    server.use(
+      http.get('/api/trips/1/members', () =>
+        HttpResponse.json({
+          owner: { id: ownerUser.id, username: ownerUser.username, avatar_url: null, is_guest: false },
+          members: [{ id: 7, username: 'Grandma', avatar_url: null, is_guest: true }],
+          current_user_id: ownerUser.id,
+        })
+      ),
+      http.delete('/api/trips/1/guests/:userId', ({ params }) => {
+        deletedGuestId = params.userId as string;
+        return HttpResponse.json({ success: true });
+      }),
+    );
+
+    render(<TripMembersModal {...defaultProps} />);
+    await screen.findByText('Grandma');
+
+    // The guest row's trash button opens a confirm modal — nothing deleted yet.
+    await user.click(screen.getByTitle('Remove access'));
+    await screen.findByText(/permanently deletes Grandma/);
+    expect(deletedGuestId).toBeNull();
+
+    await user.click(screen.getByRole('button', { name: 'Delete guest' }));
+    await waitFor(() => expect(deletedGuestId).toBe('7'));
+  });
+
+  it('FE-COMP-MEMBERS-030: added-by metadata renders when invited_by_username is present', async () => {
+    server.use(
+      http.get('/api/trips/1/members', () =>
+        HttpResponse.json({
+          owner: { id: ownerUser.id, username: ownerUser.username, avatar_url: null },
+          members: [
+            {
+              id: memberUser.id,
+              username: memberUser.username,
+              avatar_url: null,
+              added_at: '2026-05-01 10:00:00',
+              invited_by_username: 'owner',
+            },
+          ],
+          current_user_id: ownerUser.id,
+        })
+      ),
+    );
+
+    render(<TripMembersModal {...defaultProps} />);
+    await screen.findByText('alice');
+    // members.addedMetaBy = 'Added {date} · invited by {name}'
+    expect(screen.getByText(/invited by owner/)).toBeInTheDocument();
   });
 });

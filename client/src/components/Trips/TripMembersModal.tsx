@@ -1,11 +1,13 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, type ReactNode, type CSSProperties } from 'react'
+import { useNavigate } from 'react-router-dom'
 import Modal from '../shared/Modal'
+import InfoDot from '../shared/InfoDot'
 import { tripsApi, authApi, shareApi, tripInviteApi } from '../../api/client'
 import { useToast } from '../shared/Toast'
 import { useAuthStore } from '../../store/authStore'
 import { useCanDo } from '../../store/permissionsStore'
 import { useTripStore } from '../../store/tripStore'
-import { Crown, UserMinus, UserPlus, Users, LogOut, Link2, Trash2, Copy, Check, UserRound, Pencil, Plus } from 'lucide-react'
+import { Crown, UserMinus, UserPlus, UserCheck, Users, LogOut, Link2, Trash2, Copy, Check, UserRound, Pencil, Plus } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import { getApiErrorMessage } from '../../types'
 import CustomSelect from '../shared/CustomSelect'
@@ -263,6 +265,79 @@ function TripInviteLinkSection({ tripId, t }: { tripId: number; t: (key: string,
   )
 }
 
+// ── Crew admin building blocks ─────────────────────────────────────────────
+
+/** 34×34 round icon action button used on crew/guest rows. */
+function IconBtn({ title, onClick, disabled = false, color = 'var(--text-faint)', hoverColor = 'var(--text-secondary)', children }: {
+  title: string
+  onClick: () => void
+  disabled?: boolean
+  color?: string
+  hoverColor?: string
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      title={title}
+      style={{
+        width: 34, height: 34, flexShrink: 0, padding: 0,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        background: 'none', border: 'none', borderRadius: '50%',
+        cursor: disabled ? 'default' : 'pointer', color,
+        opacity: disabled ? 0.4 : 1, transition: 'background 0.12s, color 0.12s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.color = hoverColor; e.currentTarget.style.background = 'var(--bg-tertiary)' }}
+      onMouseLeave={e => { e.currentTarget.style.color = color; e.currentTarget.style.background = 'transparent' }}
+    >
+      {children}
+    </button>
+  )
+}
+
+interface MemberEntry {
+  id: number
+  username: string
+  avatar_url?: string | null
+  role?: string
+  is_guest?: boolean
+  added_at?: string | null
+  invited_by_username?: string | null
+}
+
+interface MembersData {
+  owner: MemberEntry
+  members: MemberEntry[]
+}
+
+interface DirectoryUser {
+  id: number
+  username: string
+  is_guest?: boolean
+}
+
+/** Pending confirm-dialog action (replaces the old window.confirm calls). */
+type ConfirmAction =
+  | { kind: 'removeMember'; member: MemberEntry }
+  | { kind: 'leave'; member: MemberEntry }
+  | { kind: 'transfer'; member: MemberEntry }
+  | { kind: 'deleteGuest'; guest: MemberEntry }
+
+const footerBtnBase: CSSProperties = {
+  padding: '9px 18px', borderRadius: 10,
+  fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 600,
+  fontFamily: 'inherit', cursor: 'pointer',
+}
+
+/** SQLite timestamps come as "YYYY-MM-DD HH:MM:SS" — normalise before parsing. */
+function formatAddedDate(raw?: string | null): string | null {
+  if (!raw) return null
+  const d = new Date(raw.includes('T') ? raw : raw.replace(' ', 'T'))
+  return isNaN(d.getTime()) ? null : d.toLocaleDateString()
+}
+
 interface TripMembersModalProps {
   isOpen: boolean
   onClose: () => void
@@ -274,23 +349,32 @@ interface TripMembersModalProps {
 }
 
 export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, onMembersChanged }: TripMembersModalProps) {
-  const [data, setData] = useState(null)
-  const [allUsers, setAllUsers] = useState([])
+  const [data, setData] = useState<MembersData | null>(null)
+  const [allUsers, setAllUsers] = useState<DirectoryUser[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedUserId, setSelectedUserId] = useState('')
   const [adding, setAdding] = useState(false)
-  const [removingId, setRemovingId] = useState(null)
-  const [transferringId, setTransferringId] = useState(null)
+  const [removingId, setRemovingId] = useState<number | null>(null)
+  const [transferringId, setTransferringId] = useState<number | null>(null)
   const [newGuestName, setNewGuestName] = useState('')
   const [addingGuest, setAddingGuest] = useState(false)
-  const [renamingGuestId, setRenamingGuestId] = useState(null)
+  const [renamingGuestId, setRenamingGuestId] = useState<number | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  // Confirm dialogs (remove/leave/transfer/delete-guest) + guest promotion
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null)
+  const [promoteTarget, setPromoteTarget] = useState<MemberEntry | null>(null)
+  const [promoteUserId, setPromoteUserId] = useState('')
+  const [promoting, setPromoting] = useState(false)
   const toast = useToast()
+  const navigate = useNavigate()
   const { user } = useAuthStore()
   const { t } = useTranslation()
   const can = useCanDo()
   const trip = useTripStore((s) => s.trip)
-  const canManageMembers = can('member_manage', trip)
+  // Prefer the modal's own loaded data for the owner context — the store trip
+  // may be unset when the modal is opened outside the planner.
+  const permTrip = data?.owner ? { owner_id: data.owner.id } : trip
+  const canManageMembers = can('member_manage', permTrip)
   const canManageShare = can('share_manage', trip)
 
   useEffect(() => {
@@ -324,9 +408,10 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
 
   const handleAdd = async () => {
     if (!selectedUserId) return
+    const target = allUsers.find(u => String(u.id) === String(selectedUserId))
+    if (!target) return
     setAdding(true)
     try {
-      const target = allUsers.find(u => String(u.id) === String(selectedUserId))
       await tripsApi.addMember(tripId, target.username)
       setSelectedUserId('')
       await loadMembers(true)
@@ -338,8 +423,7 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
     }
   }
 
-  const handleTransfer = async (newOwnerId, username) => {
-    if (!confirm(t('members.confirmTransfer', { name: username }))) return
+  const doTransfer = async (newOwnerId: number) => {
     setTransferringId(newOwnerId)
     try {
       await tripsApi.transferOwnership(tripId, newOwnerId)
@@ -369,7 +453,7 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
     }
   }
 
-  const handleRenameGuest = async (userId) => {
+  const handleRenameGuest = async (userId: number) => {
     const name = renameValue.trim()
     if (!name) { setRenamingGuestId(null); return }
     try {
@@ -381,8 +465,7 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
     }
   }
 
-  const handleDeleteGuest = async (userId) => {
-    if (!confirm(t('members.confirmRemoveGuest'))) return
+  const doDeleteGuest = async (userId: number) => {
     setRemovingId(userId)
     try {
       await tripsApi.deleteGuest(tripId, userId)
@@ -395,20 +478,49 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
     }
   }
 
-  const handleRemove = async (userId, isSelf) => {
-    const msg = isSelf
-      ? t('members.confirmLeave')
-      : t('members.confirmRemove')
-    if (!confirm(msg)) return
+  const doRemoveMember = async (userId: number, isSelf: boolean) => {
     setRemovingId(userId)
     try {
       await tripsApi.removeMember(tripId, userId)
-      if (isSelf) { onClose(); window.location.reload() }
-      else { await loadMembers(true); toast.success(t('members.removed')) }
+      if (isSelf) {
+        // Leaving strips this user's access — head home instead of reloading in place.
+        onClose()
+        navigate('/')
+      } else {
+        await loadMembers(true)
+        toast.success(t('members.removed'))
+      }
     } catch {
       toast.error(t('members.removeError'))
     } finally {
       setRemovingId(null)
+    }
+  }
+
+  const runConfirmAction = async () => {
+    if (!confirmAction) return
+    const action = confirmAction
+    setConfirmAction(null)
+    if (action.kind === 'removeMember') await doRemoveMember(action.member.id, false)
+    else if (action.kind === 'leave') await doRemoveMember(action.member.id, true)
+    else if (action.kind === 'transfer') await doTransfer(action.member.id)
+    else await doDeleteGuest(action.guest.id)
+  }
+
+  const closePromote = () => { setPromoteTarget(null); setPromoteUserId('') }
+
+  const handlePromote = async () => {
+    if (!promoteTarget || !promoteUserId) return
+    setPromoting(true)
+    try {
+      await tripsApi.promoteGuest(tripId, promoteTarget.id, Number(promoteUserId))
+      toast.success(t('members.promoteDone'))
+      closePromote()
+      await loadMembers(true)
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, t('members.promoteError')))
+    } finally {
+      setPromoting(false)
     }
   }
 
@@ -418,21 +530,57 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
     ...(data?.members?.map(m => m.id) || []),
   ])
   const availableUsers = allUsers.filter(u => !existingIds.has(u.id) && !u.is_guest)
+  // Promotion targets: any full account — promoting onto an existing crew member
+  // is valid (their guest history merges into that member).
+  const promoteCandidates = allUsers.filter(u => !u.is_guest)
 
   const isCurrentOwner = data?.owner?.id === user?.id
   // Real members (owner + accounts) and guests (#1362) are listed separately.
-  const realMembers = data ? [
+  const realMembers: MemberEntry[] = data ? [
     { ...data.owner, role: 'owner' },
     ...data.members.filter(m => !m.is_guest),
   ] : []
   const guests = data ? data.members.filter(m => m.is_guest) : []
 
+  const confirmCopy = confirmAction && ({
+    removeMember: {
+      title: t('members.removeMemberTitle'),
+      body: t('members.removeMemberBody', { name: (confirmAction as { member?: MemberEntry }).member?.username ?? '' }),
+      confirm: t('members.removeConfirm'),
+      destructive: true,
+    },
+    leave: {
+      title: t('members.leaveTitle'),
+      body: t('members.leaveBody'),
+      confirm: t('members.leaveConfirm'),
+      destructive: true,
+    },
+    transfer: {
+      title: t('members.transferTitle'),
+      body: t('members.confirmTransfer', { name: (confirmAction as { member?: MemberEntry }).member?.username ?? '' }),
+      confirm: t('members.transferConfirm'),
+      destructive: false,
+    },
+    deleteGuest: {
+      title: t('members.deleteGuestTitle'),
+      body: t('members.deleteGuestBody', { name: (confirmAction as { guest?: MemberEntry }).guest?.username ?? '' }),
+      confirm: t('members.deleteGuestConfirm'),
+      destructive: true,
+    },
+  })[confirmAction.kind]
+
+  const sectionCardStyle: CSSProperties = { borderRadius: 12, padding: '14px 14px 16px' }
+  const sectionTitleStyle: CSSProperties = { fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 700 }
+  const sectionCountStyle: CSSProperties = { fontSize: 'calc(12px * var(--fs-scale-caption, 1))', fontWeight: 600 }
+  const rowStyle: CSSProperties = { display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 10 }
+
   return (
+    <>
     <Modal isOpen={isOpen} onClose={onClose} title={t('members.shareTrip')} size="3xl">
       <div style={{ display: 'grid', gridTemplateColumns: canManageShare ? '1fr 1fr' : '1fr', gap: 24, fontFamily: "var(--font-system)" }} className="share-modal-grid">
         <style>{`@media (max-width: 640px) { .share-modal-grid { grid-template-columns: 1fr !important; } }`}</style>
 
-        {/* Left column: Members */}
+        {/* Left column: crew + guests admin */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
 
         {/* Trip name */}
@@ -441,58 +589,21 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
           <div className="text-content" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{tripTitle}</div>
         </div>
 
-        {/* Add member dropdown */}
-        {canManageMembers && <div>
-          <label className="text-content-secondary" style={{ display: 'block', fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600, marginBottom: 8 }}>
-            {t('members.inviteUser')}
-          </label>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <CustomSelect
-              value={selectedUserId}
-              onChange={value => setSelectedUserId(String(value))}
-              placeholder={t('members.selectUser')}
-              options={[
-                { value: '', label: t('members.selectUser') },
-                ...availableUsers.map(u => ({
-                  value: u.id,
-                  label: u.username,
-                })),
-              ]}
-              searchable
-              style={{ flex: 1 }}
-              size="sm"
-            />
-            <button
-              onClick={handleAdd}
-              disabled={adding || !selectedUserId}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px',
-                background: 'var(--accent)', color: 'var(--accent-text)', border: 'none', borderRadius: 10,
-                fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: adding || !selectedUserId ? 'default' : 'pointer',
-                fontFamily: 'inherit', opacity: adding || !selectedUserId ? 0.4 : 1, flexShrink: 0,
-              }}
-            >
-              <UserPlus size={13} /> {adding ? '…' : t('members.invite')}
-            </button>
-          </div>
-          {availableUsers.length === 0 && allUsers.length > 0 && canManageMembers && (
-            <p className="text-content-faint" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', margin: '6px 0 0' }}>{t('members.allHaveAccess')}</p>
-          )}
-        </div>}
-
-        {/* Members list */}
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-            <Users size={13} className="text-content-faint" />
-            <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600 }}>
-              {t('members.access')} ({realMembers.length} {realMembers.length === 1 ? t('members.person') : t('members.persons')})
+        {/* Crew section */}
+        <section className="border border-edge-secondary" style={sectionCardStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+            <Users size={15} className="text-content-muted" />
+            <span className="text-content" style={sectionTitleStyle}>{t('members.crewSection')}</span>
+            <span className="text-content-faint" style={sectionCountStyle}>
+              {realMembers.length} {realMembers.length === 1 ? t('members.person') : t('members.persons')}
             </span>
+            <InfoDot title={t('members.crewInfoTitle')} size={14}><p style={{ margin: 0 }}>{t('members.crewInfoBody')}</p></InfoDot>
           </div>
 
           {loading ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {[1, 2].map(i => (
-                <div key={i} className="bg-surface-tertiary" style={{ height: 48, borderRadius: 10, animation: 'pulse 1.5s ease-in-out infinite' }} />
+                <div key={i} className="bg-surface-tertiary" style={{ height: 52, borderRadius: 10, animation: 'pulse 1.5s ease-in-out infinite' }} />
               ))}
             </div>
           ) : (
@@ -500,15 +611,18 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
               {realMembers.map(member => {
                 const isSelf = member.id === user?.id
                 const canRemove = isSelf || (canManageMembers && member.role !== 'owner')
+                const addedDate = formatAddedDate(member.added_at)
+                const addedMeta = addedDate
+                  ? (member.invited_by_username
+                      ? t('members.addedMetaBy', { date: addedDate, name: member.invited_by_username })
+                      : t('members.addedMeta', { date: addedDate }))
+                  : null
                 return (
-                  <div key={member.id} className="bg-surface-secondary border border-edge-secondary" style={{
-                    display: 'flex', alignItems: 'center', gap: 10,
-                    padding: '8px 12px', borderRadius: 10,
-                  }}>
-                    <Avatar username={member.username} avatarUrl={member.avatar_url} />
+                  <div key={member.id} className="bg-surface-secondary" style={rowStyle}>
+                    <Avatar username={member.username} avatarUrl={member.avatar_url ?? null} size={34} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{member.username}</span>
+                        <span className="text-content" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{member.username}</span>
                         {isSelf && <span className="text-content-faint" style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))' }}>({t('members.you')})</span>}
                         {member.role === 'owner' && (
                           <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 700, color: '#d97706', background: '#fef9c3', padding: '1px 6px', borderRadius: 99 }}>
@@ -516,55 +630,92 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
                           </span>
                         )}
                       </div>
+                      {addedMeta && (
+                        <div className="text-content-faint" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {addedMeta}
+                        </div>
+                      )}
                     </div>
                     {isCurrentOwner && member.role !== 'owner' && (
-                      <button
-                        onClick={() => handleTransfer(member.id, member.username)}
-                        disabled={transferringId === member.id}
+                      <IconBtn
                         title={t('members.makeOwner')}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: 6, display: 'flex', color: 'var(--text-faint)', opacity: transferringId === member.id ? 0.4 : 1 }}
-                        onMouseEnter={e => e.currentTarget.style.color = '#d97706'}
-                        onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+                        onClick={() => setConfirmAction({ kind: 'transfer', member })}
+                        disabled={transferringId === member.id}
+                        hoverColor="#d97706"
                       >
-                        <Crown size={14} />
-                      </button>
+                        <Crown size={16} />
+                      </IconBtn>
                     )}
                     {canRemove && (
-                      <button
-                        onClick={() => handleRemove(member.id, isSelf)}
-                        disabled={removingId === member.id}
+                      <IconBtn
                         title={isSelf ? t('members.leaveTrip') : t('members.removeAccess')}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: 6, display: 'flex', color: 'var(--text-faint)', opacity: removingId === member.id ? 0.4 : 1 }}
-                        onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                        onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+                        onClick={() => setConfirmAction(isSelf ? { kind: 'leave', member } : { kind: 'removeMember', member })}
+                        disabled={removingId === member.id}
+                        hoverColor="#ef4444"
                       >
-                        {isSelf ? <LogOut size={14} /> : <UserMinus size={14} />}
-                      </button>
+                        {isSelf ? <LogOut size={16} /> : <UserMinus size={16} />}
+                      </IconBtn>
                     )}
                   </div>
                 )
               })}
             </div>
           )}
-        </div>
 
-        {/* Guests (#1362) — accountless participants, managed by the owner */}
-        {(isCurrentOwner || guests.length > 0) && (
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
-            <UserRound size={13} className="text-content-faint" />
-            <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600 }}>
-              {t('members.guests')}{guests.length > 0 ? ` (${guests.length})` : ''}
-            </span>
+          {/* Add member dropdown */}
+          {canManageMembers && <div style={{ marginTop: 12 }}>
+            <label className="text-content-secondary" style={{ display: 'block', fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600, marginBottom: 8 }}>
+              {t('members.inviteUser')}
+            </label>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <CustomSelect
+                value={selectedUserId}
+                onChange={value => setSelectedUserId(String(value))}
+                placeholder={t('members.selectUser')}
+                options={[
+                  { value: '', label: t('members.selectUser') },
+                  ...availableUsers.map(u => ({
+                    value: u.id,
+                    label: u.username,
+                  })),
+                ]}
+                searchable
+                style={{ flex: 1 }}
+                size="sm"
+              />
+              <button
+                onClick={handleAdd}
+                disabled={adding || !selectedUserId}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px',
+                  background: 'var(--accent)', color: 'var(--accent-text)', border: 'none', borderRadius: 10,
+                  fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: adding || !selectedUserId ? 'default' : 'pointer',
+                  fontFamily: 'inherit', opacity: adding || !selectedUserId ? 0.4 : 1, flexShrink: 0,
+                }}
+              >
+                <UserPlus size={13} /> {adding ? '…' : t('members.invite')}
+              </button>
+            </div>
+            {availableUsers.length === 0 && allUsers.length > 0 && (
+              <p className="text-content-faint" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', margin: '6px 0 0' }}>{t('members.allHaveAccess')}</p>
+            )}
+          </div>}
+        </section>
+
+        {/* Guests (#1362) — accountless participants, managed via member_manage */}
+        {(canManageMembers || guests.length > 0) && (
+        <section className="border border-edge-secondary" style={sectionCardStyle}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 12 }}>
+            <UserRound size={15} className="text-content-muted" />
+            <span className="text-content" style={sectionTitleStyle}>{t('members.guests')}</span>
+            <span className="text-content-faint" style={sectionCountStyle}>{guests.length}</span>
+            <InfoDot title={t('members.guestInfoTitle')} size={14}><p style={{ margin: 0 }}>{t('members.guestInfoBody')}</p></InfoDot>
           </div>
-          <p className="text-content-faint" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', margin: '0 0 10px', lineHeight: 1.5 }}>{t('members.guestsHint')}</p>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {guests.map(g => (
-              <div key={g.id} className="bg-surface-secondary border border-edge-secondary" style={{
-                display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 10,
-              }}>
-                <Avatar username={g.username} avatarUrl={null} />
+              <div key={g.id} className="bg-surface-secondary" style={rowStyle}>
+                <Avatar username={g.username} avatarUrl={null} size={34} />
                 {renamingGuestId === g.id ? (
                   <input
                     autoFocus
@@ -574,45 +725,48 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
                     onBlur={() => handleRenameGuest(g.id)}
                     maxLength={50}
                     className="bg-surface border border-edge text-content"
-                    style={{ flex: 1, minWidth: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', padding: '4px 8px', borderRadius: 8, outline: 'none', fontFamily: 'inherit' }}
+                    style={{ flex: 1, minWidth: 0, fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', padding: '4px 8px', borderRadius: 8, outline: 'none', fontFamily: 'inherit' }}
                   />
                 ) : (
                   <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{g.username}</span>
+                    <span className="text-content" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{g.username}</span>
                     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--bg-tertiary)', padding: '1px 6px', borderRadius: 99 }}>
                       <UserRound size={9} /> {t('members.guest')}
                     </span>
                   </div>
                 )}
-                {isCurrentOwner && renamingGuestId !== g.id && (
+                {canManageMembers && renamingGuestId !== g.id && (
                   <>
-                    <button
-                      onClick={() => { setRenamingGuestId(g.id); setRenameValue(g.username) }}
+                    <IconBtn
                       title={t('common.rename')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: 6, display: 'flex', color: 'var(--text-faint)' }}
-                      onMouseEnter={e => e.currentTarget.style.color = 'var(--text-secondary)'}
-                      onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+                      onClick={() => { setRenamingGuestId(g.id); setRenameValue(g.username) }}
                     >
-                      <Pencil size={13} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteGuest(g.id)}
-                      disabled={removingId === g.id}
+                      <Pencil size={15} />
+                    </IconBtn>
+                    <IconBtn
+                      title={t('members.promote')}
+                      onClick={() => { setPromoteTarget(g); setPromoteUserId('') }}
+                      hoverColor="#16a34a"
+                    >
+                      <UserCheck size={16} />
+                    </IconBtn>
+                    <IconBtn
                       title={t('members.removeAccess')}
-                      style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '4px', borderRadius: 6, display: 'flex', color: 'var(--text-faint)', opacity: removingId === g.id ? 0.4 : 1 }}
-                      onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
-                      onMouseLeave={e => e.currentTarget.style.color = '#9ca3af'}
+                      onClick={() => setConfirmAction({ kind: 'deleteGuest', guest: g })}
+                      disabled={removingId === g.id}
+                      color="#dc2626"
+                      hoverColor="#b91c1c"
                     >
-                      <Trash2 size={13} />
-                    </button>
+                      <Trash2 size={16} />
+                    </IconBtn>
                   </>
                 )}
               </div>
             ))}
           </div>
 
-          {isCurrentOwner && (
-            <div style={{ display: 'flex', gap: 8, marginTop: guests.length > 0 ? 8 : 0 }}>
+          {canManageMembers && (
+            <div style={{ display: 'flex', gap: 8, marginTop: guests.length > 0 ? 10 : 0 }}>
               <input
                 value={newGuestName}
                 onChange={e => setNewGuestName(e.target.value)}
@@ -620,7 +774,7 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
                 placeholder={t('members.guestNamePlaceholder')}
                 maxLength={50}
                 className="bg-surface border border-edge text-content"
-                style={{ flex: 1, minWidth: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', padding: '8px 10px', borderRadius: 10, outline: 'none', fontFamily: 'inherit' }}
+                style={{ flex: 1, minWidth: 0, fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', padding: '8px 10px', borderRadius: 10, outline: 'none', fontFamily: 'inherit' }}
               />
               <button
                 onClick={handleAddGuest}
@@ -636,7 +790,7 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
               </button>
             </div>
           )}
-        </div>
+        </section>
         )}
 
         </div>
@@ -650,5 +804,94 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
         <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }`}</style>
       </div>
     </Modal>
+
+    {/* Confirm dialog — replaces the old window.confirm calls */}
+    {isOpen && confirmAction && confirmCopy && (
+      <Modal
+        isOpen
+        onClose={() => setConfirmAction(null)}
+        title={confirmCopy.title}
+        size="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <button
+              onClick={() => setConfirmAction(null)}
+              className="text-content-secondary border border-edge-secondary"
+              style={{ ...footerBtnBase, background: 'none' }}
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              onClick={runConfirmAction}
+              style={{
+                ...footerBtnBase, border: 'none',
+                background: confirmCopy.destructive ? '#dc2626' : 'var(--accent)',
+                color: confirmCopy.destructive ? 'white' : 'var(--accent-text)',
+              }}
+            >
+              {confirmCopy.confirm}
+            </button>
+          </div>
+        }
+      >
+        <p className="text-content-secondary" style={{ margin: 0, fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', lineHeight: 1.6 }}>
+          {confirmCopy.body}
+        </p>
+      </Modal>
+    )}
+
+    {/* Promote guest → full account */}
+    {isOpen && promoteTarget && (
+      <Modal
+        isOpen
+        onClose={closePromote}
+        title={t('members.promoteTitle')}
+        size="md"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10 }}>
+            <button
+              onClick={closePromote}
+              className="text-content-secondary border border-edge-secondary"
+              style={{ ...footerBtnBase, background: 'none' }}
+            >
+              {t('common.cancel')}
+            </button>
+            <button
+              onClick={handlePromote}
+              disabled={promoting || !promoteUserId}
+              style={{
+                ...footerBtnBase, border: 'none',
+                background: 'var(--accent)', color: 'var(--accent-text)',
+                cursor: promoting || !promoteUserId ? 'default' : 'pointer',
+                opacity: promoting || !promoteUserId ? 0.4 : 1,
+              }}
+            >
+              {promoting ? '…' : t('members.promoteConfirm')}
+            </button>
+          </div>
+        }
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+          <p className="text-content-secondary" style={{ margin: 0, fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', lineHeight: 1.6 }}>
+            {t('members.promoteBody', { name: promoteTarget.username })}
+          </p>
+          <div>
+            <label className="text-content-secondary" style={{ display: 'block', fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600, marginBottom: 8 }}>
+              {t('members.promoteSelect')}
+            </label>
+            <CustomSelect
+              value={promoteUserId}
+              onChange={value => setPromoteUserId(String(value))}
+              placeholder={t('members.promoteSelect')}
+              searchPlaceholder={t('members.promoteSearch')}
+              options={promoteCandidates.map(u => ({ value: u.id, label: u.username }))}
+              searchable
+              size="sm"
+            />
+          </div>
+        </div>
+      </Modal>
+    )}
+    </>
   )
 }
