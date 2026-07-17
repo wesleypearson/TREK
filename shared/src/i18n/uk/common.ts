@@ -5,6 +5,7 @@ const common: TranslationStrings = {
   'common.showMore': 'Показати більше',
   'common.showLess': 'Показати менше',
   'common.cancel': 'Скасувати',
+  'common.moreInfo': 'Докладніше',
   'common.clear': 'Очистити',
   'common.delete': 'Видалити',
   'common.preview': 'Перегляд',

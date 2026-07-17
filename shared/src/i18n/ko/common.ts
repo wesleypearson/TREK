@@ -5,6 +5,7 @@ const common: TranslationStrings = {
   'common.showMore': '더 보기',
   'common.showLess': '접기',
   'common.cancel': '취소',
+  'common.moreInfo': '자세한 정보',
   'common.clear': '지우기',
   'common.delete': '삭제',
   'common.preview': '미리보기',

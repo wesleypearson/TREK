@@ -5,6 +5,7 @@ const common: TranslationStrings = {
   'common.showMore': 'もっと見る',
   'common.showLess': '閉じる',
   'common.cancel': 'キャンセル',
+  'common.moreInfo': '詳細情報',
   'common.clear': 'クリア',
   'common.delete': '削除',
   'common.preview': 'プレビュー',

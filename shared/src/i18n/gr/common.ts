@@ -5,6 +5,7 @@ const common: TranslationStrings = {
   'common.showMore': 'Εμφάνιση περισσότερων',
   'common.showLess': 'Εμφάνιση λιγότερων',
   'common.cancel': 'Ακύρωση',
+  'common.moreInfo': 'Περισσότερες πληροφορίες',
   'common.clear': 'Εκκαθάριση',
   'common.delete': 'Διαγραφή',
   'common.preview': 'Προεπισκόπηση',

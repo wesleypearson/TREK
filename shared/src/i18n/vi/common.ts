@@ -17,6 +17,7 @@ const common: TranslationStrings = {
   'common.showMore': 'Hiển thị thêm',
   'common.showLess': 'Hiển thị ít hơn',
   'common.cancel': 'Hủy',
+  'common.moreInfo': 'Thêm thông tin',
   'common.clear': 'Xóa',
   'common.delete': 'Xóa bỏ',
   'common.preview': 'Xem trước',

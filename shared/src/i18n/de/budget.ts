@@ -197,5 +197,65 @@ const budget: TranslationStrings = {
     'Dies löscht dauerhaft alle Ausgaben, Ausgleiche und öffentlichen Deckel-Links dieser Reise. Mitglieder und Gäste bleiben erhalten. Das lässt sich nicht rückgängig machen.',
   'costs.resetConfirm': 'Alles löschen',
   'costs.resetDone': 'Ausgaben zurückgesetzt',
+
+  'costs.sharesSummary': 'Übersicht der einzelnen Anteile',
+  'costs.excluded': 'Ausgeschlossen',
+  'costs.splitMatches': 'Aufteilung stimmt mit dem Gesamtbetrag überein',
+  'costs.splitProgress': 'Summe der Anteile: {sum} von {total} ({diff} {direction})',
+  'costs.splitUnder': 'zu wenig',
+  'costs.splitOver': 'zu viel',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Eine Rechnung aufteilen',
+  'costs.info.splitBody':
+    '„Gleichmäßig“ teilt den Gesamtbetrag zu gleichen Teilen zwischen allen ausgewählten Personen auf. Bei „Individuell“ gibst du den Anteil jeder Person selbst ein. „Beleg“ erfasst die Rechnung Zeile für Zeile — lege pro Zeile Menge und Einzelpreis fest, tippe dann auf die Mitglieder, die sich diese Zeile geteilt haben, und jeder zahlt nur das, was er tatsächlich hatte.',
+  'costs.info.personalTitle': 'Persönliche Ausgaben',
+  'costs.info.personalBody':
+    'Eine persönliche Ausgabe gehört nur dir: Sie wird als dein eigener Aufwand erfasst, bleibt für die anderen Mitglieder unsichtbar und fließt nie in den gemeinsamen Ausgleich ein. So behältst du deine eigenen Kosten neben den geteilten im Blick.',
+  'costs.info.venueTitle': 'Veranstaltungsorte an Ausgaben',
+  'costs.info.venueBody':
+    'Hefte eine Ausgabe an einen Veranstaltungsort der Reise, und sie erscheint mit laufender Summe auf dessen Karte — so siehst du auf einen Blick, was ein Ort gekostet hat. Fügst du eine Ausgabe direkt über eine Ort-Karte hinzu, ist sie bereits angeheftet.',
+  'costs.info.tabsTitle': 'Deckel & Freigabe-Links',
+  'costs.info.tabsBody':
+    'Ein Deckel zeigt einer Person live, was sie dir schuldet — geteilt als Link, ganz ohne Konto. Verknüpfe einen Deckel mit einem Mitglied (oder einem per Name hinzugefügten Gast), und er folgt der Reiseabrechnung: die Anteile aus Aufteilungen, wem die Person etwas schuldet und alle Zahlungen — inklusive deiner Zahlungsdetails, damit klar ist, wie beglichen werden kann.',
+  'costs.info.settleTitle': 'Ausgleichen',
+  'costs.info.settleBody':
+    'Der Ausgleich ermittelt mit möglichst wenigen Überweisungen, wer wem wie viel schuldet — mit dem Wechselkurs, der beim Erfassen jeder Ausgabe eingefroren wurde. Erfasse eine Zahlung, sobald tatsächlich Geld fließt; alle Salden aktualisieren sich live.',
+  'costs.info.scanTitle': 'Belege scannen',
+  'costs.info.scanBody':
+    'Scanne einen Kassenbon mit der Kamera, wähle Fotos aus deiner Mediathek oder eine Datei — auch Dokumentenscans aus der iOS-Notizen-App. Ein langer Beleg kann aus mehreren Fotos bestehen, und jede Zeile kommt mit Menge und Einzelpreis an, bereit zur Zuordnung an die Mitglieder.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Anleitung',
+  'costs.guide.title': 'Ausgaben-Anleitung',
+  'costs.guide.intro':
+    'Alles, was auf dieser Reise gemeinsam ausgegeben wird, lebt hier — erfasst, aufgeteilt, an Veranstaltungsorte geheftet und ohne Tabellenkalkulation ausgeglichen. So funktioniert es, und so sehen es die anderen.',
+  'costs.guide.lodgeTitle': 'Eine Ausgabe erfassen',
+  'costs.guide.lodgeBody':
+    'Tippe auf „Ausgabe hinzufügen“, gib Name, Betrag und Kategorie an und lege fest, wer bezahlt hat. Ausgaben können in jeder Währung sein — der Kurs wird beim Speichern eingefroren, damit sich abgerechnete Beträge nie verschieben.',
+  'costs.guide.splitTitle': 'Aufteilen',
+  'costs.guide.splitBody':
+    'Teile gleichmäßig, gib individuelle Anteile ein oder erfasse den Beleg Zeile für Zeile und ordne jede Zeile den Mitgliedern zu, die sie sich geteilt haben. Wer nicht auf einer Zeile steht, zahlt dafür nichts.',
+  'costs.guide.scanTitle': 'Belege scannen',
+  'costs.guide.scanBody':
+    'Fotografiere einen Kassenbon (oder wähle einen Dokumentenscan aus der iOS-Notizen-App über „Dateien“), und die Zeilen werden für dich ausgelesen — Mengen, Einzelpreise und die Gesamtsumme. Lange Belege kannst du in bis zu sechs Teilen aufnehmen.',
+  'costs.guide.personalTitle': 'Persönliche Ausgaben',
+  'costs.guide.personalBody':
+    'Markiere eine Ausgabe als „Persönlich (nur ich)“, um deine eigenen Kosten zu verfolgen. Sie ist für die anderen Mitglieder unsichtbar und berührt den gemeinsamen Ausgleich nie.',
+  'costs.guide.venuesTitle': 'Veranstaltungsorte',
+  'costs.guide.venuesBody':
+    'Hefte Ausgaben an die Veranstaltungsorte der Reise. Jede Ort-Karte zeigt die verknüpften Ausgaben und deren Summe, und über ihren Button „Ausgabe hinzufügen“ erfasst du eine bereits angeheftete Ausgabe.',
+  'costs.guide.tabsTitle': 'Deckel & Freigabe-Links',
+  'costs.guide.tabsBody':
+    'Gib jeder Person einen Live-Link zu ihrem laufenden Saldo — ganz ohne Konto. Verknüpfte Deckel folgen automatisch der Abrechnung; eigenständige Deckel enthalten nur, was du ihnen anschreibst. Deine Zahlungsdetails erscheinen im Link, damit klar ist, wie man dich bezahlt.',
+  'costs.guide.settleTitle': 'Ausgleichen',
+  'costs.guide.settleBody':
+    '„Ausgleichen“ zeigt mit möglichst wenigen Überweisungen, wer wem etwas schuldet. Erfasse Zahlungen, sobald sie passieren; das Rückgängigmachen eines Ausgleichs öffnet die Salden wieder.',
+  'costs.guide.guestsTitle': 'Personen ohne Konto',
+  'costs.guide.guestsBody':
+    'Füge jemanden per Name zu einer Rechnung hinzu — ohne Registrierung. Die Person nimmt an Aufteilungen teil wie alle anderen, kann einen eigenen Deckel-Link bekommen und ihren Platz später über den Beitrittslink der Reise übernehmen.',
+  'costs.guide.viewsTitle': 'Was die anderen sehen',
+  'costs.guide.viewsBody':
+    'Jedes Mitglied sieht die gemeinsame Abrechnung, den eigenen Saldo und was es pro Ausgabe verliehen oder geliehen hat. Persönliche Ausgaben bleiben nur für ihren Besitzer sichtbar; private Veranstaltungsorte geben ihren Namen über eine Ausgabe nie preis; und Deckel-Links zeigen Außenstehenden nur ihre eigenen Posten, Zahlungen und wie sie bezahlen können — nie die ganze Abrechnung.',
 };
 export default budget;

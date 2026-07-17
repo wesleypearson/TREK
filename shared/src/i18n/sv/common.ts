@@ -17,6 +17,7 @@ const common: TranslationStrings = {
   'common.showMore': 'Visa mer',
   'common.showLess': 'Visa mindre',
   'common.cancel': 'Avbryt',
+  'common.moreInfo': 'Mer info',
   'common.clear': 'Rensa',
   'common.delete': 'Ta bort',
   'common.preview': 'Förhandsvisning',

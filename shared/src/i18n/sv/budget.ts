@@ -193,5 +193,65 @@ const budget: TranslationStrings = {
     'Detta raderar permanent alla kostnader, regleringar och offentliga notalänkar i den här resan. Medlemmar och gäster finns kvar. Det går inte att ångra.',
   'costs.resetConfirm': 'Radera allt',
   'costs.resetDone': 'Kostnaderna har återställts',
+
+  'costs.sharesSummary': 'Översikt över individuella andelar',
+  'costs.excluded': 'Exkluderad',
+  'costs.splitMatches': 'Fördelningen stämmer med totalen',
+  'costs.splitProgress': 'Summan av andelarna: {sum} av {total} ({diff} {direction})',
+  'costs.splitUnder': 'för lite',
+  'costs.splitOver': 'för mycket',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Dela en nota',
+  'costs.info.splitBody':
+    '”Equally” delar totalbeloppet lika mellan alla du väljer. Med ”Custom” skriver du in varje persons andel själv. ”Ticket” specificerar notan rad för rad — ange antal och styckpris per rad, tryck sedan på de medlemmar som delade raden, så betalar var och en bara för det de tog.',
+  'costs.info.personalTitle': 'Personliga utgifter',
+  'costs.info.personalBody':
+    'En personlig utgift är bara din: den bokförs som din egen kostnad, förblir osynlig för resten av gruppen och tas aldrig med i den gemensamma uppgörelsen. Använd den för att hålla koll på dina egna kostnader vid sidan av de delade.',
+  'costs.info.venueTitle': 'Platser på utgifter',
+  'costs.info.venueBody':
+    'Fäst en utgift vid en av resans platser så visas den på platsens kort med en löpande summa — så ser du direkt vad en plats har kostat. Lägg till en utgift direkt från ett platskort så kommer den redan fäst.',
+  'costs.info.tabsTitle': 'Notor & delningslänkar',
+  'costs.info.tabsBody':
+    'En nota ger en person en livevy över vad hen är skyldig dig, delad som en länk som inte kräver något konto. Koppla en nota till en medlem (eller en gäst du lagt till med namn) så följer den resans räkenskaper: andelarna i delningar, vem hen är skyldig och alla betalningar — inklusive dina betalningsuppgifter, så att hen vet exakt hur skulden görs upp.',
+  'costs.info.settleTitle': 'Göra upp',
+  'costs.info.settleBody':
+    'Uppgörelsen räknar ut vem som är skyldig vem med så få överföringar som möjligt, med den växelkurs som frystes när varje utgift lades in. Registrera en betalning när pengar faktiskt byter ägare; allas saldon uppdateras live.',
+  'costs.info.scanTitle': 'Skanna kvitton',
+  'costs.info.scanBody':
+    'Skanna ett kvitto med kameran, välj foton från ditt bibliotek eller välj en fil — även dokumentskanningar sparade från iOS-appen Anteckningar. Ett långt kvitto kan komma som flera foton, och varje rad läses in med antal och styckpris, redo att fördelas på medlemmarna.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Guide',
+  'costs.guide.title': 'Utgiftsguide',
+  'costs.guide.intro':
+    'Allt gruppen spenderar på den här resan finns här — inlagt, delat, fäst vid platser och uppgjort utan kalkylblad. Så här fungerar det, och så här ser det ut för alla andra.',
+  'costs.guide.lodgeTitle': 'Lägga in en utgift',
+  'costs.guide.lodgeBody':
+    'Tryck på Lägg till utgift, ge den ett namn, ett belopp och en kategori och ange vem som betalade. Utgifter kan vara i vilken valuta som helst — kursen fryses i samma stund du sparar, så uppgjorda belopp aldrig ändras.',
+  'costs.guide.splitTitle': 'Dela',
+  'costs.guide.splitBody':
+    'Dela lika, skriv in egna andelar eller specificera kvittot rad för rad och koppla varje rad till de medlemmar som delade den. Den som inte står på en rad betalar inget för den.',
+  'costs.guide.scanTitle': 'Kvittoskanning',
+  'costs.guide.scanBody':
+    'Fotografera ett kvitto (eller välj en dokumentskanning från iOS Anteckningar via Filer) så läses raderna in åt dig — antal, styckpriser och totalsumman. Långa kvitton kan fotograferas i upp till sex delar.',
+  'costs.guide.personalTitle': 'Personliga utgifter',
+  'costs.guide.personalBody':
+    'Markera en utgift som ”Personlig (bara jag)” för att hålla koll på dina egna kostnader. Den är osynlig för resten av gruppen och påverkar aldrig den gemensamma uppgörelsen.',
+  'costs.guide.venuesTitle': 'Platser',
+  'costs.guide.venuesBody':
+    'Fäst utgifter vid resans platser. Varje platskort visar kopplade utgifter och totalsumman, och kortets knapp Lägg till utgift skapar en redan fäst utgift.',
+  'costs.guide.tabsTitle': 'Notor & delningslänkar',
+  'costs.guide.tabsBody':
+    'Ge vem som helst en livelänk till sitt löpande saldo — inget konto behövs. Kopplade notor följer räkenskaperna automatiskt; fristående notor innehåller bara det du för upp på dem. Dina betalningsuppgifter visas på länken så att folk vet hur de betalar dig.',
+  'costs.guide.settleTitle': 'Göra upp',
+  'costs.guide.settleBody':
+    'Betala visar vem som är skyldig vem med så få överföringar som möjligt. Registrera betalningar när de sker; ångrar du en uppgörelse öppnas saldona igen.',
+  'costs.guide.guestsTitle': 'Personer utan konto',
+  'costs.guide.guestsBody':
+    'Lägg till någon på en nota med namn — ingen registrering behövs. Personen deltar i delningar som alla andra, kan få en egen notalänk och kan senare ta över sin plats via resans inbjudningslänk.',
+  'costs.guide.viewsTitle': 'Vad de andra ser',
+  'costs.guide.viewsBody':
+    'Varje medlem ser de delade räkenskaperna, sitt eget saldo och vad hen lånat ut eller är skyldig per utgift. Personliga utgifter förblir privata för sin ägare; privata platser avslöjar aldrig sitt namn via en utgift; och notalänkar visar utomstående bara deras egna poster, betalningar och hur de betalar — aldrig hela räkenskaperna.',
 };
 export default budget;

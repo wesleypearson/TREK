@@ -196,6 +196,66 @@ const budget: TranslationStrings = {
     'Thao tác này xóa vĩnh viễn mọi khoản chi, thanh toán và liên kết sổ công khai trong chuyến đi này. Thành viên và khách vẫn được giữ lại. Không thể hoàn tác.',
   'costs.resetConfirm': 'Xóa tất cả',
   'costs.resetDone': 'Đã đặt lại chi phí',
+
+  'costs.sharesSummary': 'Tóm tắt phần chia của từng người',
+  'costs.excluded': 'Không tính',
+  'costs.splitMatches': 'Phần chia khớp với tổng',
+  'costs.splitProgress': 'Tổng các phần chia: {sum} / {total} ({direction} {diff})',
+  'costs.splitUnder': 'thiếu',
+  'costs.splitOver': 'thừa',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Chia hóa đơn',
+  'costs.info.splitBody':
+    '“Chia đều” chia tổng tiền đều cho mọi người bạn chọn. “Tùy chỉnh” cho phép bạn nhập phần của từng người. “Hóa đơn” bóc tách hóa đơn theo từng dòng — đặt số lượng và đơn giá cho mỗi dòng, rồi chạm vào các thành viên đã dùng chung dòng đó, và mỗi người chỉ trả cho những gì mình dùng.',
+  'costs.info.personalTitle': 'Chi tiêu cá nhân',
+  'costs.info.personalBody':
+    'Khoản chi cá nhân là của riêng bạn: nó được ghi vào chi tiêu của riêng bạn, không hiển thị với các thành viên khác và không bao giờ được đưa vào phần thanh toán chung. Dùng nó để theo dõi chi phí riêng bên cạnh các khoản chia chung.',
+  'costs.info.venueTitle': 'Địa điểm trên khoản chi',
+  'costs.info.venueBody':
+    'Ghim một khoản chi vào một địa điểm của chuyến đi, nó sẽ hiện trên thẻ địa điểm đó cùng tổng cộng dồn — giúp bạn thấy ngay một địa điểm đã tốn bao nhiêu. Thêm khoản chi trực tiếp từ thẻ địa điểm và nó sẽ được ghim sẵn.',
+  'costs.info.tabsTitle': 'Sổ nợ & liên kết chia sẻ',
+  'costs.info.tabsBody':
+    'Sổ nợ cho một người xem trực tiếp số tiền họ nợ bạn, chia sẻ qua liên kết không cần tài khoản. Liên kết sổ nợ với một thành viên (hoặc khách bạn thêm theo tên) và nó sẽ bám theo sổ cái chuyến đi: phần chia của họ, họ nợ ai và các khoản thanh toán — kể cả thông tin thanh toán của bạn, để họ biết chính xác cách trả.',
+  'costs.info.settleTitle': 'Thanh toán',
+  'costs.info.settleBody':
+    'Phần thanh toán tính ra ai nợ ai với số lần chuyển tiền ít nhất, dùng tỷ giá được cố định tại thời điểm nhập từng khoản chi. Ghi lại khoản thanh toán khi tiền thực sự được trao; số dư của mọi người cập nhật trực tiếp.',
+  'costs.info.scanTitle': 'Quét hóa đơn',
+  'costs.info.scanBody':
+    'Quét hóa đơn bằng máy ảnh, chọn ảnh từ thư viện hoặc chọn tệp — kể cả bản quét tài liệu lưu từ ứng dụng Ghi chú của iOS. Hóa đơn dài có thể gồm nhiều ảnh, và mỗi dòng được nhập kèm số lượng và đơn giá, sẵn sàng gán cho các thành viên.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Hướng dẫn',
+  'costs.guide.title': 'Hướng dẫn chi phí',
+  'costs.guide.intro':
+    'Mọi khoản cả nhóm chi trong chuyến đi này đều nằm ở đây — được ghi lại, chia ra, ghim vào địa điểm và thanh toán mà không cần bảng tính. Đây là cách nó hoạt động, và cách những người khác nhìn thấy.',
+  'costs.guide.lodgeTitle': 'Ghi một khoản chi',
+  'costs.guide.lodgeBody':
+    'Chạm Thêm chi phí, đặt tên, số tiền và danh mục, rồi cho biết ai đã trả. Khoản chi có thể ở bất kỳ loại tiền nào — tỷ giá được cố định ngay khi bạn lưu, nên các con số đã thanh toán không bao giờ thay đổi.',
+  'costs.guide.splitTitle': 'Chia tiền',
+  'costs.guide.splitBody':
+    'Chia đều, nhập phần tùy chỉnh, hoặc bóc tách hóa đơn theo từng dòng và gán mỗi dòng cho các thành viên đã dùng chung. Ai không có trong dòng nào thì không trả gì cho dòng đó.',
+  'costs.guide.scanTitle': 'Quét hóa đơn',
+  'costs.guide.scanBody':
+    'Chụp hóa đơn (hoặc chọn bản quét tài liệu Ghi chú iOS từ Tệp) và các dòng sẽ được đọc giúp bạn — số lượng, đơn giá và tổng tiền. Hóa đơn dài có thể chụp tối đa sáu phần.',
+  'costs.guide.personalTitle': 'Chi tiêu cá nhân',
+  'costs.guide.personalBody':
+    'Đánh dấu khoản chi là “Cá nhân (chỉ mình tôi)” để theo dõi chi phí riêng. Nó không hiển thị với các thành viên khác và không bao giờ ảnh hưởng đến thanh toán chung.',
+  'costs.guide.venuesTitle': 'Địa điểm',
+  'costs.guide.venuesBody':
+    'Ghim các khoản chi vào địa điểm của chuyến đi. Mỗi thẻ địa điểm hiển thị các khoản chi liên kết và tổng, còn nút Thêm chi phí trên thẻ sẽ tạo khoản chi được ghim sẵn.',
+  'costs.guide.tabsTitle': 'Sổ nợ & liên kết chia sẻ',
+  'costs.guide.tabsBody':
+    'Đưa cho bất kỳ ai liên kết trực tiếp đến số dư hiện tại của họ — không cần tài khoản. Sổ nợ liên kết tự động bám theo sổ cái; sổ nợ độc lập chỉ chứa những gì bạn ghi vào. Thông tin thanh toán của bạn hiển thị trên liên kết để mọi người biết cách trả cho bạn.',
+  'costs.guide.settleTitle': 'Thanh toán',
+  'costs.guide.settleBody':
+    'Thanh toán cho biết ai nợ ai với số lần chuyển tiền ít nhất. Ghi lại các khoản trả khi chúng diễn ra; hoàn tác một lần thanh toán sẽ mở lại số dư.',
+  'costs.guide.guestsTitle': 'Người không có tài khoản',
+  'costs.guide.guestsBody':
+    'Thêm ai đó vào hóa đơn theo tên — không cần đăng ký. Họ tham gia chia tiền như mọi người, có thể nhận liên kết sổ nợ riêng và sau này nhận chỗ của mình bằng liên kết tham gia chuyến đi.',
+  'costs.guide.viewsTitle': 'Những gì thành viên khác thấy',
+  'costs.guide.viewsBody':
+    'Mỗi thành viên thấy sổ cái chung, số dư của mình và số tiền đã cho mượn hoặc mượn theo từng khoản chi. Chi tiêu cá nhân chỉ hiển thị với chủ của nó; địa điểm riêng tư không bao giờ lộ tên qua khoản chi; và liên kết sổ nợ chỉ cho người ngoài thấy các khoản ghi sổ, khoản thanh toán và cách trả của chính họ — không bao giờ thấy toàn bộ sổ cái.',
 };
 
 export default budget;

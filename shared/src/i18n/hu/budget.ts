@@ -195,5 +195,65 @@ const budget: TranslationStrings = {
     'Ez véglegesen töröl minden költséget, elszámolást és nyilvános számlalinket ebben az utazásban. A tagok és a vendégek megmaradnak. A művelet nem vonható vissza.',
   'costs.resetConfirm': 'Összes törlése',
   'costs.resetDone': 'Költségek nullázva',
+
+  'costs.sharesSummary': 'Egyéni részek összegzése',
+  'costs.excluded': 'Kihagyva',
+  'costs.splitMatches': 'A felosztás egyezik a végösszeggel',
+  'costs.splitProgress': 'A részek összege: {sum} / {total} ({direction}: {diff})',
+  'costs.splitUnder': 'hiányzik',
+  'costs.splitOver': 'többlet',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Számla felosztása',
+  'costs.info.splitBody':
+    'Az „Equally” egyenlően osztja el a végösszeget a kiválasztottak között. A „Custom” lehetővé teszi, hogy mindenki részét te írd be. A „Ticket” tételenként bontja a számlát — adj meg soronként mennyiséget és egységárat, majd koppints azokra a tagokra, akik az adott tételen osztoztak, és mindenki csak azért fizet, amit valóban fogyasztott.',
+  'costs.info.personalTitle': 'Személyes költségek',
+  'costs.info.personalBody':
+    'A személyes költség csak a tiéd: a saját kiadásaid közé kerül, a csoport többi tagja számára láthatatlan marad, és soha nem kerül be a közös elszámolásba. Használd arra, hogy a saját költségeidet a közösek mellett kövesd.',
+  'costs.info.venueTitle': 'Helyszínek a költségeken',
+  'costs.info.venueBody':
+    'Tűzz egy költséget az út egyik helyszínéhez, és az megjelenik a helyszín kártyáján göngyölített összeggel — így egy pillantással látod, mennyibe került egy helyszín. Adj hozzá költséget közvetlenül a helyszín kártyájáról, és már rögzítve érkezik.',
+  'costs.info.tabsTitle': 'Számlák és megosztási linkek',
+  'costs.info.tabsBody':
+    'A számla egy személynek élő képet ad arról, mennyivel tartozik neked — linkként megosztva, fiók nélkül. Kapcsold a számlát egy taghoz (vagy egy név szerint hozzáadott vendéghez), és követi az út elszámolását: a felosztásokból rá eső részeket, hogy kinek tartozik, és a befizetéseket — a fizetési adataiddal együtt, hogy pontosan tudja, hogyan rendezheti.',
+  'costs.info.settleTitle': 'Elszámolás',
+  'costs.info.settleBody':
+    'Az elszámolás a lehető legkevesebb utalással számolja ki, ki kinek mennyivel tartozik, az egyes költségek rögzítésekor befagyasztott árfolyamon. Rögzíts befizetést, amikor a pénz ténylegesen gazdát cserél; mindenki egyenlege élőben frissül.',
+  'costs.info.scanTitle': 'Blokkok beolvasása',
+  'costs.info.scanBody':
+    'Olvass be blokkot a kamerával, válassz fotókat a könyvtáradból vagy egy fájlt — akár az iOS Jegyzetek appból mentett dokumentumszkenneket is. Egy hosszú blokk több fotóként is érkezhet, és minden tétel mennyiséggel és egységárral együtt kerül be, készen arra, hogy a tagokhoz rendeld.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Útmutató',
+  'costs.guide.title': 'Költség-útmutató',
+  'costs.guide.intro':
+    'Minden, amit a csoport ezen az úton elkölt, itt él — rögzítve, felosztva, helyszínekhez tűzve és táblázatok nélkül elszámolva. Így működik, és így látják a többiek.',
+  'costs.guide.lodgeTitle': 'Költség rögzítése',
+  'costs.guide.lodgeBody':
+    'Koppints a Költség hozzáadása gombra, adj meg nevet, összeget és kategóriát, és jelöld meg, ki fizetett. A költségek bármilyen pénznemben lehetnek — az árfolyam a mentés pillanatában befagy, így az elszámolt összegek soha nem csúsznak el.',
+  'costs.guide.splitTitle': 'Felosztás',
+  'costs.guide.splitBody':
+    'Ossz el egyenlően, írj be egyéni részeket, vagy bontsd a blokkot tételenként, és rendeld az egyes tételeket azokhoz a tagokhoz, akik osztoztak rajtuk. Aki nincs egy tételen, az nem fizet érte semmit.',
+  'costs.guide.scanTitle': 'Blokkbeolvasás',
+  'costs.guide.scanBody':
+    'Fotózd le a blokkot (vagy válassz a Fájlokból egy iOS Jegyzetek dokumentumszkennt), és a tételeket beolvassuk helyetted — mennyiségek, egységárak és a végösszeg. A hosszú blokkok legfeljebb hat részletben fotózhatók.',
+  'costs.guide.personalTitle': 'Személyes kiadás',
+  'costs.guide.personalBody':
+    'Jelölj meg egy költséget „Személyes (csak én)” címkével a saját költségeid követéséhez. A csoport többi tagja számára láthatatlan, és soha nem érinti a közös elszámolást.',
+  'costs.guide.venuesTitle': 'Helyszínek',
+  'costs.guide.venuesBody':
+    'Tűzz költségeket az út helyszíneihez. Minden helyszínkártya mutatja a hozzá kapcsolt kiadásokat és azok összegét, a Költség hozzáadása gombja pedig már odatűzött költséget rögzít.',
+  'costs.guide.tabsTitle': 'Számlák és megosztási linkek',
+  'costs.guide.tabsBody':
+    'Adj bárkinek élő linket az aktuális egyenlegéhez — fiók nélkül is működik. Az összekapcsolt számlák automatikusan követik az elszámolást; az önálló számlákon csak az szerepel, amit rájuk írsz. A fizetési adataid megjelennek a linken, így mindenki tudja, hogyan fizethet neked.',
+  'costs.guide.settleTitle': 'Elszámolás',
+  'costs.guide.settleBody':
+    'Az elszámolás megmutatja, ki kinek tartozik, a lehető legkevesebb utalással. Rögzítsd a befizetéseket, ahogy megtörténnek; egy elszámolás visszavonása újra megnyitja az egyenlegeket.',
+  'costs.guide.guestsTitle': 'Fiók nélküli emberek',
+  'costs.guide.guestsBody':
+    'Adj hozzá valakit egy számlához név szerint — regisztráció nélkül. Ugyanúgy részt vesz a felosztásokban, mint bárki más, kaphat saját számlalinket, és később az út csatlakozási linkjével átveheti a helyét.',
+  'costs.guide.viewsTitle': 'Mit látnak a többiek',
+  'costs.guide.viewsBody':
+    'Minden tag látja a közös elszámolást, a saját egyenlegét, és azt, hogy költségenként mennyit adott kölcsön vagy mennyivel tartozik. A személyes költségek a tulajdonosuk számára maradnak privátak; a privát helyszínek neve soha nem derül ki egy költségen keresztül; a számlalinkek pedig kívülállóknak csak a saját tételeiket, befizetéseiket és a fizetés módját mutatják — soha nem a teljes elszámolást.',
 };
 export default budget;

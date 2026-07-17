@@ -194,5 +194,65 @@ const budget: TranslationStrings = {
     'Dit verwijdert permanent alle uitgaven, afrekeningen en openbare rekeninglinks in deze reis. Leden en gasten blijven. Dit kan niet ongedaan worden gemaakt.',
   'costs.resetConfirm': 'Alles verwijderen',
   'costs.resetDone': 'Uitgaven gereset',
+
+  'costs.sharesSummary': 'Overzicht van individuele aandelen',
+  'costs.excluded': 'Uitgesloten',
+  'costs.splitMatches': 'Verdeling komt overeen met het totaal',
+  'costs.splitProgress': 'Som van de delen: {sum} van {total} ({diff} {direction})',
+  'costs.splitUnder': 'te weinig',
+  'costs.splitOver': 'te veel',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Een rekening verdelen',
+  'costs.info.splitBody':
+    '‘Equally’ verdeelt het totaal gelijk over iedereen die je selecteert. Met ‘Custom’ typ je ieders aandeel zelf. ‘Ticket’ splitst de rekening regel voor regel uit — stel per regel een aantal en stukprijs in, tik dan de leden aan die die regel deelden, en iedereen betaalt alleen wat hij of zij had.',
+  'costs.info.personalTitle': 'Persoonlijke uitgaven',
+  'costs.info.personalBody':
+    'Een persoonlijke uitgave is alleen van jou: ze wordt geregistreerd als je eigen uitgave, blijft onzichtbaar voor de rest van de groep en komt nooit in de gezamenlijke afrekening terecht. Gebruik dit om je eigen kosten naast de gedeelde bij te houden.',
+  'costs.info.venueTitle': 'Locaties bij uitgaven',
+  'costs.info.venueBody':
+    'Koppel een uitgave aan een van de locaties van de reis en ze verschijnt op de kaart van die locatie met een lopend totaal — zo zie je in één oogopslag wat een locatie heeft gekost. Voeg een uitgave rechtstreeks toe vanaf een locatiekaart en ze is al gekoppeld.',
+  'costs.info.tabsTitle': 'Rekeningen & deellinks',
+  'costs.info.tabsBody':
+    'Een rekening geeft één persoon live inzicht in wat diegene je schuldig is, gedeeld als link waarvoor geen account nodig is. Koppel een rekening aan een lid (of aan een gast die je op naam hebt toegevoegd) en ze volgt het reisoverzicht: de aandelen in verdelingen, aan wie diegene iets schuldig is en alle betalingen — inclusief je betaalgegevens, zodat precies duidelijk is hoe er afgerekend kan worden.',
+  'costs.info.settleTitle': 'Afrekenen',
+  'costs.info.settleBody':
+    'De afrekening berekent wie wat aan wie schuldig is met zo min mogelijk overboekingen, tegen de wisselkoers die is vastgezet toen elke uitgave werd ingevoerd. Registreer een betaling zodra er echt geld wordt overgemaakt; ieders saldo wordt live bijgewerkt.',
+  'costs.info.scanTitle': 'Bonnen scannen',
+  'costs.info.scanBody':
+    "Scan een bon met je camera, kies foto's uit je bibliotheek of kies een bestand — ook documentscans die zijn opgeslagen vanuit de iOS Notities-app. Een lange bon kan uit meerdere foto's bestaan, en elke regel komt binnen met aantal en stukprijs, klaar om aan de leden toe te wijzen.",
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Gids',
+  'costs.guide.title': 'Uitgavengids',
+  'costs.guide.intro':
+    'Alles wat de groep tijdens deze reis uitgeeft, leeft hier — ingevoerd, verdeeld, gekoppeld aan locaties en afgerekend zonder spreadsheets. Zo werkt het, en zo ziet de rest het.',
+  'costs.guide.lodgeTitle': 'Een uitgave invoeren',
+  'costs.guide.lodgeBody':
+    'Tik op Uitgave toevoegen, geef een naam, een bedrag en een categorie op en zeg wie er heeft betaald. Uitgaven kunnen in elke valuta — de koers wordt vastgezet op het moment van opslaan, zodat afgerekende bedragen nooit verschuiven.',
+  'costs.guide.splitTitle': 'Verdelen',
+  'costs.guide.splitBody':
+    'Verdeel gelijk, typ eigen aandelen of splits de bon regel voor regel uit en wijs elke regel toe aan de leden die hem deelden. Wie niet op een regel staat, betaalt er niets voor.',
+  'costs.guide.scanTitle': 'Bonnen scannen',
+  'costs.guide.scanBody':
+    'Fotografeer een bon (of kies via Bestanden een documentscan uit iOS Notities) en de regels worden voor je uitgelezen — aantallen, stukprijzen en het totaal. Lange bonnen kun je in maximaal zes delen fotograferen.',
+  'costs.guide.personalTitle': 'Persoonlijke uitgaven',
+  'costs.guide.personalBody':
+    'Markeer een uitgave als ‘Persoonlijk (alleen ik)’ om je eigen kosten bij te houden. Ze is onzichtbaar voor de rest van de groep en raakt de gezamenlijke afrekening nooit.',
+  'costs.guide.venuesTitle': 'Locaties',
+  'costs.guide.venuesBody':
+    'Koppel uitgaven aan de locaties van de reis. Elke locatiekaart toont de gekoppelde uitgaven en het totaal, en met de knop Uitgave toevoegen voer je een al gekoppelde uitgave in.',
+  'costs.guide.tabsTitle': 'Rekeningen & deellinks',
+  'costs.guide.tabsBody':
+    'Geef iedereen een live link naar het eigen lopende saldo — geen account nodig. Gekoppelde rekeningen volgen het overzicht automatisch; losse rekeningen bevatten alleen wat jij erop zet. Je betaalgegevens staan op de link, zodat mensen weten hoe ze je kunnen betalen.',
+  'costs.guide.settleTitle': 'Afrekenen',
+  'costs.guide.settleBody':
+    'Afrekenen toont wie wat aan wie schuldig is met zo min mogelijk overboekingen. Registreer betalingen zodra ze plaatsvinden; het ongedaan maken van een afrekening heropent de saldi.',
+  'costs.guide.guestsTitle': 'Mensen zonder account',
+  'costs.guide.guestsBody':
+    'Voeg iemand op naam toe aan een rekening — geen registratie nodig. Diegene doet mee met verdelingen zoals iedereen, kan een eigen rekeninglink krijgen en kan later met de deelnamelink van de reis de eigen plek claimen.',
+  'costs.guide.viewsTitle': 'Wat de rest ziet',
+  'costs.guide.viewsBody':
+    'Elk lid ziet het gedeelde overzicht, het eigen saldo en wat het per uitgave heeft voorgeschoten of geleend. Persoonlijke uitgaven blijven privé voor de eigenaar; privélocaties geven hun naam nooit prijs via een uitgave; en rekeninglinks tonen buitenstaanders alleen hun eigen posten, betalingen en hoe ze kunnen betalen — nooit het hele overzicht.',
 };
 export default budget;

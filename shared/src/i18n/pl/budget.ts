@@ -194,5 +194,65 @@ const budget: TranslationStrings = {
     'To trwale usunie wszystkie wydatki, rozliczenia i publiczne linki do rachunków w tej podróży. Członkowie i goście zostaną. Tego nie można cofnąć.',
   'costs.resetConfirm': 'Usuń wszystko',
   'costs.resetDone': 'Wydatki zresetowane',
+
+  'costs.sharesSummary': 'Podsumowanie indywidualnych udziałów',
+  'costs.excluded': 'Wykluczono',
+  'costs.splitMatches': 'Podział zgadza się z sumą',
+  'costs.splitProgress': 'Suma udziałów: {sum} z {total} ({direction} o {diff})',
+  'costs.splitUnder': 'mniej',
+  'costs.splitOver': 'więcej',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Dzielenie rachunku',
+  'costs.info.splitBody':
+    '„Equally” dzieli kwotę po równo między wszystkie wybrane osoby. „Custom” pozwala wpisać udział każdej osoby ręcznie. „Ticket” rozpisuje rachunek pozycja po pozycji — ustaw ilość i cenę jednostkową dla każdej pozycji, potem stuknij członków, którzy dzielili daną pozycję, a każdy zapłaci tylko za to, co faktycznie miał.',
+  'costs.info.personalTitle': 'Wydatki osobiste',
+  'costs.info.personalBody':
+    'Wydatek osobisty jest tylko twój: zapisuje się w twoich własnych wydatkach, pozostaje niewidoczny dla reszty grupy i nigdy nie trafia do wspólnego rozliczenia. Używaj go, aby śledzić własne koszty obok tych dzielonych.',
+  'costs.info.venueTitle': 'Miejsca przy wydatkach',
+  'costs.info.venueBody':
+    'Przypnij wydatek do jednego z miejsc podróży, a pojawi się na karcie tego miejsca z narastającą sumą — od razu widzisz, ile dane miejsce kosztowało. Dodaj wydatek prosto z karty miejsca, a będzie już przypięty.',
+  'costs.info.tabsTitle': 'Rachunki i linki do udostępniania',
+  'costs.info.tabsBody':
+    'Rachunek daje jednej osobie podgląd na żywo tego, ile ci jest winna, udostępniany jako link bez zakładania konta. Połącz rachunek z członkiem (lub gościem dodanym z imienia), a będzie podążał za rozliczeniami podróży: udziałami z podziałów, długami tej osoby i płatnościami — łącznie z twoimi danymi do płatności, żeby dokładnie wiedziała, jak się rozliczyć.',
+  'costs.info.settleTitle': 'Rozliczanie się',
+  'costs.info.settleBody':
+    'Rozliczenie wylicza, kto komu ile jest winien, przy jak najmniejszej liczbie przelewów, według kursu zamrożonego w chwili wpisania każdego wydatku. Zapisuj płatność, gdy pieniądze naprawdę zmieniają właściciela; salda wszystkich aktualizują się na żywo.',
+  'costs.info.scanTitle': 'Skanowanie paragonów',
+  'costs.info.scanBody':
+    'Zeskanuj paragon aparatem, wybierz zdjęcia z biblioteki albo plik — także skany dokumentów zapisane z aplikacji Notatki w iOS. Długi paragon może przyjść w kilku zdjęciach, a każda pozycja wczytuje się z ilością i ceną jednostkową, gotowa do przypisania członkom.',
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Przewodnik',
+  'costs.guide.title': 'Przewodnik po wydatkach',
+  'costs.guide.intro':
+    'Wszystko, co grupa wydaje w tej podróży, żyje tutaj — wpisane, podzielone, przypięte do miejsc i rozliczone bez arkuszy kalkulacyjnych. Tak to działa i tak widzą to pozostali.',
+  'costs.guide.lodgeTitle': 'Wpisywanie wydatku',
+  'costs.guide.lodgeBody':
+    'Stuknij Dodaj wydatek, nadaj mu nazwę, kwotę i kategorię oraz wskaż, kto zapłacił. Wydatki mogą być w dowolnej walucie — kurs zostaje zamrożony w chwili zapisu, więc rozliczone kwoty nigdy się nie zmieniają.',
+  'costs.guide.splitTitle': 'Dzielenie',
+  'costs.guide.splitBody':
+    'Dziel po równo, wpisuj własne udziały albo rozpisz paragon pozycja po pozycji i przypisz każdą pozycję członkom, którzy ją dzielili. Kto nie jest przy pozycji, nic za nią nie płaci.',
+  'costs.guide.scanTitle': 'Skanowanie paragonów',
+  'costs.guide.scanBody':
+    'Sfotografuj paragon (albo wybierz w Plikach skan dokumentu z Notatek iOS), a pozycje zostaną odczytane za ciebie — ilości, ceny jednostkowe i suma. Długie paragony można sfotografować w maksymalnie sześciu częściach.',
+  'costs.guide.personalTitle': 'Wydatki osobiste',
+  'costs.guide.personalBody':
+    'Oznacz wydatek jako „Osobisty (tylko ja)”, aby śledzić własne koszty. Jest niewidoczny dla reszty grupy i nigdy nie dotyka wspólnego rozliczenia.',
+  'costs.guide.venuesTitle': 'Miejsca',
+  'costs.guide.venuesBody':
+    'Przypinaj wydatki do miejsc podróży. Karta każdego miejsca pokazuje powiązane wydatki i sumę, a jej przycisk Dodaj wydatek wpisuje wydatek już przypięty.',
+  'costs.guide.tabsTitle': 'Rachunki i linki do udostępniania',
+  'costs.guide.tabsBody':
+    'Daj dowolnej osobie link na żywo do jej bieżącego salda — bez zakładania konta. Połączone rachunki automatycznie podążają za rozliczeniami; samodzielne rachunki zawierają tylko to, co na nie wpiszesz. W linku widać twoje dane do płatności, więc wiadomo, jak ci zapłacić.',
+  'costs.guide.settleTitle': 'Rozliczanie się',
+  'costs.guide.settleBody':
+    'Rozliczenie pokazuje, kto komu ile jest winien, przy jak najmniejszej liczbie przelewów. Zapisuj płatności na bieżąco; cofnięcie rozliczenia ponownie otwiera salda.',
+  'costs.guide.guestsTitle': 'Osoby bez konta',
+  'costs.guide.guestsBody':
+    'Dodaj kogoś do rachunku z imienia — bez rejestracji. Taka osoba bierze udział w podziałach jak każdy, może dostać własny link do rachunku, a później przejąć swoje miejsce dzięki linkowi dołączenia do podróży.',
+  'costs.guide.viewsTitle': 'Co widzą pozostali',
+  'costs.guide.viewsBody':
+    'Każdy członek widzi wspólne rozliczenia, własne saldo i to, co pożyczył lub jest winien przy każdym wydatku. Wydatki osobiste pozostają prywatne dla właściciela; prywatne miejsca nigdy nie zdradzają swojej nazwy przez wydatek; a linki do rachunków pokazują osobom z zewnątrz tylko ich własne pozycje, płatności i sposób zapłaty — nigdy całych rozliczeń.',
 };
 export default budget;

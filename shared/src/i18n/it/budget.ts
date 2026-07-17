@@ -194,5 +194,65 @@ const budget: TranslationStrings = {
     'Questa operazione elimina definitivamente tutte le spese, i saldi e i link pubblici dei conti di questo viaggio. Membri e ospiti restano. Non può essere annullata.',
   'costs.resetConfirm': 'Elimina tutto',
   'costs.resetDone': 'Spese azzerate',
+
+  'costs.sharesSummary': 'Riepilogo delle quote individuali',
+  'costs.excluded': 'Escluso',
+  'costs.splitMatches': 'La divisione corrisponde al totale',
+  'costs.splitProgress': 'Somma delle quote: {sum} su {total} ({diff} {direction})',
+  'costs.splitUnder': 'in meno',
+  'costs.splitOver': 'in più',
+
+  // (i) popups — short, feature-scoped explainers.
+  'costs.info.splitTitle': 'Dividere un conto',
+  'costs.info.splitBody':
+    '«Equally» divide il totale in parti uguali tra le persone selezionate. «Custom» ti lascia digitare la quota di ciascuno. «Ticket» scompone il conto riga per riga — imposta quantità e prezzo unitario per riga, poi tocca i membri che hanno condiviso quella riga: ognuno paga solo ciò che ha preso.',
+  'costs.info.personalTitle': 'Spese personali',
+  'costs.info.personalBody':
+    'Una spesa personale è solo tua: viene registrata tra le tue spese, resta invisibile al resto del gruppo e non entra mai nel regolamento comune. Usala per tenere traccia dei tuoi costi accanto a quelli condivisi.',
+  'costs.info.venueTitle': 'Luoghi sulle spese',
+  'costs.info.venueBody':
+    "Aggancia una spesa a uno dei luoghi del viaggio e comparirà sulla scheda di quel luogo con un totale progressivo — così vedi a colpo d'occhio quanto è costato un luogo. Aggiungi una spesa direttamente dalla scheda di un luogo e arriverà già agganciata.",
+  'costs.info.tabsTitle': 'Conti e link di condivisione',
+  'costs.info.tabsBody':
+    'Un conto dà a una persona una vista in tempo reale di quanto ti deve, condivisa con un link che non richiede alcun account. Collega un conto a un membro (o a un ospite aggiunto per nome) e seguirà il registro del viaggio: le sue quote nelle divisioni, a chi deve e i pagamenti — compresi i tuoi dati di pagamento, così saprà esattamente come saldare.',
+  'costs.info.settleTitle': 'Saldare i conti',
+  'costs.info.settleBody':
+    "Il regolamento calcola chi deve quanto a chi con il minor numero di trasferimenti, usando il tasso di cambio congelato al momento dell'inserimento di ogni spesa. Registra un pagamento quando il denaro passa davvero di mano; i saldi di tutti si aggiornano in tempo reale.",
+  'costs.info.scanTitle': 'Scansione degli scontrini',
+  'costs.info.scanBody':
+    "Scansiona uno scontrino con la fotocamera, scegli foto dalla libreria o un file — compresi i documenti scansionati salvati dall'app Note di iOS. Uno scontrino lungo può arrivare in più foto, e ogni riga viene importata con quantità e prezzo unitario, pronta da assegnare ai membri.",
+
+  // Full in-app guide (the Guide button in the Costs header).
+  'costs.guide.open': 'Guida',
+  'costs.guide.title': 'Guida alle spese',
+  'costs.guide.intro':
+    'Tutto ciò che il gruppo spende in questo viaggio vive qui — registrato, diviso, agganciato ai luoghi e saldato senza fogli di calcolo. Ecco come funziona e come lo vedono gli altri.',
+  'costs.guide.lodgeTitle': 'Registrare una spesa',
+  'costs.guide.lodgeBody':
+    'Tocca «Aggiungi spesa», assegnale un nome, un importo e una categoria e indica chi ha pagato. Le spese possono essere in qualsiasi valuta — il cambio viene congelato al salvataggio, così gli importi saldati non cambiano mai.',
+  'costs.guide.splitTitle': 'Dividere',
+  'costs.guide.splitBody':
+    "Dividi in parti uguali, digita quote personalizzate oppure scomponi lo scontrino riga per riga e assegna ogni riga ai membri che l'hanno condivisa. Chi non è su una riga non paga nulla per essa.",
+  'costs.guide.scanTitle': 'Scansione scontrini',
+  'costs.guide.scanBody':
+    'Fotografa uno scontrino (o scegli da File un documento scansionato con Note di iOS) e le righe vengono lette per te — quantità, prezzi unitari e totale. Gli scontrini lunghi possono essere fotografati in fino a sei parti.',
+  'costs.guide.personalTitle': 'Spese personali',
+  'costs.guide.personalBody':
+    'Contrassegna una spesa come «Personale (solo io)» per tenere traccia dei tuoi costi. È invisibile al resto del gruppo e non tocca mai il regolamento comune.',
+  'costs.guide.venuesTitle': 'Luoghi',
+  'costs.guide.venuesBody':
+    'Aggancia le spese ai luoghi del viaggio. Ogni scheda di luogo mostra le spese collegate e il totale, e il suo pulsante «Aggiungi spesa» crea una spesa già agganciata.',
+  'costs.guide.tabsTitle': 'Conti e link di condivisione',
+  'costs.guide.tabsBody':
+    'Dai a chiunque un link in tempo reale al suo saldo — senza bisogno di account. I conti collegati seguono automaticamente il registro; quelli indipendenti contengono solo ciò che vi addebiti. I tuoi dati di pagamento compaiono nel link, così si sa come pagarti.',
+  'costs.guide.settleTitle': 'Saldare i conti',
+  'costs.guide.settleBody':
+    'Salda mostra chi deve quanto a chi con il minor numero di trasferimenti. Registra i pagamenti man mano che avvengono; annullare un regolamento riapre i saldi.',
+  'costs.guide.guestsTitle': 'Persone senza account',
+  'costs.guide.guestsBody':
+    'Aggiungi qualcuno a un conto per nome — senza registrazione. Partecipa alle divisioni come tutti, può ricevere il proprio link del conto e reclamare il suo posto più tardi con il link di invito al viaggio.',
+  'costs.guide.viewsTitle': 'Cosa vedono gli altri',
+  'costs.guide.viewsBody':
+    "Ogni membro vede il registro condiviso, il proprio saldo e quanto ha prestato o preso in prestito per ogni spesa. Le spese personali restano private del loro proprietario; i luoghi privati non rivelano mai il loro nome tramite una spesa; e i link dei conti mostrano agli esterni solo i propri addebiti, i pagamenti e come pagare — mai l'intero registro.",
 };
 export default budget;
