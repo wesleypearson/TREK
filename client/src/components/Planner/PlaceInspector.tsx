@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm'
 import remarkBreaks from 'remark-breaks'
 import { X, Clock, MapPin, ExternalLink, Phone, Euro, Edit2, Trash2, Plus, Minus, ChevronDown, ChevronUp, FileText, Upload, File, FileImage, Star, Navigation, Map as MapIcon, Users, Mountain, TrendingUp, Bookmark, BookmarkCheck, Copy } from 'lucide-react'
 import PlaceAvatar from '../shared/PlaceAvatar'
+import InfoDot from '../shared/InfoDot'
 import GuestBadge from '../shared/GuestBadge'
 import StatusBadge from '../Collections/StatusBadge'
 import { mapsApi, pluginsApi } from '../../api/client'
@@ -1049,6 +1050,7 @@ function PlaceExtras({ openingHours, weekdayIndex, hoursExpanded, setHoursExpand
                   </span>
                   {spend.expanded ? <ChevronUp size={12} color="#9ca3af" /> : <ChevronDown size={12} color="#9ca3af" />}
                 </button>
+                <InfoDot title={t('costs.info.venueTitle')} size={13}><p style={{ margin: 0 }}>{t('costs.info.venueBody')}</p></InfoDot>
                 {spend.onAdd && (
                   <button onClick={spend.onAdd} className="text-content-muted bg-surface-tertiary"
                     style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(11px * var(--fs-scale-caption, 1))', padding: '2px 6px', borderRadius: 6, border: 0, fontFamily: 'inherit' }}>

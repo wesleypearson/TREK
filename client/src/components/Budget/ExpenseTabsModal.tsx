@@ -6,6 +6,7 @@ import { expenseTabsApi, settingsApi, type ExpenseTab } from '../../api/client'
 import { formatMoney } from '../../utils/formatters'
 import { downloadFile } from '../../utils/fileDownload'
 import Modal from '../shared/Modal'
+import InfoDot from '../shared/InfoDot'
 import CustomSelect from '../shared/CustomSelect'
 import GuestBadge from '../shared/GuestBadge'
 import PaymentDetailsForm, { hasPaymentDetails } from '../Settings/PaymentDetailsForm'
@@ -184,7 +185,10 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
   return (
     <Modal isOpen onClose={onClose} title={addItemFor ? t('costs.addToTabTitle', { name: addItemFor.name }) : t('costs.tabsTitle')} size="lg">
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-        <p className="text-content-muted" style={{ margin: 0, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}>{t('costs.tabsHint')}</p>
+        <p className="text-content-muted" style={{ margin: 0, fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}>
+          {t('costs.tabsHint')}
+          <InfoDot title={t('costs.info.tabsTitle')} size={13} style={{ marginLeft: 2, verticalAlign: 'middle' }}><p style={{ margin: 0 }}>{t('costs.info.tabsBody')}</p></InfoDot>
+        </p>
 
         {/* No payment details on file → payers can't act on the link. */}
         {payDetailsConfigured === false && (
