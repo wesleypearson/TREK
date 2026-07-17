@@ -8,16 +8,16 @@ const en: NotificationLocale = {
   },
   events: {
     trip_invite: (p) => ({
-      title: `Trip invite: "${p.trip}"`,
-      body: `${p.actor} invited ${p.invitee || 'a member'} to the trip "${p.trip}".`,
+      title: `Event invite: "${p.trip}"`,
+      body: `${p.actor} invited ${p.invitee || 'a crew member'} to the event "${p.trip}".`,
     }),
     booking_change: (p) => ({
       title: `New booking: ${p.booking}`,
       body: `${p.actor} added a new ${p.type} "${p.booking}" to "${p.trip}".`,
     }),
     trip_reminder: (p) => ({
-      title: `Trip reminder: ${p.trip}`,
-      body: `Your trip "${p.trip}" is coming up soon!`,
+      title: `Event reminder: ${p.trip}`,
+      body: `Your event "${p.trip}" is coming up soon!`,
     }),
     todo_due: (p) => ({
       title: `To-do due: ${p.todo}`,
