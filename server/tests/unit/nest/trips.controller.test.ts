@@ -304,20 +304,33 @@ describe('TripsController (parity with the legacy /api/trips route)', () => {
       expect(createGuest).toHaveBeenCalledWith('9', 'Anna', user.id);
     });
 
-    it('rename: 403 non-owner, 404 when the guest is missing, else success', () => {
-      expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue({ user_id: 5 }) })).renameGuest(user, '9', '7', 'Bob'))).toEqual({ status: 403, body: { error: 'Only the owner can manage guests' } });
+    it('rename: 403 without member_manage, 404 when the guest is missing, else success', () => {
+      // Guest management follows the member_manage permission now (matrix +
+      // admin bypass), not a raw owner check.
+      expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue({ user_id: 5 }), can: vi.fn().mockReturnValue(false) })).renameGuest(user, '9', '7', 'Bob'))).toEqual({ status: 403, body: { error: 'No permission to manage guests' } });
       const miss = svc({ renameGuest: vi.fn().mockReturnValue(false) } as Partial<TripsService>);
       expect(thrown(() => new TripsController(miss).renameGuest(user, '9', '7', 'Bob'))).toEqual({ status: 404, body: { error: 'Guest not found' } });
       const ok = svc({ renameGuest: vi.fn().mockReturnValue(true) } as Partial<TripsService>);
       expect(new TripsController(ok).renameGuest(user, '9', '7', 'Bob')).toEqual({ success: true });
     });
 
-    it('delete: 403 non-owner, 404 when the guest is missing, else success', () => {
-      expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue({ user_id: 5 }) })).deleteGuest(user, '9', '7'))).toEqual({ status: 403, body: { error: 'Only the owner can manage guests' } });
+    it('delete: 403 without member_manage, 404 when the guest is missing, else success', () => {
+      expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue({ user_id: 5 }), can: vi.fn().mockReturnValue(false) })).deleteGuest(user, '9', '7'))).toEqual({ status: 403, body: { error: 'No permission to manage guests' } });
       const miss = svc({ deleteGuest: vi.fn().mockReturnValue(false) } as Partial<TripsService>);
       expect(thrown(() => new TripsController(miss).deleteGuest(user, '9', '7'))).toEqual({ status: 404, body: { error: 'Guest not found' } });
       const ok = svc({ deleteGuest: vi.fn().mockReturnValue(true) } as Partial<TripsService>);
       expect(new TripsController(ok).deleteGuest(user, '9', '7')).toEqual({ success: true });
+    });
+
+    it('promote: 400 bad target, 403 without member_manage, ValidationError to 400, else merges', () => {
+      expect(thrown(() => new TripsController(svc()).promoteGuest(user, '9', '7', 'x'))).toEqual({ status: 400, body: { error: 'Target user id is required' } });
+      expect(thrown(() => new TripsController(svc({ canAccessTrip: vi.fn().mockReturnValue({ user_id: 5 }), can: vi.fn().mockReturnValue(false) })).promoteGuest(user, '9', '7', 2))).toEqual({ status: 403, body: { error: 'No permission to manage guests' } });
+      const ve = svc({ promoteGuest: vi.fn().mockImplementation(() => { throw new ValidationError('Target must be a full account, not another guest'); }) } as Partial<TripsService>);
+      expect(thrown(() => new TripsController(ve).promoteGuest(user, '9', '7', 2))).toEqual({ status: 400, body: { error: 'Target must be a full account, not another guest' } });
+      const promoteGuest = vi.fn().mockReturnValue({ merged: true });
+      const ok = svc({ promoteGuest } as Partial<TripsService>);
+      expect(new TripsController(ok).promoteGuest(user, '9', '7', 2)).toEqual({ merged: true });
+      expect(promoteGuest).toHaveBeenCalledWith('9', 7, 2);
     });
 
     it('maps a ValidationError from createGuest to 400', () => {
