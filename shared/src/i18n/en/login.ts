@@ -2,8 +2,8 @@ import type { TranslationStrings } from '../types';
 
 const login: TranslationStrings = {
   'login.error': 'Login failed. Please check your credentials.',
-  'login.tagline': 'Your Trips.\nYour Plan.',
-  'login.description': 'Plan trips collaboratively with interactive maps, budgets, and real-time sync.',
+  'login.tagline': 'Your Events.\nYour Plan.',
+  'login.description': 'Plan events collaboratively with interactive maps, budgets, and real-time sync.',
   'login.features.maps': 'Interactive Maps',
   'login.features.mapsDesc': 'Google Places, routes & clustering',
   'login.features.realtime': 'Real-Time Sync',
@@ -11,7 +11,7 @@ const login: TranslationStrings = {
   'login.features.budget': 'Cost Tracking',
   'login.features.budgetDesc': 'Categories, charts & per-person costs',
   'login.features.collab': 'Collaboration',
-  'login.features.collabDesc': 'Multi-user with shared trips',
+  'login.features.collabDesc': 'Multi-user with shared events',
   'login.features.packing': 'Packing Lists',
   'login.features.packingDesc': 'Categories, progress & suggestions',
   'login.features.bookings': 'Reservations',

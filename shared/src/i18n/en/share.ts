@@ -3,7 +3,7 @@ import type { TranslationStrings } from '../types';
 const share: TranslationStrings = {
   'share.linkTitle': 'Public Link',
   'share.linkHint':
-    'Create a link anyone can use to view this trip without logging in. Read-only — no editing possible.',
+    'Create a link anyone can use to view this event without logging in. Read-only — no editing possible.',
   'share.createLink': 'Create link',
   'share.deleteLink': 'Delete link',
   'share.createError': 'Could not create link',

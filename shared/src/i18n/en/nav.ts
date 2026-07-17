@@ -1,7 +1,7 @@
 import type { TranslationStrings } from '../types';
 
 const nav: TranslationStrings = {
-  'nav.trip': 'Trip',
+  'nav.trip': 'Event',
   'nav.share': 'Share',
   'nav.settings': 'Settings',
   'nav.admin': 'Admin',
@@ -10,7 +10,7 @@ const nav: TranslationStrings = {
   'nav.darkMode': 'Dark Mode',
   'nav.autoMode': 'Auto Mode',
   'nav.administrator': 'Administrator',
-  'nav.myTrips': 'My Trips',
+  'nav.myTrips': 'My Events',
   'nav.profile': 'Profile',
   'nav.bottomSettings': 'Settings',
   'nav.bottomAdmin': 'Admin Settings',

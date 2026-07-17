@@ -2,7 +2,7 @@ import type { TranslationStrings } from '../types';
 
 const categories: TranslationStrings = {
   'categories.title': 'Categories',
-  'categories.subtitle': 'Manage categories for places',
+  'categories.subtitle': 'Manage categories for venues',
   'categories.new': 'New Category',
   'categories.empty': 'No categories yet',
   'categories.namePlaceholder': 'Category name',
@@ -13,7 +13,7 @@ const categories: TranslationStrings = {
   'categories.defaultName': 'Category',
   'categories.update': 'Update',
   'categories.create': 'Create',
-  'categories.confirm.delete': 'Delete category? Places in this category will not be deleted.',
+  'categories.confirm.delete': 'Delete category? Venues in this category will not be deleted.',
   'categories.toast.loadError': 'Failed to load categories',
   'categories.toast.nameRequired': 'Please enter a name',
   'categories.toast.updated': 'Category updated',
