@@ -61,9 +61,12 @@ export default function PublicTabPage() {
   }
 
   return (
-    <div className="bg-[#f3f4f6]" style={{ minHeight: '100vh', fontFamily: 'var(--font-system)' }}>
+    // overflowX clips the decorative header circle that extends past the right
+    // edge — without it iOS Safari widens the layout viewport and the whole
+    // page drifts sideways under a finger.
+    <div className="bg-[#f3f4f6]" style={{ minHeight: '100vh', fontFamily: 'var(--font-system)', overflowX: 'hidden' }}>
       {/* Header */}
-      <div className="text-white" style={{ background: 'linear-gradient(135deg, #000 0%, #0f172a 50%, #1e293b 100%)', padding: '32px 20px 60px', textAlign: 'center', position: 'relative' }}>
+      <div className="text-white" style={{ background: 'linear-gradient(135deg, #000 0%, #0f172a 50%, #1e293b 100%)', padding: '32px 20px 60px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
         <div className="bg-[rgba(255,255,255,0.03)]" style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%' }} />
         <div className="bg-[rgba(255,255,255,0.08)]" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, backdropFilter: 'blur(8px)', marginBottom: 12, border: '1px solid rgba(255,255,255,0.1)' }}>
           <img src="/icons/icon-white.svg" alt="Travla" width="26" height="26" />
