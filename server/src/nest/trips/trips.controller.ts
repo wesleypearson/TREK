@@ -314,14 +314,19 @@ export class TripsController {
     }
   }
 
-  /** Loads the trip or throws 404, then asserts the caller is its owner (guest CRUD, #1362). */
-  private requireOwner(id: string, user: User): void {
+  /**
+   * Loads the trip or throws 404, then asserts the caller may manage guests.
+   * Follows the member_manage permission (default: event owner) instead of a
+   * raw owner check, so the instance permission matrix — and instance admins —
+   * apply to guest management the same way they do to crew management.
+   */
+  private requireGuestManage(id: string, user: User): void {
     const access = this.trips.canAccessTrip(id, user.id);
     if (!access) {
       throw new HttpException({ error: 'Trip not found' }, 404);
     }
-    if (access.user_id !== user.id) {
-      throw new HttpException({ error: 'Only the owner can manage guests' }, 403);
+    if (!this.trips.can('member_manage', user.role, access.user_id, user.id, access.user_id !== user.id)) {
+      throw new HttpException({ error: 'No permission to manage guests' }, 403);
     }
   }
 
@@ -350,7 +355,7 @@ export class TripsController {
 
   @Put(':id/guests/:userId')
   renameGuest(@CurrentUser() user: User, @Param('id') id: string, @Param('userId') userId: string, @Body('name') name: unknown) {
-    this.requireOwner(id, user);
+    this.requireGuestManage(id, user);
     if (typeof name !== 'string' || !name.trim()) {
       throw new HttpException({ error: 'Guest name is required' }, 400);
     }
@@ -368,11 +373,26 @@ export class TripsController {
 
   @Delete(':id/guests/:userId')
   deleteGuest(@CurrentUser() user: User, @Param('id') id: string, @Param('userId') userId: string) {
-    this.requireOwner(id, user);
+    this.requireGuestManage(id, user);
     if (!this.trips.deleteGuest(id, parseInt(userId))) {
       throw new HttpException({ error: 'Guest not found' }, 404);
     }
     return { success: true };
+  }
+
+  @Post(':id/guests/:userId/promote')
+  promoteGuest(@CurrentUser() user: User, @Param('id') id: string, @Param('userId') userId: string, @Body('user_id') targetUserId: unknown) {
+    this.requireGuestManage(id, user);
+    const target = Number(targetUserId);
+    if (!Number.isInteger(target) || target <= 0) {
+      throw new HttpException({ error: 'Target user id is required' }, 400);
+    }
+    try {
+      return this.trips.promoteGuest(id, parseInt(userId), target);
+    } catch (e: unknown) {
+      if (e instanceof ValidationError) throw new HttpException({ error: e.message }, 400);
+      throw e;
+    }
   }
 
   @Get(':id/bundle')

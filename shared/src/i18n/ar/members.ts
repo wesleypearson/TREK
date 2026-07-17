@@ -33,5 +33,35 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'فشلت إعادة تسمية الضيف',
   'members.guestRemoved': 'تمت إزالة الضيف',
   'members.confirmRemoveGuest': 'إزالة هذا الضيف؟ سيتم أيضًا إزالة تعييناته وحصص التكاليف الخاصة به.',
+  'members.crewSection': 'أعضاء الرحلة',
+  'members.crewInfoTitle': 'أعضاء هذه الرحلة',
+  'members.crewInfoBody':
+    'يملك الأعضاء حسابات كاملة ويمكنهم رؤية الرحلة. يتحكم المالك في الرحلة نفسها؛ وكل ما عدا ذلك يخضع لإعدادات صلاحيات النسخة. أضف أعضاء من القائمة أدناه، أو شارك معهم رابط الانضمام — فهو يجعلهم أعضاء مباشرة.',
+  'members.guestInfoTitle': 'الضيوف المؤقتون',
+  'members.guestInfoBody':
+    'الضيف شخص بدون حساب: يمكن إدراجه في الفواتير والحسابات المفتوحة والأمتعة والمهام، لكنه لا يستطيع تسجيل الدخول أبدًا. عندما يحصل على حساب حقيقي، رقِّ الضيف إلى ذلك الحساب — تنتقل كل الحصص والمدفوعات والحسابات المفتوحة ويختفي الضيف.',
+  'members.addedMeta': 'أُضيف في {date}',
+  'members.addedMetaBy': 'أُضيف في {date} · بدعوة من {name}',
+  'members.removeMemberTitle': 'إزالة عضو',
+  'members.removeMemberBody': 'سيفقد {name} صلاحية الوصول إلى هذه الرحلة. تبقى نفقاته وحصصه السابقة في السجل.',
+  'members.leaveTitle': 'مغادرة الرحلة',
+  'members.leaveBody': 'ستفقد صلاحية الوصول إلى هذه الرحلة حتى يضيفك أحد من جديد.',
+  'members.leaveConfirm': 'مغادرة',
+  'members.removeConfirm': 'إزالة',
+  'members.deleteGuestTitle': 'حذف الضيف',
+  'members.deleteGuestBody':
+    'سيؤدي هذا إلى حذف {name} نهائيًا. تُزال حصصه وتعييناته من كل الفواتير، ويتوقف أي رابط حساب مفتوح خاص به عن العمل. إذا كان قد انضم إلى المنصة، فرقِّه بدلًا من ذلك حتى لا يضيع شيء.',
+  'members.deleteGuestConfirm': 'حذف الضيف',
+  'members.promote': 'ترقية',
+  'members.promoteTitle': 'ترقية الضيف إلى حساب كامل',
+  'members.promoteBody':
+    'اختر الحساب الذي أصبح يملكه {name}. تنتقل كل حصص الضيف ومدفوعاته وتسوياته وحساباته المفتوحة إلى ذلك الحساب (وينضم إلى الأعضاء عند الحاجة)، ثم يختفي سجل الضيف. لا يمكن التراجع عن هذا الإجراء.',
+  'members.promoteSelect': 'حسابه',
+  'members.promoteSearch': 'ابحث في الحسابات…',
+  'members.promoteConfirm': 'دمج في الحساب',
+  'members.promoteDone': 'تمت ترقية الضيف — تم نقل السجل إلى الحساب',
+  'members.promoteError': 'فشلت ترقية الضيف',
+  'members.transferTitle': 'نقل الملكية',
+  'members.transferConfirm': 'تعيين كمالك',
 };
 export default members;

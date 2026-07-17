@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': "Échec du renommage de l'invité",
   'members.guestRemoved': 'Invité supprimé',
   'members.confirmRemoveGuest': 'Supprimer cet invité ? Ses affectations et parts de dépenses seront aussi supprimées.',
+  'members.crewSection': 'Membres du voyage',
+  'members.crewInfoTitle': 'Membres de ce voyage',
+  'members.crewInfoBody':
+    "Les membres disposent d'un compte complet et peuvent voir le voyage. Le propriétaire contrôle le voyage lui-même ; tout le reste suit les paramètres de permissions de l'instance. Ajoutez des membres depuis la liste ci-dessous, ou transmettez-leur le lien d'invitation — il les intègre directement aux membres.",
+  'members.guestInfoTitle': 'Invités temporaires',
+  'members.guestInfoBody':
+    "Un invité est une personne sans compte : il peut figurer sur les notes, les ardoises, les bagages et les tâches, mais ne peut jamais se connecter. Quand il obtient un vrai compte, promouvez l'invité vers celui-ci — chaque part, paiement et ardoise est transféré et l'invité disparaît.",
+  'members.addedMeta': 'Ajouté le {date}',
+  'members.addedMetaBy': 'Ajouté le {date} · invité par {name}',
+  'members.removeMemberTitle': 'Retirer le membre',
+  'members.removeMemberBody':
+    "{name} perdra l'accès à ce voyage. Ses dépenses et parts passées restent dans les comptes.",
+  'members.leaveTitle': 'Quitter le voyage',
+  'members.leaveBody': "Vous perdrez l'accès à ce voyage jusqu'à ce que quelqu'un vous ajoute à nouveau.",
+  'members.leaveConfirm': 'Quitter',
+  'members.removeConfirm': 'Retirer',
+  'members.deleteGuestTitle': "Supprimer l'invité",
+  'members.deleteGuestBody':
+    "Cette action supprime définitivement {name}. Ses parts et affectations sont retirées de toutes les notes, et tout lien d'ardoise le concernant cesse de fonctionner. S'il a rejoint la plateforme, promouvez-le plutôt afin de ne rien perdre.",
+  'members.deleteGuestConfirm': "Supprimer l'invité",
+  'members.promote': 'Promouvoir',
+  'members.promoteTitle': "Promouvoir l'invité vers un compte complet",
+  'members.promoteBody':
+    "Choisissez le compte qui appartient désormais à {name}. Chaque part, paiement, remboursement et ardoise de l'invité est transféré vers ce compte (il rejoint les membres si nécessaire), puis la fiche de l'invité disparaît. Cette action est irréversible.",
+  'members.promoteSelect': 'Son compte',
+  'members.promoteSearch': 'Rechercher des comptes…',
+  'members.promoteConfirm': 'Fusionner avec le compte',
+  'members.promoteDone': "Invité promu — l'historique a été transféré vers le compte",
+  'members.promoteError': "Échec de la promotion de l'invité",
+  'members.transferTitle': 'Transférer la propriété',
+  'members.transferConfirm': 'Définir comme propriétaire',
 };
 export default members;

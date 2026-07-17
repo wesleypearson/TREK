@@ -379,6 +379,8 @@ export const tripsApi = {
   createGuest: (id: number | string, name: string) => apiClient.post(`/trips/${id}/guests`, { name } satisfies TripCreateGuestRequest).then(r => r.data),
   renameGuest: (id: number | string, userId: number, name: string) => apiClient.put(`/trips/${id}/guests/${userId}`, { name } satisfies TripRenameGuestRequest).then(r => r.data),
   deleteGuest: (id: number | string, userId: number) => apiClient.delete(`/trips/${id}/guests/${userId}`).then(r => r.data),
+  promoteGuest: (id: number | string, guestUserId: number, userId: number) =>
+    apiClient.post(`/trips/${id}/guests/${guestUserId}/promote`, { user_id: userId }).then(r => r.data as { merged: true }),
   copy: (id: number | string, data?: TripCopyRequest) => apiClient.post(`/trips/${id}/copy`, data || {}).then(r => r.data),
   bundle: (id: number | string) => apiClient.get(`/trips/${id}/bundle`).then(r => r.data),
 }

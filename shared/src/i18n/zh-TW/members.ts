@@ -33,5 +33,35 @@ const members: TranslationStrings = {
   'members.guestRenameError': '重新命名訪客失敗',
   'members.guestRemoved': '已移除訪客',
   'members.confirmRemoveGuest': '移除此訪客？其指派和費用分攤也將被移除。',
+  'members.crewSection': '旅行成員',
+  'members.crewInfoTitle': '本次旅行的成員',
+  'members.crewInfoBody':
+    '成員擁有完整帳號並可以檢視旅行。擁有者管理旅行本身；其餘均遵循執行個體的權限設定。可從下方清單新增成員，或將加入連結傳給他們——透過連結即可直接成為成員。',
+  'members.guestInfoTitle': '臨時訪客',
+  'members.guestInfoBody':
+    '訪客是沒有帳號的人：可以出現在帳單、共享餘額、行李和任務中，但永遠無法登入。當他們擁有真實帳號後，請將訪客升級到該帳號——所有分攤、付款和共享餘額都會轉移，訪客隨之消失。',
+  'members.addedMeta': '新增於 {date}',
+  'members.addedMetaBy': '新增於 {date} · 由 {name} 邀請',
+  'members.removeMemberTitle': '移除成員',
+  'members.removeMemberBody': '{name} 將失去對本次旅行的訪問許可權。其過去的費用和分攤仍保留在帳目中。',
+  'members.leaveTitle': '退出旅行',
+  'members.leaveBody': '你將失去對本次旅行的訪問許可權，直到有人再次新增你。',
+  'members.leaveConfirm': '退出',
+  'members.removeConfirm': '移除',
+  'members.deleteGuestTitle': '刪除訪客',
+  'members.deleteGuestBody':
+    '此操作將永久刪除 {name}。其分攤和指派將從所有帳單中移除，其共享餘額連結也將失效。如果對方已加入平台，請改為升級訪客，以免遺失任何資料。',
+  'members.deleteGuestConfirm': '刪除訪客',
+  'members.promote': '升級',
+  'members.promoteTitle': '將訪客升級為完整帳號',
+  'members.promoteBody':
+    '選擇現在屬於 {name} 的帳號。訪客的所有分攤、付款、結算和共享餘額都會轉移到該帳號（如有需要，該帳號會加入成員），隨後訪客項目消失。此操作無法復原。',
+  'members.promoteSelect': '對方的帳號',
+  'members.promoteSearch': '搜尋帳號…',
+  'members.promoteConfirm': '合併到帳號',
+  'members.promoteDone': '訪客已升級——歷史記錄已轉移到該帳號',
+  'members.promoteError': '升級訪客失敗',
+  'members.transferTitle': '轉移擁有權',
+  'members.transferConfirm': '設為擁有者',
 };
 export default members;

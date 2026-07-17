@@ -33,5 +33,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Falha ao renomear convidado',
   'members.guestRemoved': 'Convidado removido',
   'members.confirmRemoveGuest': 'Remover este convidado? As atribuições e os custos dele também serão removidos.',
+  'members.crewSection': 'Membros da viagem',
+  'members.crewInfoTitle': 'Membros desta viagem',
+  'members.crewInfoBody':
+    'Os membros têm conta completa e podem ver a viagem. O proprietário controla a própria viagem; todo o resto segue as configurações de permissão da instância. Adicione membros pela lista abaixo ou envie o link de entrada — ele coloca a pessoa direto entre os membros.',
+  'members.guestInfoTitle': 'Convidados temporários',
+  'members.guestInfoBody':
+    'Um convidado é uma pessoa sem conta: pode entrar em despesas, comandas, bagagem e tarefas, mas nunca consegue fazer login. Quando ele criar uma conta de verdade, promova o convidado para ela — cada divisão, pagamento e comanda é transferido e o convidado desaparece.',
+  'members.addedMeta': 'Adicionado em {date}',
+  'members.addedMetaBy': 'Adicionado em {date} · convidado por {name}',
+  'members.removeMemberTitle': 'Remover membro',
+  'members.removeMemberBody':
+    '{name} perderá o acesso a esta viagem. As despesas e divisões anteriores permanecem no registro.',
+  'members.leaveTitle': 'Sair da viagem',
+  'members.leaveBody': 'Você perderá o acesso a esta viagem até que alguém adicione você novamente.',
+  'members.leaveConfirm': 'Sair',
+  'members.removeConfirm': 'Remover',
+  'members.deleteGuestTitle': 'Excluir convidado',
+  'members.deleteGuestBody':
+    'Isso exclui {name} permanentemente. As divisões e atribuições dele são removidas de todas as despesas, e qualquer link de comanda dele deixa de funcionar. Se ele já entrou na plataforma, promova-o em vez de excluir para não perder nada.',
+  'members.deleteGuestConfirm': 'Excluir convidado',
+  'members.promote': 'Promover',
+  'members.promoteTitle': 'Promover convidado a conta completa',
+  'members.promoteBody':
+    'Escolha a conta que agora pertence a {name}. Cada divisão, pagamento, acerto e comanda do convidado passa para essa conta (ela entra como membro se necessário) e o registro do convidado desaparece. Isso não pode ser desfeito.',
+  'members.promoteSelect': 'Conta dele',
+  'members.promoteSearch': 'Buscar contas…',
+  'members.promoteConfirm': 'Mesclar com a conta',
+  'members.promoteDone': 'Convidado promovido — o histórico foi movido para a conta',
+  'members.promoteError': 'Falha ao promover convidado',
+  'members.transferTitle': 'Transferir propriedade',
+  'members.transferConfirm': 'Tornar proprietário',
 };
 export default members;

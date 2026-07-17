@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Gast konnte nicht umbenannt werden',
   'members.guestRemoved': 'Gast entfernt',
   'members.confirmRemoveGuest': 'Diesen Gast entfernen? Seine Zuweisungen und Kostenanteile werden ebenfalls entfernt.',
+  'members.crewSection': 'Mitglieder der Reise',
+  'members.crewInfoTitle': 'Mitglieder dieser Reise',
+  'members.crewInfoBody':
+    'Mitglieder haben einen vollwertigen Account und können die Reise sehen. Der Eigentümer verwaltet die Reise selbst; alles Weitere richtet sich nach den Berechtigungseinstellungen der Instanz. Füge Mitglieder aus der Liste unten hinzu oder gib ihnen den Beitrittslink — damit werden sie direkt Mitglied.',
+  'members.guestInfoTitle': 'Temporäre Gäste',
+  'members.guestInfoBody':
+    'Ein Gast ist eine Person ohne Account: Er kann bei Abrechnungen, laufenden Rechnungen, Gepäck und Aufgaben eingetragen werden, sich aber nie anmelden. Sobald er einen echten Account hat, stufe den Gast auf diesen Account hoch — alle Anteile, Zahlungen und laufenden Rechnungen ziehen mit um und der Gast verschwindet.',
+  'members.addedMeta': 'Hinzugefügt am {date}',
+  'members.addedMetaBy': 'Hinzugefügt am {date} · eingeladen von {name}',
+  'members.removeMemberTitle': 'Mitglied entfernen',
+  'members.removeMemberBody':
+    '{name} verliert den Zugriff auf diese Reise. Vergangene Ausgaben und Anteile bleiben in der Abrechnung erhalten.',
+  'members.leaveTitle': 'Reise verlassen',
+  'members.leaveBody': 'Du verlierst den Zugriff auf diese Reise, bis dich jemand wieder hinzufügt.',
+  'members.leaveConfirm': 'Verlassen',
+  'members.removeConfirm': 'Entfernen',
+  'members.deleteGuestTitle': 'Gast löschen',
+  'members.deleteGuestBody':
+    'Damit wird {name} dauerhaft gelöscht. Seine Kostenanteile und Zuweisungen werden aus allen Abrechnungen entfernt, und alle Links zu seinen laufenden Rechnungen funktionieren nicht mehr. Wenn er inzwischen der Plattform beigetreten ist, stufe ihn stattdessen hoch, damit nichts verloren geht.',
+  'members.deleteGuestConfirm': 'Gast löschen',
+  'members.promote': 'Hochstufen',
+  'members.promoteTitle': 'Gast zu vollwertigem Account hochstufen',
+  'members.promoteBody':
+    'Wähle den Account, der jetzt {name} gehört. Alle Kostenanteile, Zahlungen, Ausgleichszahlungen und laufenden Rechnungen des Gasts wandern auf diesen Account (er wird bei Bedarf Mitglied der Reise), danach verschwindet der Gasteintrag. Das kann nicht rückgängig gemacht werden.',
+  'members.promoteSelect': 'Zugehöriger Account',
+  'members.promoteSearch': 'Accounts durchsuchen…',
+  'members.promoteConfirm': 'Mit Account zusammenführen',
+  'members.promoteDone': 'Gast hochgestuft — Verlauf wurde auf den Account übertragen',
+  'members.promoteError': 'Gast konnte nicht hochgestuft werden',
+  'members.transferTitle': 'Eigentümerschaft übertragen',
+  'members.transferConfirm': 'Zum Eigentümer machen',
 };
 export default members;

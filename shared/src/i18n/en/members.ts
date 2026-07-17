@@ -34,5 +34,39 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Failed to rename guest',
   'members.guestRemoved': 'Guest removed',
   'members.confirmRemoveGuest': 'Remove this guest? Their assignments and cost shares will be removed too.',
+
+  // Crew admin redesign: sectioned manager with info popups, proper confirm
+  // dialogs, added-by metadata and guest → full-account promotion.
+  'members.crewSection': 'Event crew',
+  'members.crewInfoTitle': 'Crew on this event',
+  'members.crewInfoBody':
+    'Crew members have full accounts and can see the event. The owner controls the event itself; everything else follows the instance permission settings. Add crew from the directory below, or hand them the join link — it puts them straight onto the crew.',
+  'members.guestInfoTitle': 'Temp guests',
+  'members.guestInfoBody':
+    'A guest is a person without an account: they can sit on bills, tabs, packing and tasks, but can never sign in. When they get a real account, promote the guest onto it — every split, payment and tab moves across and the guest disappears.',
+  'members.addedMeta': 'Added {date}',
+  'members.addedMetaBy': 'Added {date} · invited by {name}',
+  'members.removeMemberTitle': 'Remove crew member',
+  'members.removeMemberBody':
+    '{name} will lose access to this event. Their past expenses and shares stay in the ledger.',
+  'members.leaveTitle': 'Leave event',
+  'members.leaveBody': 'You will lose access to this event until someone adds you again.',
+  'members.leaveConfirm': 'Leave',
+  'members.removeConfirm': 'Remove',
+  'members.deleteGuestTitle': 'Delete guest',
+  'members.deleteGuestBody':
+    'This permanently deletes {name}. Their split shares and assignments are removed from every bill, and any tab link for them stops working. If they have joined the platform, promote them instead so nothing is lost.',
+  'members.deleteGuestConfirm': 'Delete guest',
+  'members.promote': 'Promote',
+  'members.promoteTitle': 'Promote guest to full account',
+  'members.promoteBody':
+    'Pick the account {name} now owns. Every split share, payment, settlement and tab of the guest moves onto that account (it joins the crew if needed), then the guest entry disappears. This cannot be undone.',
+  'members.promoteSelect': 'Their account',
+  'members.promoteSearch': 'Search accounts…',
+  'members.promoteConfirm': 'Merge into account',
+  'members.promoteDone': 'Guest promoted — history moved to the account',
+  'members.promoteError': 'Failed to promote guest',
+  'members.transferTitle': 'Transfer ownership',
+  'members.transferConfirm': 'Make owner',
 };
 export default members;

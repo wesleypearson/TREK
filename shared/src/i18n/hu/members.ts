@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Nem sikerült átnevezni a vendéget',
   'members.guestRemoved': 'Vendég eltávolítva',
   'members.confirmRemoveGuest': 'Eltávolítja ezt a vendéget? A hozzárendelései és költségrészei is törlődnek.',
+  'members.crewSection': 'Az utazás tagjai',
+  'members.crewInfoTitle': 'Ennek az utazásnak a tagjai',
+  'members.crewInfoBody':
+    'A tagok teljes értékű fiókkal rendelkeznek, és látják az utazást. A tulajdonos magát az utazást kezeli; minden más a példány jogosultsági beállításait követi. Adj hozzá tagokat a lenti listából, vagy add oda nekik a csatlakozási linket — ezzel azonnal a tagok közé kerülnek.',
+  'members.guestInfoTitle': 'Ideiglenes vendégek',
+  'members.guestInfoBody':
+    'A vendég fiók nélküli személy: szerepelhet költségekben, nyitott számlákon, csomagolásban és feladatokban, de soha nem tud bejelentkezni. Ha valódi fiókot szerez, léptesd elő a vendéget arra a fiókra — minden részesedés, fizetés és nyitott számla átkerül, a vendég pedig eltűnik.',
+  'members.addedMeta': 'Hozzáadva: {date}',
+  'members.addedMetaBy': 'Hozzáadva: {date} · meghívta: {name}',
+  'members.removeMemberTitle': 'Tag eltávolítása',
+  'members.removeMemberBody':
+    '{name} elveszíti a hozzáférését ehhez az utazáshoz. Korábbi kiadásai és részesedései megmaradnak a nyilvántartásban.',
+  'members.leaveTitle': 'Utazás elhagyása',
+  'members.leaveBody': 'Elveszíted a hozzáférést ehhez az utazáshoz, amíg valaki újra hozzá nem ad.',
+  'members.leaveConfirm': 'Elhagyás',
+  'members.removeConfirm': 'Eltávolítás',
+  'members.deleteGuestTitle': 'Vendég törlése',
+  'members.deleteGuestBody':
+    'Ez véglegesen törli a következőt: {name}. Részesedései és hozzárendelései minden költségből törlődnek, és a nyitott számlájára mutató linkek nem működnek tovább. Ha időközben csatlakozott a platformhoz, inkább léptesd elő, hogy semmi ne vesszen el.',
+  'members.deleteGuestConfirm': 'Vendég törlése',
+  'members.promote': 'Előléptetés',
+  'members.promoteTitle': 'Vendég előléptetése teljes fiókká',
+  'members.promoteBody':
+    'Válaszd ki a fiókot, amely mostantól {name} tulajdona. A vendég minden részesedése, fizetése, elszámolása és nyitott számlája átkerül arra a fiókra (szükség esetén a tagok közé kerül), majd a vendégbejegyzés eltűnik. Ez nem vonható vissza.',
+  'members.promoteSelect': 'A fiókja',
+  'members.promoteSearch': 'Fiókok keresése…',
+  'members.promoteConfirm': 'Összevonás a fiókkal',
+  'members.promoteDone': 'Vendég előléptetve — az előzmények átkerültek a fiókra',
+  'members.promoteError': 'Nem sikerült előléptetni a vendéget',
+  'members.transferTitle': 'Tulajdonjog átruházása',
+  'members.transferConfirm': 'Tulajdonossá tétel',
 };
 export default members;

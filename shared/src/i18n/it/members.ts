@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': "Impossibile rinominare l'ospite",
   'members.guestRemoved': 'Ospite rimosso',
   'members.confirmRemoveGuest': 'Rimuovere questo ospite? Verranno rimosse anche le sue assegnazioni e quote di spesa.',
+  'members.crewSection': 'Membri del viaggio',
+  'members.crewInfoTitle': 'Membri di questo viaggio',
+  'members.crewInfoBody':
+    "I membri hanno un account completo e possono vedere il viaggio. Il proprietario controlla il viaggio stesso; tutto il resto segue le impostazioni dei permessi dell'istanza. Aggiungi membri dall'elenco qui sotto oppure condividi il link di accesso: li inserisce direttamente tra i membri.",
+  'members.guestInfoTitle': 'Ospiti temporanei',
+  'members.guestInfoBody':
+    "Un ospite è una persona senza account: può comparire in spese, conti aperti, bagagli e attività, ma non può mai accedere. Quando ottiene un account reale, promuovi l'ospite su quell'account: ogni quota, pagamento e conto aperto viene trasferito e l'ospite scompare.",
+  'members.addedMeta': 'Aggiunto il {date}',
+  'members.addedMetaBy': 'Aggiunto il {date} · invitato da {name}',
+  'members.removeMemberTitle': 'Rimuovi membro',
+  'members.removeMemberBody':
+    "{name} perderà l'accesso a questo viaggio. Le sue spese e quote passate restano nel registro.",
+  'members.leaveTitle': 'Abbandona viaggio',
+  'members.leaveBody': "Perderai l'accesso a questo viaggio finché qualcuno non ti aggiunge di nuovo.",
+  'members.leaveConfirm': 'Abbandona',
+  'members.removeConfirm': 'Rimuovi',
+  'members.deleteGuestTitle': 'Elimina ospite',
+  'members.deleteGuestBody':
+    'Questa azione elimina definitivamente {name}. Le sue quote e assegnazioni vengono rimosse da tutte le spese e ogni link al suo conto aperto smette di funzionare. Se nel frattempo si è registrato alla piattaforma, promuovilo invece, così non si perde nulla.',
+  'members.deleteGuestConfirm': 'Elimina ospite',
+  'members.promote': 'Promuovi',
+  'members.promoteTitle': 'Promuovi ospite ad account completo',
+  'members.promoteBody':
+    "Scegli l'account che ora appartiene a {name}. Ogni quota, pagamento, saldo e conto aperto dell'ospite passa su quell'account (che entra tra i membri se necessario), poi la voce dell'ospite scompare. L'operazione non può essere annullata.",
+  'members.promoteSelect': 'Il suo account',
+  'members.promoteSearch': 'Cerca account...',
+  'members.promoteConfirm': "Unisci all'account",
+  'members.promoteDone': "Ospite promosso: la cronologia è stata spostata sull'account",
+  'members.promoteError': "Impossibile promuovere l'ospite",
+  'members.transferTitle': 'Trasferisci proprietà',
+  'members.transferConfirm': 'Rendi proprietario',
 };
 export default members;

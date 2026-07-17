@@ -34,5 +34,36 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'Gagal mengganti nama tamu',
   'members.guestRemoved': 'Tamu dihapus',
   'members.confirmRemoveGuest': 'Hapus tamu ini? Penugasan dan bagian biayanya juga akan dihapus.',
+  'members.crewSection': 'Anggota perjalanan',
+  'members.crewInfoTitle': 'Anggota perjalanan ini',
+  'members.crewInfoBody':
+    'Anggota memiliki akun penuh dan dapat melihat perjalanan. Pemilik mengendalikan perjalanan itu sendiri; selebihnya mengikuti pengaturan izin instans. Tambahkan anggota dari daftar di bawah, atau berikan tautan bergabung — tautan itu langsung menjadikan mereka anggota.',
+  'members.guestInfoTitle': 'Tamu sementara',
+  'members.guestInfoBody':
+    'Tamu adalah orang tanpa akun: mereka dapat dicantumkan pada tagihan, saldo bersama, kemasan, dan tugas, tetapi tidak pernah bisa masuk. Saat mereka punya akun sungguhan, promosikan tamu ke akun itu — setiap pembagian, pembayaran, dan saldo bersama ikut pindah dan tamu tersebut hilang.',
+  'members.addedMeta': 'Ditambahkan {date}',
+  'members.addedMetaBy': 'Ditambahkan {date} · diundang oleh {name}',
+  'members.removeMemberTitle': 'Hapus anggota',
+  'members.removeMemberBody':
+    '{name} akan kehilangan akses ke perjalanan ini. Pengeluaran dan pembagian sebelumnya tetap tersimpan dalam catatan.',
+  'members.leaveTitle': 'Keluar dari perjalanan',
+  'members.leaveBody': 'Kamu akan kehilangan akses ke perjalanan ini sampai seseorang menambahkanmu lagi.',
+  'members.leaveConfirm': 'Keluar',
+  'members.removeConfirm': 'Hapus',
+  'members.deleteGuestTitle': 'Hapus tamu',
+  'members.deleteGuestBody':
+    'Ini menghapus {name} secara permanen. Pembagian dan penugasannya dihapus dari semua tagihan, dan semua tautan saldo miliknya berhenti berfungsi. Jika ia sudah bergabung dengan platform, promosikan saja agar tidak ada yang hilang.',
+  'members.deleteGuestConfirm': 'Hapus tamu',
+  'members.promote': 'Promosikan',
+  'members.promoteTitle': 'Promosikan tamu ke akun penuh',
+  'members.promoteBody':
+    'Pilih akun yang sekarang dimiliki {name}. Setiap pembagian, pembayaran, pelunasan, dan saldo bersama milik tamu pindah ke akun itu (akun tersebut menjadi anggota jika perlu), lalu entri tamu hilang. Ini tidak dapat dibatalkan.',
+  'members.promoteSelect': 'Akun mereka',
+  'members.promoteSearch': 'Cari akun…',
+  'members.promoteConfirm': 'Gabungkan ke akun',
+  'members.promoteDone': 'Tamu dipromosikan — riwayat dipindahkan ke akun',
+  'members.promoteError': 'Gagal mempromosikan tamu',
+  'members.transferTitle': 'Alihkan kepemilikan',
+  'members.transferConfirm': 'Jadikan pemilik',
 };
 export default members;

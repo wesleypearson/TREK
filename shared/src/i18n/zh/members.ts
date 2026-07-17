@@ -33,5 +33,35 @@ const members: TranslationStrings = {
   'members.guestRenameError': '重命名访客失败',
   'members.guestRemoved': '已移除访客',
   'members.confirmRemoveGuest': '移除此访客？其分配和费用分摊也将被移除。',
+  'members.crewSection': '旅行成员',
+  'members.crewInfoTitle': '本次旅行的成员',
+  'members.crewInfoBody':
+    '成员拥有完整账户并可以查看旅行。所有者管理旅行本身；其余均遵循实例的权限设置。可从下方列表添加成员，或将加入链接发给他们——通过链接即可直接成为成员。',
+  'members.guestInfoTitle': '临时访客',
+  'members.guestInfoBody':
+    '访客是没有账户的人：可以出现在账单、共享余额、行李和任务中，但永远无法登录。当他们拥有真实账户后，请将访客升级到该账户——所有分摊、付款和共享余额都会转移，访客随之消失。',
+  'members.addedMeta': '添加于 {date}',
+  'members.addedMetaBy': '添加于 {date} · 由 {name} 邀请',
+  'members.removeMemberTitle': '移除成员',
+  'members.removeMemberBody': '{name} 将失去对本次旅行的访问权限。其过去的费用和分摊仍保留在账目中。',
+  'members.leaveTitle': '退出旅行',
+  'members.leaveBody': '你将失去对本次旅行的访问权限，直到有人再次添加你。',
+  'members.leaveConfirm': '退出',
+  'members.removeConfirm': '移除',
+  'members.deleteGuestTitle': '删除访客',
+  'members.deleteGuestBody':
+    '此操作将永久删除 {name}。其分摊和分配将从所有账单中移除，其共享余额链接也将失效。如果对方已加入平台，请改为升级访客，以免丢失任何数据。',
+  'members.deleteGuestConfirm': '删除访客',
+  'members.promote': '升级',
+  'members.promoteTitle': '将访客升级为完整账户',
+  'members.promoteBody':
+    '选择现在属于 {name} 的账户。访客的所有分摊、付款、结算和共享余额都会转移到该账户（如有需要，该账户会加入成员），随后访客条目消失。此操作无法撤销。',
+  'members.promoteSelect': '对方的账户',
+  'members.promoteSearch': '搜索账户…',
+  'members.promoteConfirm': '合并到账户',
+  'members.promoteDone': '访客已升级——历史记录已转移到该账户',
+  'members.promoteError': '升级访客失败',
+  'members.transferTitle': '转移所有权',
+  'members.transferConfirm': '设为所有者',
 };
 export default members;

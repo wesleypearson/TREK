@@ -530,11 +530,100 @@ export function deleteGuest(tripId: string | number, guestUserId: number): boole
   // host-side per-user tables + a durable own-db erasure per granted plugin — exactly
   // like a full account deletion (otherwise a deleted guest's plugin data lingers).
   erasePluginUserData(guestUserId);
-  // Deleting the guest's users row cascades its membership and every assignment join
-  // (trip_members, budget/packing/assignment links) via the ON DELETE foreign keys.
-  db.prepare('DELETE FROM users WHERE id = ? AND is_guest = 1').run(guestUserId);
+  const wipe = db.transaction(() => {
+    // paid_by_user_id has no ON DELETE action — leaving it set makes the user
+    // delete below fail the FK check when the guest is recorded as a payer.
+    db.prepare('UPDATE budget_items SET paid_by_user_id = NULL WHERE paid_by_user_id = ?').run(guestUserId);
+    // Deleting the guest's users row cascades its membership and every assignment join
+    // (trip_members, budget/packing/assignment links) via the ON DELETE foreign keys.
+    db.prepare('DELETE FROM users WHERE id = ? AND is_guest = 1').run(guestUserId);
+  });
+  wipe();
   emitUserDeleted(guestUserId); // deliver the erasure to any active plugin now
   return true;
+}
+
+/**
+ * Merge a guest into a full account: the temp person got a real login, so
+ * every trace of them — split shares, payer records, settlements, category
+ * assignments, day-assignment participation, linked expense tab — is
+ * repointed at the account, then the guest row is deleted. The target is
+ * added to the crew if not already on it, so "promote" also works when the
+ * new account joined the platform but not yet the event.
+ */
+export function promoteGuest(tripId: string | number, guestUserId: number, targetUserId: number): { merged: true } {
+  if (!guestOfTrip(tripId, guestUserId)) throw new ValidationError('Guest not found');
+  const target = db.prepare('SELECT id, is_guest FROM users WHERE id = ?').get(targetUserId) as { id: number; is_guest: number } | undefined;
+  if (!target) throw new ValidationError('Target user not found');
+  if (target.is_guest) throw new ValidationError('Target must be a full account, not another guest');
+
+  const merge = db.transaction(() => {
+    // Crew membership (skip when the target already is owner or member).
+    const trip = db.prepare('SELECT user_id FROM trips WHERE id = ?').get(tripId) as { user_id: number };
+    if (trip.user_id !== targetUserId) {
+      db.prepare('INSERT OR IGNORE INTO trip_members (trip_id, user_id, invited_by) VALUES (?, ?, NULL)').run(tripId, targetUserId);
+    }
+
+    // Split shares: where both people sit on the same line, fold the guest's
+    // share into the target's (sum custom amounts; any equal-share row wins
+    // as equal share), then repoint the remainder.
+    const overlaps = db.prepare(`
+      SELECT g.id AS guest_row, t.id AS target_row, g.amount AS g_amount, t.amount AS t_amount, g.paid AS g_paid
+      FROM budget_item_members g JOIN budget_item_members t
+        ON t.budget_item_id = g.budget_item_id AND t.user_id = ? AND g.user_id = ?
+    `).all(targetUserId, guestUserId) as { guest_row: number; target_row: number; g_amount: number | null; t_amount: number | null; g_paid: number }[];
+    for (const o of overlaps) {
+      const amount = o.g_amount != null && o.t_amount != null ? o.g_amount + o.t_amount : null;
+      db.prepare('UPDATE budget_item_members SET amount = ?, paid = MAX(paid, ?) WHERE id = ?').run(amount, o.g_paid, o.target_row);
+      db.prepare('DELETE FROM budget_item_members WHERE id = ?').run(o.guest_row);
+    }
+    db.prepare('UPDATE budget_item_members SET user_id = ? WHERE user_id = ?').run(targetUserId, guestUserId);
+
+    // Payer records and settlements follow the person; a settlement that
+    // collapses onto itself (guest settled with the target) is void.
+    // budget_item_payers first — where both paid parts of one expense, their
+    // contributions are one person's now, so they add up.
+    const payerOverlaps = db.prepare(`
+      SELECT g.id AS guest_row, t.id AS target_row, g.amount AS g_amount, t.amount AS t_amount
+      FROM budget_item_payers g JOIN budget_item_payers t
+        ON t.budget_item_id = g.budget_item_id AND t.user_id = ? AND g.user_id = ?
+    `).all(targetUserId, guestUserId) as { guest_row: number; target_row: number; g_amount: number; t_amount: number }[];
+    for (const o of payerOverlaps) {
+      db.prepare('UPDATE budget_item_payers SET amount = ? WHERE id = ?').run(o.g_amount + o.t_amount, o.target_row);
+      db.prepare('DELETE FROM budget_item_payers WHERE id = ?').run(o.guest_row);
+    }
+    db.prepare('UPDATE budget_item_payers SET user_id = ? WHERE user_id = ?').run(targetUserId, guestUserId);
+    db.prepare('UPDATE budget_items SET paid_by_user_id = ? WHERE paid_by_user_id = ?').run(targetUserId, guestUserId);
+    db.prepare('UPDATE budget_settlements SET from_user_id = ? WHERE from_user_id = ?').run(targetUserId, guestUserId);
+    db.prepare('UPDATE budget_settlements SET to_user_id = ? WHERE to_user_id = ?').run(targetUserId, guestUserId);
+    db.prepare('DELETE FROM budget_settlements WHERE from_user_id = to_user_id').run();
+
+    // Category/day assignments: keep whichever rows don't collide.
+    db.prepare('UPDATE OR IGNORE packing_category_assignees SET user_id = ? WHERE user_id = ?').run(targetUserId, guestUserId);
+    db.prepare('UPDATE OR IGNORE todo_category_assignees SET user_id = ? WHERE user_id = ?').run(targetUserId, guestUserId);
+    db.prepare('UPDATE OR IGNORE assignment_participants SET user_id = ? WHERE user_id = ?').run(targetUserId, guestUserId);
+
+    // Linked expense tab: repoint unless the target already has a live linked
+    // tab in this trip (unique per trip+member) — then the guest's tab closes.
+    const targetTab = db.prepare(
+      'SELECT id FROM expense_tabs WHERE trip_id = ? AND member_user_id = ? LIMIT 1'
+    ).get(tripId, targetUserId) as { id: number } | undefined;
+    if (targetTab) {
+      db.prepare("UPDATE expense_tabs SET revoked_at = COALESCE(revoked_at, datetime('now')) WHERE trip_id = ? AND member_user_id = ?").run(tripId, guestUserId);
+      db.prepare('UPDATE expense_tabs SET member_user_id = NULL WHERE trip_id = ? AND member_user_id = ?').run(tripId, guestUserId);
+    } else {
+      db.prepare('UPDATE OR IGNORE expense_tabs SET member_user_id = ? WHERE trip_id = ? AND member_user_id = ?').run(targetUserId, tripId, guestUserId);
+    }
+
+    // The guest row itself: remaining references cascade on user delete.
+    db.prepare('DELETE FROM users WHERE id = ? AND is_guest = 1').run(guestUserId);
+  });
+  merge();
+  // Only after the merge sticks: the guest identity is gone, so its plugin
+  // data goes the same way a deleted guest's does.
+  erasePluginUserData(guestUserId);
+  emitUserDeleted(guestUserId);
+  return { merged: true };
 }
 
 // ── ICS export ────────────────────────────────────────────────────────────

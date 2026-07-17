@@ -33,5 +33,35 @@ const members: TranslationStrings = {
   'members.guestRenameError': 'ゲストの名前変更に失敗しました',
   'members.guestRemoved': 'ゲストを削除しました',
   'members.confirmRemoveGuest': 'このゲストを削除しますか？割り当てと費用の負担分も削除されます。',
+  'members.crewSection': '旅行のメンバー',
+  'members.crewInfoTitle': 'この旅行のメンバー',
+  'members.crewInfoBody':
+    'メンバーは正式なアカウントを持ち、旅行を閲覧できます。オーナーは旅行そのものを管理し、それ以外はインスタンスの権限設定に従います。下の一覧からメンバーを追加するか、参加リンクを渡してください。リンクからはそのままメンバーになります。',
+  'members.guestInfoTitle': '一時ゲスト',
+  'members.guestInfoBody':
+    'ゲストはアカウントを持たない人です。請求・共有残高・持ち物・タスクに割り当てられますが、ログインは一切できません。本物のアカウントを取得したら、ゲストをそのアカウントに昇格してください。すべての負担分・支払い・共有残高が移り、ゲストは消えます。',
+  'members.addedMeta': '{date} に追加',
+  'members.addedMetaBy': '{date} に追加 · 招待者: {name}',
+  'members.removeMemberTitle': 'メンバーを削除',
+  'members.removeMemberBody': '{name} はこの旅行にアクセスできなくなります。過去の費用と負担分は記録に残ります。',
+  'members.leaveTitle': '旅行を退出',
+  'members.leaveBody': '誰かに再度追加されるまで、この旅行にアクセスできなくなります。',
+  'members.leaveConfirm': '退出',
+  'members.removeConfirm': '削除',
+  'members.deleteGuestTitle': 'ゲストを削除',
+  'members.deleteGuestBody':
+    '{name} を完全に削除します。負担分と割り当てはすべての請求から取り除かれ、このゲスト宛の共有残高リンクは無効になります。すでにプラットフォームに参加している場合は、何も失われないように代わりに昇格してください。',
+  'members.deleteGuestConfirm': 'ゲストを削除',
+  'members.promote': '昇格',
+  'members.promoteTitle': 'ゲストを正式なアカウントに昇格',
+  'members.promoteBody':
+    '{name} が現在使っているアカウントを選択してください。ゲストのすべての負担分・支払い・精算・共有残高がそのアカウントに移り（必要ならメンバーに加わります）、ゲストの項目は消えます。この操作は取り消せません。',
+  'members.promoteSelect': '本人のアカウント',
+  'members.promoteSearch': 'アカウントを検索…',
+  'members.promoteConfirm': 'アカウントに統合',
+  'members.promoteDone': 'ゲストを昇格しました — 履歴はアカウントに移動しました',
+  'members.promoteError': 'ゲストの昇格に失敗しました',
+  'members.transferTitle': '所有権を移譲',
+  'members.transferConfirm': 'オーナーにする',
 };
 export default members;
