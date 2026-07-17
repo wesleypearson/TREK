@@ -188,8 +188,8 @@ export default function DashboardPage(): React.ReactElement {
                   </div>
                   <button
                     className="tool-action"
-                    aria-label="Subscribe to all trips calendar"
-                    title="Subscribe to all trips"
+                    aria-label="Subscribe to all events calendar"
+                    title="Subscribe to all events"
                     onClick={() => setAllSubOpen(true)}
                     style={{ width: 38, height: 38, borderRadius: 11 }}
                   >
@@ -203,8 +203,8 @@ export default function DashboardPage(): React.ReactElement {
               {allSubOpen && (
                 <IcsSubscribeModal
                   endpoint="/api/feed/user"
-                  title="Subscribe to all trips"
-                  description="One calendar feed for all your active trips, kept in sync automatically. Excludes archived trips and trips that ended more than 90 days ago."
+                  title="Subscribe to all events"
+                  description="One calendar feed for all your active events, kept in sync automatically. Excludes archived events and events that ended more than 90 days ago."
                   onClose={() => setAllSubOpen(false)}
                 />
               )}

@@ -124,7 +124,7 @@ export default function JourneyDetailPage() {
                 }`}
               >
                 <MapPin size={13} />
-                {t('journey.detail.journeyTab') || 'Journey'}
+                {t('journey.detail.journeyTab') || 'Tour'}
               </button>
               <button
                 onClick={() => setView('gallery')}
@@ -264,7 +264,7 @@ export default function JourneyDetailPage() {
                 <div className="flex bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg overflow-hidden">
                   {(isMobile
                     ? [
-                        { id: 'timeline' as const, icon: MapPin, label: t('journey.detail.journeyTab') || 'Journey' },
+                        { id: 'timeline' as const, icon: MapPin, label: t('journey.detail.journeyTab') || 'Tour' },
                         { id: 'gallery' as const, icon: Grid, label: t('journey.share.gallery') },
                       ]
                     : [
@@ -308,7 +308,7 @@ export default function JourneyDetailPage() {
                         <BookOpen size={24} className="text-zinc-400" />
                       </div>
                       <p className="text-[15px] font-medium text-zinc-700 dark:text-zinc-300">No entries yet</p>
-                      <p className="text-[12px] text-zinc-500 mt-1">Add a trip to get started with skeleton entries</p>
+                      <p className="text-[12px] text-zinc-500 mt-1">Add an event to get started with skeleton entries</p>
                     </div>
                   )}
 

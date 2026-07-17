@@ -35,7 +35,7 @@ export function MobileAddPlaceButton({ dayId, places, assignments, onAssign, onA
           }}
         >
           <Plus size={14} />
-          Add Place
+          Add Venue
         </button>
       ) : (
         <div style={{ borderRadius: 14, border: '1px solid var(--border-primary)', background: 'var(--bg-card)', overflow: 'hidden' }}>
@@ -87,7 +87,7 @@ export function MobileAddPlaceButton({ dayId, places, assignments, onAssign, onA
               }}
             >
               <Plus size={13} />
-              Create new place
+              Create new venue
             </button>
           )}
         </div>

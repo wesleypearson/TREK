@@ -79,7 +79,7 @@ export default function AdminPage(): React.ReactElement {
             <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-amber-900">Demo Baseline</p>
-                <p className="text-xs text-amber-700">Save current state as the hourly reset point. All admin trips and settings will be preserved.</p>
+                <p className="text-xs text-amber-700">Save current state as the hourly reset point. All admin events and settings will be preserved.</p>
               </div>
               <button
                 onClick={async () => {

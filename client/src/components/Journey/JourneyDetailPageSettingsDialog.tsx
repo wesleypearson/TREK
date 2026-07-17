@@ -154,7 +154,7 @@ export function JourneySettingsDialog({ journey, onClose, onSaved, onOpenInvite,
                   <button
                     onClick={() => setUnlinkTarget({ trip_id: trip.trip_id, title: trip.title })}
                     className="w-8 h-8 rounded-lg flex-shrink-0 flex items-center justify-center bg-red-500/10 text-red-500 hover:bg-red-500/20 dark:bg-red-500/15 dark:hover:bg-red-500/25 transition-colors"
-                    title="Unlink trip"
+                    title="Unlink event"
                   >
                     <Trash2 size={14} />
                   </button>

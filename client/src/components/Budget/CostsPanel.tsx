@@ -451,7 +451,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    const safeName = (trip?.title || 'trip').replace(/[^a-zA-Z0-9À-ɏ _-]/g, '').trim()
+    const safeName = (trip?.title || 'event').replace(/[^a-zA-Z0-9À-ɏ _-]/g, '').trim()
     a.download = `costs-${safeName}.csv`
     a.click()
     URL.revokeObjectURL(url)

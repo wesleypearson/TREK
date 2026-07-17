@@ -36,7 +36,7 @@ export const ICON_LABELS: Record<string, string> = {
   Globe: 'World', Compass: 'Explore', Flag: 'Flag', Navigation: 'Navigation', Map: 'Map',
   Church: 'Church', Library: 'Museum', Store: 'Market', Home: 'Accommodation', Cross: 'Medicine',
   Heart: 'Favorite', Star: 'Top', CreditCard: 'Bank', Wifi: 'Internet',
-  Luggage: 'Luggage', Backpack: 'Backpack', Zap: 'Adventure',
+  Luggage: 'Luggage', Backpack: 'Backpack', Zap: 'Action',
 }
 
 export function getCategoryIcon(iconName: string | null | undefined): LucideIcon {

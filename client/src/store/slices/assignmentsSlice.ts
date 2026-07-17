@@ -86,7 +86,7 @@ export const createAssignmentsSlice = (set: SetState, get: GetState): Assignment
           [String(dayId)]: state.assignments[String(dayId)].filter(a => a.id !== tempId),
         }
       }))
-      throw new Error(getApiErrorMessage(err, 'Error assigning place'))
+      throw new Error(getApiErrorMessage(err, 'Error assigning venue'))
     }
   },
 
