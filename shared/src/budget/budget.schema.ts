@@ -119,6 +119,10 @@ export const budgetItemSchema = z.object({
   created_by: z.number().nullable().optional(),
   is_private: z.number().nullable().optional(),
   receipt_file_id: z.number().nullable().optional(),
+  // Venue link (custom): the places row this expense belongs to, plus the
+  // venue's name hydrated by the server when the viewer may see that venue.
+  place_id: z.number().nullable().optional(),
+  place_name: z.string().nullable().optional(),
   sort_order: z.number().optional(),
   created_at: z.string().optional(),
   members: z.array(budgetItemMemberSchema).optional(),
@@ -156,6 +160,8 @@ export const budgetCreateItemRequestSchema = z.object({
   // boolean (new UI) or the raw 0/1 the item row carries (legacy edit paths).
   is_private: z.union([z.boolean(), z.number()]).optional(),
   receipt_file_id: z.number().nullable().optional(),
+  // Link this expense to a venue (places row) in the same event.
+  place_id: z.number().nullable().optional(),
   // Link this expense to a reservation (e.g. created from a booking's
   // "add expense" flow). The server stores it on budget_items.reservation_id.
   reservation_id: z.number().optional(),
@@ -180,6 +186,8 @@ export const budgetUpdateItemRequestSchema = z.object({
   // boolean (new UI) or the raw 0/1 the item row carries (legacy edit paths).
   is_private: z.union([z.boolean(), z.number()]).optional(),
   receipt_file_id: z.number().nullable().optional(),
+  // Venue link: set to a places id to pin the expense, null to unpin.
+  place_id: z.number().nullable().optional(),
 });
 export type BudgetUpdateItemRequest = z.infer<typeof budgetUpdateItemRequestSchema>;
 

@@ -339,7 +339,8 @@ const admin: TranslationStrings = {
   'admin.plugins.perm.db:write:places': 'Add, edit and remove venues on events the acting user can edit',
   'admin.plugins.perm.db:write:days': 'Add, edit and remove days on events the acting user can edit',
   'admin.plugins.perm.db:write:itinerary': 'Assign and remove venues on days of events the acting user can edit',
-  'admin.plugins.perm.db:write:trips': 'Edit event details (title, dates, currency…) on events the acting user can edit',
+  'admin.plugins.perm.db:write:trips':
+    'Edit event details (title, dates, currency…) on events the acting user can edit',
   'admin.plugins.perm.db:write:reservations':
     'Create, edit and delete bookings (reservations) on events the acting user can edit',
   'admin.plugins.perm.db:write:accommodations':
@@ -362,7 +363,8 @@ const admin: TranslationStrings = {
   'admin.plugins.perm.hook:notification-channel': 'Deliver your notifications over an additional channel',
   'admin.plugins.perm.hook:user-data':
     'Erase or export the data it stores about a user (GDPR account deletion & data requests)',
-  'admin.plugins.perm.events:subscribe': 'React to core activity events (activity name + the event only, never the content)',
+  'admin.plugins.perm.events:subscribe':
+    'React to core activity events (activity name + the event only, never the content)',
   'admin.plugins.perm.jobs:run':
     'Run its declared background jobs on a schedule (no user context — cannot read user data)',
   'admin.plugins.perm.http:outbound': 'Make outbound requests to its declared hosts',
@@ -580,8 +582,7 @@ const admin: TranslationStrings = {
   'admin.update.reloadHint': 'Please reload the page in a few seconds.',
   'admin.tabs.permissions': 'Permissions',
   'admin.addons.catalog.journey.name': 'Tour',
-  'admin.addons.catalog.journey.description':
-    'Event tracking & tour journal with check-ins, photos, and daily stories',
+  'admin.addons.catalog.journey.description': 'Event tracking & tour journal with check-ins, photos, and daily stories',
   'admin.addons.catalog.collections.name': 'Collections',
   'admin.addons.catalog.collections.description':
     'Personal venue library — save venues across events into named lists, copy into any event, share with others',

@@ -1,13 +1,13 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt, Link2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt, Link2, MapPin } from 'lucide-react'
 import { useTripStore } from '../../store/tripStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useCanDo } from '../../store/permissionsStore'
 import { useToast } from '../shared/Toast'
 import { useTranslation } from '../../i18n'
-import { budgetApi, tripsApi } from '../../api/client'
+import { budgetApi, tripsApi, placesApi } from '../../api/client'
 import { useExchangeRates } from '../../hooks/useExchangeRates'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { formatMoney, currencyDecimals, currencyLocale } from '../../utils/formatters'
@@ -938,7 +938,14 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           )}
           {!isMobile && (
             <div className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {t(c.labelKey)}{cur !== base ? ` · ${fmt(e.total_price, cur)} → ${fmt(baseTotal(e))}` : ''}
+              {t(c.labelKey)}
+              {e.place_name ? <> · <MapPin size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> {e.place_name}</> : ''}
+              {cur !== base ? ` · ${fmt(e.total_price, cur)} → ${fmt(baseTotal(e))}` : ''}
+            </div>
+          )}
+          {isMobile && e.place_name && (
+            <div className="text-content-faint" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(12px * var(--fs-scale-body, 1))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <MapPin size={11} style={{ flexShrink: 0 }} /> {e.place_name}
             </div>
           )}
         </div>
@@ -1158,6 +1165,8 @@ export interface ExpensePrefill {
   category?: string
   amount?: number
   reservationId?: number
+  /** Pre-pin the expense to a venue (the venue card's "Add expense" flow). */
+  placeId?: number
 }
 
 export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCreateGuest, onClose, onSaved }: {
@@ -1246,6 +1255,18 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
   const [receiptFileId, setReceiptFileId] = useState<number | null>(editing?.receipt_file_id ?? null)
   const [scanning, setScanning] = useState(false)
   const scanInputRef = useRef<HTMLInputElement>(null)
+
+  // Venue link: pin the expense to one of the event's venues. The list loads
+  // lazily; only visible venues are offered (the server enforces that too).
+  const [placeId, setPlaceId] = useState<number | null>(editing?.place_id ?? prefill?.placeId ?? null)
+  const [venues, setVenues] = useState<{ id: number; name: string }[] | null>(null)
+  useEffect(() => {
+    let live = true
+    placesApi.list(tripId)
+      .then((res: { places?: { id: number; name: string }[] }) => { if (live) setVenues(res.places || []) })
+      .catch(() => { if (live) setVenues([]) })
+    return () => { live = false }
+  }, [tripId])
 
   // A personal expense is never split — ticket mode (and its derived total)
   // only applies while the expense is a group one.
@@ -1463,6 +1484,10 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
       total_price: totalNum,
       is_private: isPrivate,
       receipt_file_id: receiptFileId,
+      // Only send the venue pin when it actually changed: re-sending another
+      // member's private venue id (hydrated nameless) would read as unknown to
+      // the server and 400 the whole save.
+      ...(placeId !== (editing?.place_id ?? null) ? { place_id: placeId } : {}),
       note: isTicketMode ? 'TICKETJSON:' + JSON.stringify({
         items: ticketItems.map(item => ({
           name: item.name,
@@ -1563,6 +1588,21 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
               )
             })}
           </div>
+        </div>
+
+        <div>
+          <label className={labelCls}>{t('costs.venue')}</label>
+          <CustomSelect value={placeId != null ? String(placeId) : ''} onChange={v => setPlaceId(v ? Number(v) : null)} searchable
+            options={[
+              { value: '', label: t('costs.noVenue') },
+              // Keep a pin to a venue the picker can't offer (someone else's
+              // private venue, hydrated without a name) selectable as-is.
+              ...(placeId != null && venues != null && !venues.some(p => p.id === placeId)
+                ? [{ value: String(placeId), label: editing?.place_name || t('costs.privateVenue') }]
+                : []),
+              ...(venues || []).map(p => ({ value: String(p.id), label: p.name })),
+            ]}
+            style={{ width: '100%' }} />
         </div>
 
         {!isPrivate && (

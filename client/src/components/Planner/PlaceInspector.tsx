@@ -12,6 +12,7 @@ import { mapsApi, pluginsApi } from '../../api/client'
 import { collectionsApi } from '../../api/collections'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useAddonStore } from '../../store/addonStore'
+import { useTripStore } from '../../store/tripStore'
 import { useSaveToCollectionStore } from '../../store/saveToCollectionStore'
 import { getCategoryIcon } from '../shared/categoryIcons'
 import { useToast } from '../shared/Toast'
@@ -20,7 +21,7 @@ import { usePluginStore } from '../../store/pluginStore'
 import PluginFrame from '../Plugins/PluginFrame'
 import type { Place, Category, Day, Assignment, Reservation, TripFile, AssignmentsMap } from '../../types'
 import type { CollectionStatus } from '@trek/shared'
-import { splitReservationDateTime, formatTime } from '../../utils/formatters'
+import { splitReservationDateTime, formatTime, formatMoney } from '../../utils/formatters'
 import { formatDistance, formatElevation } from '../../utils/units'
 import { getGoogleMapsUrlForPlace } from './placeGoogleMaps'
 import { getOpenStreetMapUrlForPlace } from './placeOpenStreetMap'
@@ -127,6 +128,8 @@ interface PlaceInspectorProps {
   tripMembers?: TripMember[]
   onSetParticipants?: (assignmentId: number, dayId: number, participantIds: number[]) => void
   onUpdatePlace?: (placeId: number, data: Partial<Place>) => void
+  /** Lodge a new expense pre-pinned to this venue (budget addon; trip mode). */
+  onAddExpense?: (placeId: number) => void
   leftWidth?: number
   rightWidth?: number
   // ── Collection-mode props ──
@@ -141,6 +144,7 @@ export default function PlaceInspector({
   assignments = {}, reservations = [],
   onClose, onEdit, onDelete, onAssignToDay, onRemoveAssignment,
   files = [], onFileUpload, tripMembers = [], onSetParticipants, onUpdatePlace,
+  onAddExpense,
   leftWidth = 0, rightWidth = 0,
   collectionStatus, onCopyToTrip, onSetStatus, onRemoveFromList,
 }: PlaceInspectorProps) {
@@ -164,6 +168,31 @@ export default function PlaceInspector({
   const timeFormat = useSettingsStore(s => s.settings.time_format) || '24h'
   const distanceUnit = useSettingsStore(s => s.settings.distance_unit) || 'metric'
   const collectionsEnabled = useAddonStore(s => s.isEnabled('collections'))
+
+  // Spend at this venue (trip mode + budget addon): the venue side of the
+  // expense ↔ venue link. Loads the ledger lazily so opening a venue card
+  // works even before the Costs tab has ever been visited.
+  const budgetEnabled = useAddonStore(s => s.isEnabled('budget'))
+  const spendTripId = useTripStore(s => s.trip?.id)
+  const spendCurrency = (useTripStore(s => s.trip?.currency) || 'EUR').toUpperCase()
+  const budgetItems = useTripStore(s => s.budgetItems)
+  const loadBudgetItems = useTripStore(s => s.loadBudgetItems)
+  const [spendExpanded, setSpendExpanded] = useState(false)
+  const showSpend = mode === 'trip' && budgetEnabled && place != null
+  useEffect(() => {
+    if (showSpend && spendTripId != null) loadBudgetItems(spendTripId)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showSpend, spendTripId])
+  const placeExpenses = useMemo(
+    () => (place ? budgetItems.filter(i => i.place_id === place.id) : []),
+    [budgetItems, place],
+  )
+  // Frozen-rate conversion, same semantics as the Costs ledger: exchange_rate
+  // is "units of item currency per 1 trip currency".
+  const spendTotal = useMemo(
+    () => placeExpenses.reduce((sum, i) => sum + (i.exchange_rate ? i.total_price / i.exchange_rate : i.total_price), 0),
+    [placeExpenses],
+  )
   const openSavePicker = useSaveToCollectionStore(s => s.open)
   const saveVersion = useSaveToCollectionStore(s => s.version)
   const [savedInCollection, setSavedInCollection] = useState(false)
@@ -371,7 +400,12 @@ export default function PlaceInspector({
             setHoursExpanded={setHoursExpanded} timeFormat={timeFormat} t={t} place={place} placeFiles={placeFiles}
             onFileUpload={onFileUpload} filesExpanded={filesExpanded} setFilesExpanded={setFilesExpanded}
             fileInputRef={fileInputRef} handleFileUpload={handleFileUpload} isUploading={isUploading}
-            distanceUnit={distanceUnit} />
+            distanceUnit={distanceUnit}
+            spend={showSpend ? {
+              expenses: placeExpenses, total: spendTotal, currency: spendCurrency, locale,
+              expanded: spendExpanded, setExpanded: setSpendExpanded,
+              onAdd: onAddExpense && place ? () => onAddExpense(place.id) : undefined,
+            } : null} />
 
           {/* Extra native rows from placeDetailProvider plugins (#1429). */}
           {mode === 'trip' && providerDetails.length > 0 && (
@@ -832,7 +866,7 @@ function PlaceReservationParticipants({ selectedAssignmentId, reservations, assi
 }
 
 function PlaceExtras({ openingHours, weekdayIndex, hoursExpanded, setHoursExpanded, timeFormat, t, place,
-  placeFiles, onFileUpload, filesExpanded, setFilesExpanded, fileInputRef, handleFileUpload, isUploading, distanceUnit }: any) {
+  placeFiles, onFileUpload, filesExpanded, setFilesExpanded, fileInputRef, handleFileUpload, isUploading, distanceUnit, spend }: any) {
   return (
           <div className={`grid grid-cols-1 ${openingHours?.length > 0 ? 'sm:grid-cols-2' : ''} gap-2`}>
           {openingHours && openingHours.length > 0 && (
@@ -993,6 +1027,46 @@ function PlaceExtras({ openingHours, weekdayIndex, hoursExpanded, setHoursExpand
                       <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.original_name}</span>
                       {f.file_size && <span className="text-content-faint" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', flexShrink: 0 }}>{formatFileSize(f.file_size)}</span>}
                     </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Spend at this venue (budget addon): linked expenses + venue total */}
+          {spend && (spend.expenses.length > 0 || spend.onAdd) && (
+            <div className="bg-surface-hover" style={{ borderRadius: 10, overflow: 'hidden' }}>
+              <div style={{ display: 'flex', alignItems: 'center', padding: '8px 12px', gap: 6 }}>
+                <button
+                  onClick={() => spend.setExpanded((s: boolean) => !s)}
+                  style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'inherit', textAlign: 'left' }}
+                >
+                  <Euro size={13} color="#9ca3af" />
+                  <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 500 }}>
+                    {spend.expenses.length > 0
+                      ? t('inspector.spendCount', { count: spend.expenses.length, total: formatMoney(spend.total, spend.currency, spend.locale) })
+                      : t('inspector.spend')}
+                  </span>
+                  {spend.expanded ? <ChevronUp size={12} color="#9ca3af" /> : <ChevronDown size={12} color="#9ca3af" />}
+                </button>
+                {spend.onAdd && (
+                  <button onClick={spend.onAdd} className="text-content-muted bg-surface-tertiary"
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(11px * var(--fs-scale-caption, 1))', padding: '2px 6px', borderRadius: 6, border: 0, fontFamily: 'inherit' }}>
+                    <Plus size={11} strokeWidth={2} /> {t('inspector.addExpense')}
+                  </button>
+                )}
+              </div>
+              {spend.expanded && spend.expenses.length > 0 && (
+                <div style={{ padding: '0 12px 10px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {spend.expenses.map((i: { id: number; name: string; expense_date?: string | null; total_price: number; exchange_rate?: number }) => (
+                    <div key={i.id} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span className="text-content-secondary" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {i.name}{i.expense_date ? <span className="text-content-faint"> · {i.expense_date}</span> : null}
+                      </span>
+                      <span className="text-content" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', fontWeight: 600, flexShrink: 0 }}>
+                        {formatMoney(i.exchange_rate ? i.total_price / i.exchange_rate : i.total_price, spend.currency, spend.locale)}
+                      </span>
+                    </div>
                   ))}
                 </div>
               )}

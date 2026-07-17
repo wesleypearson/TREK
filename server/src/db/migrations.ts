@@ -3743,6 +3743,16 @@ function runMigrations(db: Database.Database): void {
       }
       db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_expense_tabs_trip_member ON expense_tabs (trip_id, member_user_id) WHERE member_user_id IS NOT NULL');
     },
+    // Expenses can be pinned to a venue (places row) so spend is visible from
+    // the venue card and a venue can be picked when lodging an expense. One
+    // venue per expense; deleting the venue keeps the expense (SET NULL).
+    () => {
+      const cols = (db.prepare('PRAGMA table_info(budget_items)').all() as { name: string }[]).map(c => c.name);
+      if (!cols.includes('place_id')) {
+        db.exec('ALTER TABLE budget_items ADD COLUMN place_id INTEGER REFERENCES places(id) ON DELETE SET NULL');
+      }
+      db.exec('CREATE INDEX IF NOT EXISTS idx_budget_items_place_id ON budget_items (place_id)');
+    },
   ];
 
   if (currentVersion < migrations.length) {
