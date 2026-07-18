@@ -27,6 +27,8 @@ vi.mock('../src/api/websocket', () => ({
   setPreReconnectHook: vi.fn(),
   addListener: vi.fn(),
   removeListener: vi.fn(),
+  addReconnectListener: vi.fn(),
+  removeReconnectListener: vi.fn(),
 }));
 
 // MSW lifecycle
