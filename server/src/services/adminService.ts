@@ -17,6 +17,7 @@ import { ADDON_IDS } from '../addons';
 import { prepareLlmAddonConfigForWrite, maskLlmAddonConfig } from './llmConfig';
 import { send as sendNotification } from './notificationService';
 import { resolveAuthToggles } from './authService';
+import { TRAVLA_RELEASES, LATEST_TRAVLA_VERSION } from './travlaReleases';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
@@ -327,17 +328,11 @@ export function saveDemoBaseline(): { error?: string; status?: number; message?:
 // ── GitHub Integration ─────────────────────────────────────────────────────
 
 export async function getGithubReleases(perPage: string = '10', page: string = '1') {
-  try {
-    const resp = await fetch(
-      `https://api.github.com/repos/mauriceboe/TREK/releases?per_page=${perPage}&page=${page}`,
-      { headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'TREK-Server' } }
-    );
-    if (!resp.ok) return [];
-    const data = await resp.json();
-    return Array.isArray(data) ? data : [];
-  } catch {
-    return [];
-  }
+  // Travla is a private fork — the "Latest updates" section shows OUR release
+  // history (local changelog), not upstream TREK's GitHub feed.
+  const per = Math.max(1, Math.min(100, parseInt(perPage) || 10));
+  const p = Math.max(1, parseInt(page) || 1);
+  return TRAVLA_RELEASES.slice((p - 1) * per, p * per);
 }
 
 interface VersionInfo {
@@ -364,45 +359,12 @@ export async function checkVersion(): Promise<VersionInfo> {
 
   const currentVersion: string = process.env.APP_VERSION || require('../../package.json').version;
   const isPrerelease = currentVersion.includes('-pre.');
-  const fallback: VersionInfo = { current: currentVersion, latest: currentVersion, update_available: false, is_docker: isDocker, is_prerelease: isPrerelease };
-  let result: VersionInfo;
-  try {
-    if (isPrerelease) {
-      // Fetch release list and find the newest prerelease
-      const resp = await fetch(
-        'https://api.github.com/repos/mauriceboe/TREK/releases?per_page=100',
-        { headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'TREK-Server' } }
-      );
-      if (!resp.ok) {
-        return fallback;
-      }
-      const data = await resp.json() as Array<{ tag_name?: string; html_url?: string; prerelease?: boolean }>;
-      const prereleases = Array.isArray(data) ? data.filter(r => r.prerelease) : [];
-      if (!prereleases.length) {
-        return fallback;
-      }
-      // Pre-compute stripped versions, then sort descending
-      const tagged = prereleases.map(r => ({ r, v: (r.tag_name || '').replace(/^v/, '') }));
-      tagged.sort((a, b) => compareVersions(b.v, a.v));
-      const latest = tagged[0].v;
-      const update_available = !!latest && latest !== currentVersion && compareVersions(latest, currentVersion) > 0;
-      result = { current: currentVersion, latest, update_available, release_url: tagged[0].r.html_url || '', is_docker: isDocker, is_prerelease: true };
-    } else {
-      const resp = await fetch(
-        'https://api.github.com/repos/mauriceboe/TREK/releases/latest',
-        { headers: { 'Accept': 'application/vnd.github.v3+json', 'User-Agent': 'TREK-Server' } }
-      );
-      if (!resp.ok) {
-        return fallback;
-      }
-      const data = await resp.json() as { tag_name?: string; html_url?: string };
-      const latest = (data.tag_name || '').replace(/^v/, '');
-      const update_available = !!latest && latest !== currentVersion && compareVersions(latest, currentVersion) > 0;
-      result = { current: currentVersion, latest, update_available, release_url: data.html_url || '', is_docker: isDocker, is_prerelease: false };
-    }
-  } catch {
-    return fallback;
-  }
+  // The fork's source of truth is the local changelog — no upstream fetch;
+  // "update available" means the running container is behind the newest entry
+  // (a deploy happened but this instance wasn't rebuilt).
+  const latest = LATEST_TRAVLA_VERSION;
+  const update_available = !!latest && latest !== currentVersion && compareVersions(latest, currentVersion) > 0;
+  const result: VersionInfo = { current: currentVersion, latest, update_available, release_url: '', is_docker: isDocker, is_prerelease: isPrerelease };
 
   _versionCache = { data: result, expiresAt: Date.now() + VERSION_CACHE_TTL };
   return result;
