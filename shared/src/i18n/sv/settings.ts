@@ -92,6 +92,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': 'Packningslista: uppgifter',
   'settings.notifyWebhook': 'Webhook meddelanden',
   'settings.notifyVersionAvailable': 'Ny version tillgänglig',
+  'settings.notifyScheduleChange': 'Tidsändringar',
   'settings.notificationPreferences.email': 'E-post',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.inapp': 'I appen',

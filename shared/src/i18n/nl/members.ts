@@ -65,5 +65,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Kan gast niet promoveren',
   'members.transferTitle': 'Eigenaarschap overdragen',
   'members.transferConfirm': 'Eigenaar maken',
+
+  'members.guestEmail': 'Contact-e-mailadres',
+  'members.guestEmailHint': 'Updates en tijdswijzigingen worden naar dit adres gemaild',
+  'members.guestEmailSaved': 'Contact-e-mailadres opgeslagen',
+  'members.guestEmailInvalid': 'Ongeldig e-mailadres',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

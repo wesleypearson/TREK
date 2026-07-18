@@ -30,10 +30,12 @@ import photos from './photos';
 import places from './places';
 import planner from './planner';
 import register from './register';
+import report from './report';
 import reservations from './reservations';
 import settings from './settings';
 import share from './share';
 import shared from './shared';
+import shifts from './shifts';
 import stats from './stats';
 import suppliers from './suppliers';
 import system_notice from './system_notice';
@@ -67,6 +69,8 @@ const locale = {
   ...map,
   ...budget,
   ...suppliers,
+  ...shifts,
+  ...report,
   ...capture,
   ...files,
   ...packing,

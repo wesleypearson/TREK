@@ -65,5 +65,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Không thể nâng cấp khách',
   'members.transferTitle': 'Chuyển quyền sở hữu',
   'members.transferConfirm': 'Đặt làm chủ sở hữu',
+
+  'members.guestEmail': 'Email liên hệ',
+  'members.guestEmailHint': 'Các cập nhật và thay đổi giờ sẽ được gửi qua email tới đây',
+  'members.guestEmailSaved': 'Đã lưu email liên hệ',
+  'members.guestEmailInvalid': 'Địa chỉ email không hợp lệ',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

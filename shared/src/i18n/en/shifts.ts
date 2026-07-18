@@ -10,7 +10,8 @@ const shifts: TranslationStrings = {
   'shifts.history': 'History',
   'shifts.totals': 'Hours per member',
   'shifts.hours': '{h}h {m}m',
-  'shifts.locationNote': 'Your location is captured once at sign-on and once at sign-off — never tracked in between. Denying it just signs you on without a position.',
+  'shifts.locationNote':
+    'Your location is captured once at sign-on and once at sign-off — never tracked in between. Denying it just signs you on without a position.',
   'shifts.locationDenied': 'Location unavailable — signed without a position',
   'shifts.alreadyOn': 'Already on shift',
   'shifts.info.title': 'How Shifts works',

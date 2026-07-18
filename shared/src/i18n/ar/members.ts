@@ -63,5 +63,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'فشلت ترقية الضيف',
   'members.transferTitle': 'نقل الملكية',
   'members.transferConfirm': 'تعيين كمالك',
+
+  'members.guestEmail': 'البريد الإلكتروني للتواصل',
+  'members.guestEmailHint': 'تُرسل التحديثات وتغييرات المواعيد إلى هذا البريد',
+  'members.guestEmailSaved': 'تم حفظ بريد التواصل',
+  'members.guestEmailInvalid': 'عنوان بريد إلكتروني غير صالح',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

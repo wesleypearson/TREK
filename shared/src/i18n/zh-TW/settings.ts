@@ -83,6 +83,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': '行李清單：分配',
   'settings.notifyWebhook': 'Webhook 通知',
   'settings.notifyVersionAvailable': '有新版本可用',
+  'settings.notifyScheduleChange': '時間變更',
   'settings.notificationPreferences.email': '電子郵件',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.inapp': '應用程式內',

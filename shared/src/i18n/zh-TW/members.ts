@@ -63,5 +63,11 @@ const members: TranslationStrings = {
   'members.promoteError': '升級訪客失敗',
   'members.transferTitle': '轉移擁有權',
   'members.transferConfirm': '設為擁有者',
+
+  'members.guestEmail': '聯絡郵箱',
+  'members.guestEmailHint': '更新與時間變更將以電子郵件寄送到此郵箱',
+  'members.guestEmailSaved': '聯絡郵箱已儲存',
+  'members.guestEmailInvalid': '電子郵件地址無效',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

@@ -63,5 +63,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Не удалось повысить гостя',
   'members.transferTitle': 'Передать права владельца',
   'members.transferConfirm': 'Назначить владельцем',
+
+  'members.guestEmail': 'Эл. почта для связи',
+  'members.guestEmailHint': 'Сюда приходят обновления и изменения времени',
+  'members.guestEmailSaved': 'Эл. почта для связи сохранена',
+  'members.guestEmailInvalid': 'Неверный адрес эл. почты',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

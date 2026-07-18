@@ -65,5 +65,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Det gick inte att uppgradera gästen',
   'members.transferTitle': 'Överför ägarskap',
   'members.transferConfirm': 'Gör till ägare',
+
+  'members.guestEmail': 'Kontakt-e-post',
+  'members.guestEmailHint': 'Uppdateringar och tidsändringar mejlas hit',
+  'members.guestEmailSaved': 'Kontakt-e-post sparad',
+  'members.guestEmailInvalid': 'Ogiltig e-postadress',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

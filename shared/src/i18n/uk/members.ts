@@ -64,5 +64,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Не вдалося підвищити гостя',
   'members.transferTitle': 'Передати право власності',
   'members.transferConfirm': 'Призначити власником',
+
+  'members.guestEmail': 'Ел. пошта для зв’язку',
+  'members.guestEmailHint': 'Сюди надходять оновлення та зміни часу',
+  'members.guestEmailSaved': 'Ел. пошту для зв’язку збережено',
+  'members.guestEmailInvalid': 'Недійсна адреса ел. пошти',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

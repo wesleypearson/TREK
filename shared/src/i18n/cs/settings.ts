@@ -243,6 +243,7 @@ const settings: TranslationStrings = {
   'settings.bookingLabelsHint': 'Zobrazuje názvy stanic / letišť na mapě. Pokud je vypnuto, zobrazí se pouze ikona.',
   'settings.mustChangePassword': 'Před pokračováním musíte změnit heslo.',
   'settings.notifyVersionAvailable': 'Nová verze k dispozici',
+  'settings.notifyScheduleChange': 'Změny časů',
   'settings.notificationPreferences.noChannels':
     'Nejsou nakonfigurovány žádné kanály oznámení. Požádejte správce o nastavení e-mailových nebo webhook oznámení.',
   'settings.webhookUrl.label': 'URL webhooku',

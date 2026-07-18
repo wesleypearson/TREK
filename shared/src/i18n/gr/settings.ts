@@ -93,6 +93,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': 'Λίστα πακεταρίσματος: αναθέσεις',
   'settings.notifyWebhook': 'Ειδοποιήσεις Webhook',
   'settings.notifyVersionAvailable': 'Διαθέσιμη νέα έκδοση',
+  'settings.notifyScheduleChange': 'Αλλαγές ώρας',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.inapp': 'Εντός εφαρμογής',

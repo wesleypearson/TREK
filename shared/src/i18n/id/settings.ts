@@ -85,6 +85,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': 'Daftar bawaan: penugasan',
   'settings.notifyWebhook': 'Notifikasi webhook',
   'settings.notifyVersionAvailable': 'Versi baru tersedia',
+  'settings.notifyScheduleChange': 'Perubahan jadwal',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.inapp': 'In-App',

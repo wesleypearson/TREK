@@ -93,6 +93,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': 'Danh sách đóng gói: phân công',
   'settings.notifyWebhook': 'Thông báo webhook',
   'settings.notifyVersionAvailable': 'Đã có phiên bản mới',
+  'settings.notifyScheduleChange': 'Thay đổi giờ',
   'settings.notificationPreferences.email': 'Email',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.inapp': 'Trong ứng dụng',

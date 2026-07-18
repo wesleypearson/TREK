@@ -63,5 +63,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'ゲストの昇格に失敗しました',
   'members.transferTitle': '所有権を移譲',
   'members.transferConfirm': 'オーナーにする',
+
+  'members.guestEmail': '連絡先メールアドレス',
+  'members.guestEmailHint': '更新や時間の変更はこのアドレスにメールで届きます',
+  'members.guestEmailSaved': '連絡先メールアドレスを保存しました',
+  'members.guestEmailInvalid': 'メールアドレスが正しくありません',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

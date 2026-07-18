@@ -242,6 +242,7 @@ const settings: TranslationStrings = {
   'settings.bookingLabels': 'Підписи маршрутів бронювань',
   'settings.bookingLabelsHint': 'Показує назви станцій / аеропортів на карті. Якщо вимкнено, показується лише значок.',
   'settings.notifyVersionAvailable': 'Доступна нова версія',
+  'settings.notifyScheduleChange': 'Зміни часу',
   'settings.notificationPreferences.noChannels':
     'Канали сповіщень не налаштовані. Попросіть адміністратора налаштувати сповіщення електронною поштою або через webhook.',
   'settings.webhookUrl.label': 'URL вебхука',

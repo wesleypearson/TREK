@@ -65,5 +65,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Gast konnte nicht hochgestuft werden',
   'members.transferTitle': 'Eigentümerschaft übertragen',
   'members.transferConfirm': 'Zum Eigentümer machen',
+
+  'members.guestEmail': 'Kontakt-E-Mail',
+  'members.guestEmailHint': 'Updates und Zeitänderungen gehen per E-Mail an diese Adresse',
+  'members.guestEmailSaved': 'Kontakt-E-Mail gespeichert',
+  'members.guestEmailInvalid': 'Ungültige E-Mail-Adresse',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

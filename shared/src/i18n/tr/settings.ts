@@ -87,6 +87,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': 'Paket listesi: atamalar',
   'settings.notifyWebhook': 'Webhook bildirimleri',
   'settings.notifyVersionAvailable': 'Yeni sürüm mevcut',
+  'settings.notifyScheduleChange': 'Saat değişiklikleri',
   'settings.notificationPreferences.email': 'E-posta',
   'settings.notificationPreferences.webhook': 'Web kancası',
   'settings.notificationPreferences.inapp': 'Uygulama içi',

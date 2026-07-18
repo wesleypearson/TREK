@@ -15,6 +15,10 @@ const en: NotificationLocale = {
       title: `Đặt chổ mới: ${p.booking}`,
       body: `${p.actor} đã thêm mới một ${p.type} "${p.booking}" vào "${p.trip}".`,
     }),
+    schedule_change: (p) => ({
+      title: `Thay đổi giờ: ${p.trip}`,
+      body: `${p.count} thay đổi giờ trong "${p.trip}":\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Nhắc nhở chuyến đi: ${p.trip}`,
       body: `Hành trình "${p.trip}" sắp bất đầu!`,

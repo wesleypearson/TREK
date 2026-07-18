@@ -15,6 +15,10 @@ const en: NotificationLocale = {
       title: `Ny bokning: ${p.booking}`,
       body: `${p.actor} la till en ny ${p.type} "${p.booking}" till "${p.trip}".`,
     }),
+    schedule_change: (p) => ({
+      title: `Tider ändrade: ${p.trip}`,
+      body: `${p.count} tidsändring(ar) i "${p.trip}":\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Resepåminnelse: ${p.trip}`,
       body: `Din resa "${p.trip}" kommer snart!`,

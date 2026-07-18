@@ -84,6 +84,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': 'قائمة الأمتعة: التعيينات',
   'settings.notifyWebhook': 'إشعارات Webhook',
   'settings.notifyVersionAvailable': 'إصدار جديد متاح',
+  'settings.notifyScheduleChange': 'تغييرات المواعيد',
   'settings.notificationPreferences.noChannels':
     'لم يتم تكوين قنوات إشعارات. اطلب من المسؤول إعداد إشعارات البريد الإلكتروني أو webhook.',
   'settings.webhookUrl.label': 'رابط Webhook',

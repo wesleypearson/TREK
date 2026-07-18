@@ -231,6 +231,7 @@ const settings: TranslationStrings = {
   'settings.bookingLabels': '预订路线标签',
   'settings.bookingLabelsHint': '在地图上显示车站 / 机场名称。关闭时仅显示图标。',
   'settings.notifyVersionAvailable': '有新版本可用',
+  'settings.notifyScheduleChange': '时间变更',
   'settings.notificationPreferences.noChannels': '未配置通知渠道。请联系管理员设置电子邮件或 Webhook 通知。',
   'settings.webhookUrl.label': 'Webhook URL',
   'settings.webhookUrl.placeholder': 'https://discord.com/api/webhooks/...',

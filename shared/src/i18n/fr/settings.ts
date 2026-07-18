@@ -252,6 +252,7 @@ const settings: TranslationStrings = {
   'settings.bookingLabelsHint':
     "Affiche les noms des gares / aéroports sur la carte. Si désactivé, seule l'icône est affichée.",
   'settings.notifyVersionAvailable': 'Nouvelle version disponible',
+  'settings.notifyScheduleChange': "Changements d'horaires",
   'settings.notificationPreferences.noChannels':
     "Aucun canal de notification n'est configuré. Demandez à un administrateur de configurer les notifications par e-mail ou webhook.",
   'settings.webhookUrl.label': 'URL du webhook',

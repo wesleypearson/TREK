@@ -63,5 +63,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Hosta se nepodařilo povýšit',
   'members.transferTitle': 'Převést vlastnictví',
   'members.transferConfirm': 'Nastavit jako vlastníka',
+
+  'members.guestEmail': 'Kontaktní e-mail',
+  'members.guestEmailHint': 'Novinky a změny časů se posílají e-mailem na tuto adresu',
+  'members.guestEmailSaved': 'Kontaktní e-mail uložen',
+  'members.guestEmailInvalid': 'Neplatná e-mailová adresa',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;
