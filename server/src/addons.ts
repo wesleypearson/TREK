@@ -12,6 +12,7 @@ export const ADDON_IDS = {
   COLLECTIONS: 'collections',
   SUPPLIERS: 'suppliers',
   CAPTURE: 'capture',
+  SHIFTS: 'shifts',
 } as const;
 
 export type AddonId = typeof ADDON_IDS[keyof typeof ADDON_IDS];

@@ -30,6 +30,8 @@ import { AirtrailModule } from './integrations/airtrail.module';
 import { JourneyModule } from './journey/journey.module';
 import { CollectionsModule } from './collections/collections.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
+import { ShiftsModule } from './shifts/shifts.module';
+import { ReportsModule } from './reports/reports.module';
 import { ShareModule } from './share/share.module';
 import { TripInviteModule } from './trip-invite/trip-invite.module';
 import { ExpenseTabsModule } from './expense-tabs/expense-tabs.module';
@@ -55,7 +57,7 @@ import { IdempotencyInterceptor } from './common/idempotency.interceptor';
  * migrated.
  */
 @Module({
-  imports: [DatabaseModule, WeatherModule, HelpModule, AirportsModule, ConfigModule, SystemNoticesModule, MapsModule, CategoriesModule, TagsModule, NotificationsModule, AtlasModule, VacayModule, PackingModule, TodoModule, BudgetModule, ReservationsModule, DaysModule, AssignmentsModule, PlacesModule, TripsModule, CollabModule, FilesModule, PhotosModule, MemoriesModule, AirtrailModule, JourneyModule, CollectionsModule, SuppliersModule, ShareModule, TripInviteModule, ExpenseTabsModule, TransitModule, FeedsModule, SettingsModule, BackupModule, AuthModule, OidcModule, OauthModule, AdminModule, AddonsModule, PluginsModule, BookingImportModule, UpdatesModule],
+  imports: [DatabaseModule, WeatherModule, HelpModule, AirportsModule, ConfigModule, SystemNoticesModule, MapsModule, CategoriesModule, TagsModule, NotificationsModule, AtlasModule, VacayModule, PackingModule, TodoModule, BudgetModule, ReservationsModule, DaysModule, AssignmentsModule, PlacesModule, TripsModule, CollabModule, FilesModule, PhotosModule, MemoriesModule, AirtrailModule, JourneyModule, CollectionsModule, SuppliersModule, ShiftsModule, ReportsModule, ShareModule, TripInviteModule, ExpenseTabsModule, TransitModule, FeedsModule, SettingsModule, BackupModule, AuthModule, OidcModule, OauthModule, AdminModule, AddonsModule, PluginsModule, BookingImportModule, UpdatesModule],
   controllers: [HealthController],
   providers: [
     HealthService,
