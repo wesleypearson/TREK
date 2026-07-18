@@ -20,6 +20,7 @@ import AtlasPage from './pages/AtlasPage'
 import JourneyPage from './pages/JourneyPage'
 import JourneyDetailPage from './pages/JourneyDetailPage'
 import CollectionsPage from './pages/CollectionsPage'
+import SuppliersPage from './pages/SuppliersPage'
 import JourneyPublicPage from './pages/JourneyPublicPage'
 import SharedTripPage from './pages/SharedTripPage'
 import PublicTabPage from './pages/PublicTabPage'
@@ -345,6 +346,14 @@ export default function App() {
           element={
             <ProtectedRoute addonId="collections">
               <CollectionsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/suppliers"
+          element={
+            <ProtectedRoute addonId="suppliers">
+              <SuppliersPage />
             </ProtectedRoute>
           }
         />

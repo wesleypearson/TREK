@@ -601,6 +601,91 @@ export const addonsApi = {
   enabled: () => apiClient.get('/addons').then(r => r.data),
 }
 
+// ── Suppliers (custom addon): the instance-wide vendor book / CRM ────────────
+// One row per business, shared across every event; auto-created by receipt
+// scans, enriched via Google Places + AI, always hand-editable.
+
+/** A supplier row as stored — what create/update answer with (no aggregates). */
+export interface Supplier {
+  id: number
+  name: string
+  category: string | null
+  phone: string | null
+  email: string | null
+  website: string | null
+  address: string | null
+  lat: number | null
+  lng: number | null
+  google_place_id: string | null
+  ai_summary: string | null
+  notes: string | null
+  source: string
+  enriched_at: string | null
+}
+
+/** A list row: the supplier plus its cross-event interaction aggregates. */
+export interface SupplierListEntry extends Supplier {
+  expense_count: number
+  venue_count: number
+  event_count: number
+  last_interaction: string | null
+}
+
+export interface SupplierExpense {
+  id: number
+  trip_id: number
+  trip_title: string
+  name: string
+  total_price: number
+  currency: string | null
+  expense_date: string | null
+  created_at: string
+  receipt_file_id: number | null
+}
+
+export interface SupplierVenue {
+  id: number
+  trip_id: number
+  trip_title: string
+  name: string
+}
+
+export interface SupplierSpendByEvent {
+  trip_id: number
+  trip_title: string
+  currency: string | null
+  total: number
+  count: number
+}
+
+/** The detail view: full interaction history across every event. */
+export interface SupplierDetail extends SupplierListEntry {
+  expenses: SupplierExpense[]
+  venues: SupplierVenue[]
+  spendByEvent: SupplierSpendByEvent[]
+}
+
+/** The hand-editable subset — everything else is enrichment- or scan-owned. */
+export type SupplierEditableFields = Partial<
+  Record<'name' | 'category' | 'phone' | 'email' | 'website' | 'address' | 'notes', string | null>
+>
+
+export const suppliersApi = {
+  list: (q?: string): Promise<{ suppliers: SupplierListEntry[] }> =>
+    apiClient.get('/addons/suppliers', { params: q?.trim() ? { q } : undefined }).then(r => r.data),
+  create: (fields: { name: string } & SupplierEditableFields): Promise<{ supplier: Supplier }> =>
+    apiClient.post('/addons/suppliers', fields).then(r => r.data),
+  detail: (id: number): Promise<{ supplier: SupplierDetail }> =>
+    apiClient.get(`/addons/suppliers/${id}`).then(r => r.data),
+  update: (id: number, fields: SupplierEditableFields): Promise<{ supplier: Supplier }> =>
+    apiClient.put(`/addons/suppliers/${id}`, fields).then(r => r.data),
+  remove: (id: number): Promise<{ success: boolean }> =>
+    apiClient.delete(`/addons/suppliers/${id}`).then(r => r.data),
+  // Re-run Google Places + AI enrichment (gap-fill only); answers the fresh detail.
+  enrich: (id: number): Promise<{ supplier: SupplierDetail }> =>
+    apiClient.post(`/addons/suppliers/${id}/enrich`).then(r => r.data),
+}
+
 /** A host-rendered column/action a plugin contributes into a native planner view
  * (reservations/places/day) via the tableContributor hook. Every field is bounded +
  * normalized server-side; a column url is guaranteed http/https/mailto. */
