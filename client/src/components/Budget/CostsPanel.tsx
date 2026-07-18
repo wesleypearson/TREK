@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt, Link2, MapPin, HelpCircle } from 'lucide-react'
+import { ArrowDown, ArrowUp, BarChart3, Plus, Search, ArrowRight, ArrowLeftRight, Camera, Check, RotateCcw, Pencil, Trash2, AlertCircle, Download, Loader2, Lock, Receipt, Link2, MapPin, HelpCircle, Store } from 'lucide-react'
 import { useTripStore } from '../../store/tripStore'
 import { useAuthStore } from '../../store/authStore'
 import { useSettingsStore } from '../../store/settingsStore'
@@ -594,7 +594,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         {/* expenses */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16, gap: 12, flexWrap: 'wrap' }}>
-            <h3 className="text-content" style={{ fontSize: 'calc(24px * var(--fs-scale-title, 1))', fontWeight: 600, letterSpacing: '-0.025em', margin: 0 }}>
+            <h3 className="text-content tour-title" style={{ fontSize: 'calc(20px * var(--fs-scale-title, 1))', margin: 0 }}>
               {t('costs.expenses')}
             </h3>
             <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -693,7 +693,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
               <button onClick={() => setResetOpen(false)} className="text-content-muted border border-edge" style={{ padding: '8px 16px', borderRadius: 10, background: 'none', fontSize: 'calc(13px * var(--fs-scale-body, 1))', cursor: 'pointer', fontFamily: 'inherit' }}>{t('common.cancel')}</button>
               <button onClick={handleReset} disabled={resetting}
-                className="bg-[#dc2626] text-white" style={{ padding: '8px 18px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: resetting ? 0.6 : 1 }}>
+                className="bg-[var(--danger)] text-white" style={{ padding: '8px 18px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: resetting ? 0.6 : 1 }}>
                 {t('costs.resetConfirm')}
               </button>
             </div>
@@ -759,7 +759,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
     const flows = settlement?.flows || []
     if (flows.length === 0) return (
       <div style={{ textAlign: 'center', padding: '14px 8px' }}>
-        <div style={{ width: 46, height: 46, borderRadius: '50%', margin: '0 auto 10px', display: 'grid', placeItems: 'center', background: 'rgba(22,163,74,0.12)', color: '#16a34a' }}><Check size={22} /></div>
+        <div style={{ width: 46, height: 46, borderRadius: '50%', margin: '0 auto 10px', display: 'grid', placeItems: 'center', background: 'rgba(22,163,74,0.12)', color: 'var(--success)' }}><Check size={22} /></div>
         <div className="text-content" style={{ fontSize: 'calc(14.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{t('costs.everyoneSquare')}</div>
         <div className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', marginTop: 2 }}>{t('costs.nothingOutstanding')}</div>
       </div>
@@ -804,16 +804,16 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         {/* Owe / Owed */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
           <div className={cardCls} style={{ borderRadius: 18, padding: 16 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', marginBottom: 10, background: '#dc262622', color: '#dc2626' }}><ArrowDown size={17} /></div>
+            <div style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', marginBottom: 10, background: '#dc262622', color: 'var(--danger)' }}><ArrowDown size={17} /></div>
             <div className="text-content" style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{t('costs.youOwe')}</div>
             <div className="text-content-faint" style={{ fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))' }}>{t('costs.youOweSub')}</div>
-            <div style={{ fontSize: 'calc(27px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1, marginTop: 12, display: 'flex', alignItems: 'baseline', color: '#dc2626' }}>{bigMoney(totals.owe, 16, 'var(--c-ink3)')}</div>
+            <div style={{ fontSize: 'calc(27px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1, marginTop: 12, display: 'flex', alignItems: 'baseline', color: 'var(--danger)' }}>{bigMoney(totals.owe, 16, 'var(--c-ink3)')}</div>
           </div>
           <div className={cardCls} style={{ borderRadius: 18, padding: 16 }}>
-            <div style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', marginBottom: 10, background: '#16a34a22', color: '#16a34a' }}><ArrowUp size={17} /></div>
+            <div style={{ width: 34, height: 34, borderRadius: 10, display: 'grid', placeItems: 'center', marginBottom: 10, background: '#16a34a22', color: 'var(--success)' }}><ArrowUp size={17} /></div>
             <div className="text-content" style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{t('costs.youreOwed')}</div>
             <div className="text-content-faint" style={{ fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))' }}>{t('costs.youreOwedSub')}</div>
-            <div style={{ fontSize: 'calc(27px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1, marginTop: 12, display: 'flex', alignItems: 'baseline', color: '#16a34a' }}>{bigMoney(totals.owed, 16, 'var(--c-ink3)')}</div>
+            <div style={{ fontSize: 'calc(27px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', lineHeight: 1, marginTop: 12, display: 'flex', alignItems: 'baseline', color: 'var(--success)' }}>{bigMoney(totals.owed, 16, 'var(--c-ink3)')}</div>
           </div>
         </div>
 
@@ -963,12 +963,15 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
             <div className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {t(c.labelKey)}
               {e.place_name ? <> · <MapPin size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> {e.place_name}</> : ''}
+              {e.supplier_name ? <> · <Store size={11} style={{ display: 'inline', verticalAlign: '-1px' }} /> {e.supplier_name}</> : ''}
               {cur !== base ? ` · ${fmt(e.total_price, cur)} → ${fmt(baseTotal(e))}` : ''}
             </div>
           )}
-          {isMobile && e.place_name && (
+          {isMobile && (e.place_name || e.supplier_name) && (
             <div className="text-content-faint" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(12px * var(--fs-scale-body, 1))', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              <MapPin size={11} style={{ flexShrink: 0 }} /> {e.place_name}
+              {e.place_name && <><MapPin size={11} style={{ flexShrink: 0 }} /> {e.place_name}</>}
+              {e.place_name && e.supplier_name && <span> · </span>}
+              {e.supplier_name && <><Store size={11} style={{ flexShrink: 0 }} /> {e.supplier_name}</>}
             </div>
           )}
         </div>
@@ -976,7 +979,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
             <div className="text-content" style={{ fontSize: 'calc(18px * var(--fs-scale-subtitle, 1))', fontWeight: 600 }}>{fmt(baseTotal(e))}</div>
             {!isUnfinished && (e.members || []).length > 0 && Math.abs(net) > 0.01 && (
-              <div style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', marginTop: 2, fontWeight: 500, whiteSpace: 'nowrap', color: net > 0 ? '#16a34a' : '#dc2626' }}>
+              <div style={{ fontSize: 'calc(12px * var(--fs-scale-body, 1))', marginTop: 2, fontWeight: 500, whiteSpace: 'nowrap', color: net > 0 ? 'var(--success)' : 'var(--danger)' }}>
                 {net > 0 ? t('costs.youLent', { amount: fmt(net) }) : t('costs.youBorrowed', { amount: fmt(-net) })}
               </div>
             )}
@@ -985,7 +988,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
             <div className="exp-actions" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
               <button title={t('common.edit')} onClick={() => { setEditing(e); setModalOpen(true) }} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer' }}><Pencil size={15} /></button>
               <button title={t('costs.addToTab')} onClick={() => setTabsModal({ item: e })} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer' }}><Link2 size={15} /></button>
-              <button title={t('common.delete')} onClick={() => handleDelete(e.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer', color: '#dc2626' }}><Trash2 size={15} /></button>
+              <button title={t('common.delete')} onClick={() => handleDelete(e.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer', color: 'var(--danger)' }}><Trash2 size={15} /></button>
             </div>
           )}
         </div>
@@ -998,7 +1001,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
   function SettlementRow({ s }: { s: Settlement }) {
     return (
       <div className="bg-surface-card border border-edge exp-row" style={{ display: 'grid', gridTemplateColumns: '46px 1fr auto', gap: 16, alignItems: 'center', borderRadius: 18, padding: '16px 20px' }}>
-        <span style={{ width: 46, height: 46, borderRadius: 13, display: 'grid', placeItems: 'center', background: 'rgba(22,163,74,0.12)', color: '#16a34a' }}><ArrowLeftRight size={21} /></span>
+        <span style={{ width: 46, height: 46, borderRadius: 13, display: 'grid', placeItems: 'center', background: 'rgba(22,163,74,0.12)', color: 'var(--success)' }}><ArrowLeftRight size={21} /></span>
         <div style={{ minWidth: 0 }}>
           <div className="text-content" style={{ fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', fontWeight: 600, marginBottom: 6 }}>{t('costs.payment')}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, minWidth: 0 }} title={`${personName(s.from_user_id)} → ${personName(s.to_user_id)}`}>
@@ -1011,7 +1014,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
           {canEdit && (
             <div className="exp-actions" style={{ display: 'flex', flexDirection: 'column', gap: 6, flexShrink: 0 }}>
               <button title={t('common.edit')} onClick={() => setEditingSettlement(s)} className="bg-surface-secondary border border-edge text-content-muted" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer' }}><Pencil size={15} /></button>
-              <button title={t('costs.undo')} onClick={() => undoSettlement(s.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer', color: '#dc2626' }}><RotateCcw size={15} /></button>
+              <button title={t('costs.undo')} onClick={() => undoSettlement(s.id)} className="bg-surface-secondary border border-edge" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 34, height: 34, borderRadius: 999, cursor: 'pointer', color: 'var(--danger)' }}><RotateCcw size={15} /></button>
             </div>
           )}
         </div>
@@ -1034,11 +1037,11 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
                 <div className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{personName(r.user_id)}</div>
                 <div className="bg-surface-secondary" style={{ height: 5, borderRadius: 3, marginTop: 5, position: 'relative', overflow: 'hidden' }}>
                   <span style={{ position: 'absolute', left: '50%', top: -1, bottom: -1, width: 1, background: 'var(--border-primary)' }} />
-                  {pos && <span style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: pct / 2 + '%', background: '#16a34a', borderRadius: 3 }} />}
-                  {neg && <span style={{ position: 'absolute', right: '50%', top: 0, bottom: 0, width: pct / 2 + '%', background: '#dc2626', borderRadius: 3 }} />}
+                  {pos && <span style={{ position: 'absolute', left: '50%', top: 0, bottom: 0, width: pct / 2 + '%', background: 'var(--success)', borderRadius: 3 }} />}
+                  {neg && <span style={{ position: 'absolute', right: '50%', top: 0, bottom: 0, width: pct / 2 + '%', background: 'var(--danger)', borderRadius: 3 }} />}
                 </div>
               </div>
-              <div style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, textAlign: 'right', color: pos ? '#16a34a' : neg ? '#dc2626' : 'var(--text-faint)' }}>
+              <div style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, textAlign: 'right', color: pos ? 'var(--success)' : neg ? 'var(--danger)' : 'var(--text-faint)' }}>
                 {pos ? '+' + fmt(r.balance) : neg ? '−' + fmt(-r.balance) : fmt(0)}
               </div>
             </div>
@@ -1079,7 +1082,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
 // ── pure subcomponents ─────────────────────────────────────────────────────
 function SummaryCard({ label, sub, amount, currency, locale, icon, foot, tone }: { label: string; sub: string; amount: number; currency: string; locale: string; icon: React.ReactNode; foot: React.ReactNode; tone: 'owe' | 'owed' | 'total' | 'unfinished' }) {
   const total = tone === 'total'
-  const accent = tone === 'owe' ? '#dc2626' : tone === 'owed' ? '#16a34a' : tone === 'unfinished' ? '#d97706' : undefined
+  const accent = tone === 'owe' ? 'var(--danger)' : tone === 'owed' ? 'var(--success)' : tone === 'unfinished' ? '#d97706' : undefined
   const muted = total ? 'rgba(255,255,255,0.55)' : 'var(--text-faint)'
   // formatToParts keeps the design's "big integer + muted symbol/decimals" styling
   // while letting Intl place the symbol and pick separators per locale + currency.
@@ -1090,8 +1093,9 @@ function SummaryCard({ label, sub, amount, currency, locale, icon, foot, tone }:
   } catch { parts = null }
   const big = (p: Intl.NumberFormatPart) => p.type === 'integer' || p.type === 'group' || p.type === 'minusSign'
   return (
-    <div className={total ? '' : 'bg-surface-card border border-edge'}
-      style={{ borderRadius: 22, padding: '26px 28px', position: 'relative', overflow: 'hidden', ...(total ? { background: 'linear-gradient(135deg,#1f2937,#111827)', color: '#fff' } : {}) }}>
+    <div className={total ? 'tour-gradient' : 'bg-surface-card border border-edge'}
+      style={{ borderRadius: 22, padding: '26px 28px', position: 'relative', overflow: 'hidden', ...(total ? { color: '#fff' } : {}) }}>
+      {total && <div className="tour-halftone" />}
       <div style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
         <span style={{ width: 36, height: 36, borderRadius: 11, display: 'grid', placeItems: 'center', background: total ? 'rgba(255,255,255,0.12)' : (accent + '22'), color: total ? '#fff' : accent }}>{icon}</span>
         <div>
@@ -1160,7 +1164,7 @@ function SettlementModal({ tripId, people, me, editing, currency, onClose, onSav
       footer={
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
           <button onClick={onClose} className="text-content-muted border border-edge" style={{ padding: '8px 16px', borderRadius: 10, background: 'none', fontSize: 'calc(13px * var(--fs-scale-body, 1))', cursor: 'pointer', fontFamily: 'inherit' }}>{t('common.cancel')}</button>
-          <button onClick={save} disabled={!valid || saving} className="bg-[var(--text-primary)] text-[var(--bg-primary)]" style={{ padding: '8px 20px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: !valid || saving ? 0.5 : 1 }}>{editing ? t('common.save') : t('costs.addPayment')}</button>
+          <button onClick={save} disabled={!valid || saving} className="bg-[var(--text-primary)] text-[var(--bg-primary)]" style={{ padding: '8px 20px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: !valid || saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: !valid || saving ? 0.5 : 1 }}>{editing ? t('common.save') : t('costs.addPayment')}</button>
         </div>
       }>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -1563,9 +1567,12 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
   return (
     <Modal isOpen onClose={onClose} title={editing ? t('costs.editExpense') : t('costs.addExpense')} size="2xl"
       footer={
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          {!valid && !saving && (
+            <span className="text-content-faint" style={{ fontSize: 'calc(12px * var(--fs-scale-caption, 1))', marginRight: 'auto' }}>{t('costs.saveHint')}</span>
+          )}
           <button onClick={onClose} className="text-content-muted border border-edge" style={{ padding: '8px 16px', borderRadius: 10, background: 'none', fontSize: 'calc(13px * var(--fs-scale-body, 1))', cursor: 'pointer', fontFamily: 'inherit' }}>{t('common.cancel')}</button>
-          <button onClick={save} disabled={!valid || saving} className="bg-[var(--text-primary)] text-[var(--bg-primary)]" style={{ padding: '8px 20px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', opacity: !valid || saving ? 0.5 : 1 }}>{editing ? t('common.save') : t('costs.addExpense')}</button>
+          <button onClick={save} disabled={!valid || saving} className="bg-[var(--text-primary)] text-[var(--bg-primary)]" style={{ padding: '8px 20px', borderRadius: 10, border: 0, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 600, cursor: !valid || saving ? 'not-allowed' : 'pointer', fontFamily: 'inherit', opacity: !valid || saving ? 0.5 : 1 }}>{editing ? t('common.save') : t('costs.addExpense')}</button>
         </div>
       }>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -1585,9 +1592,44 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
             style={{ display: 'none' }}
             onChange={e => { const fs = Array.from(e.target.files || []); e.target.value = ''; if (fs.length) handleScanPick(fs) }} />
         </div>
+
+        {/* Who paid + where: the two answers the crew knows before anything
+            else, so they lead the form (venue goes full-width on a personal
+            expense, where the payer question doesn't exist). */}
+        <div style={{ display: 'grid', gridTemplateColumns: isPrivate ? '1fr' : '1fr 1fr', gap: 10 }}>
+          {!isPrivate && (
+            <div style={{ minWidth: 0 }}>
+              <label className={labelCls}>{t('costs.whoPaid')}</label>
+              <CustomSelect value={String(payerId)} onChange={v => setPayerId(Number(v))}
+                options={[
+                  { value: '0', label: t('costs.noOnePaid') || 'Nobody (planning entry)' },
+                  ...people.map(p => ({ value: String(p.id), label: p.id === me ? t('costs.you') : p.username }))
+                ]}
+                style={{ width: '100%' }} />
+            </div>
+          )}
+          <div style={{ minWidth: 0 }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
+              <label className={labelCls}>{t('costs.venue')}</label>
+              <InfoDot title={t('costs.info.venueTitle')} size={13} style={{ margin: '-4px 0 2px' }}><p style={{ margin: 0 }}>{t('costs.info.venueBody')}</p></InfoDot>
+            </span>
+            <CustomSelect value={placeId != null ? String(placeId) : ''} onChange={v => setPlaceId(v ? Number(v) : null)} searchable
+              options={[
+                { value: '', label: t('costs.noVenue') },
+                // Keep a pin to a venue the picker can't offer (someone else's
+                // private venue, hydrated without a name) selectable as-is.
+                ...(placeId != null && venues != null && !venues.some(p => p.id === placeId)
+                  ? [{ value: String(placeId), label: editing?.place_name || t('costs.privateVenue') }]
+                  : []),
+                ...(venues || []).map(p => ({ value: String(p.id), label: p.name })),
+              ]}
+              style={{ width: '100%' }} />
+          </div>
+        </div>
+
         <div>
           <label className={labelCls}>{t('costs.whatFor')}</label>
-          <input value={name} onChange={e => setName(e.target.value)} placeholder={t('costs.namePlaceholder')} className={inputCls} style={{ borderRadius: 10, padding: '11px 13px', fontSize: 'calc(14px * var(--fs-scale-body, 1))', outline: 'none' }} />
+          <input value={name} onChange={e => setName(e.target.value)} enterKeyHint="next" placeholder={t('costs.namePlaceholder')} className={inputCls} style={{ borderRadius: 10, padding: '11px 13px', fontSize: 'calc(14px * var(--fs-scale-body, 1))', outline: 'none' }} />
         </div>
 
         <div>
@@ -1640,24 +1682,6 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
         </div>
 
         <div>
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 2 }}>
-            <label className={labelCls}>{t('costs.venue')}</label>
-            <InfoDot title={t('costs.info.venueTitle')} size={13} style={{ margin: '-4px 0 2px' }}><p style={{ margin: 0 }}>{t('costs.info.venueBody')}</p></InfoDot>
-          </span>
-          <CustomSelect value={placeId != null ? String(placeId) : ''} onChange={v => setPlaceId(v ? Number(v) : null)} searchable
-            options={[
-              { value: '', label: t('costs.noVenue') },
-              // Keep a pin to a venue the picker can't offer (someone else's
-              // private venue, hydrated without a name) selectable as-is.
-              ...(placeId != null && venues != null && !venues.some(p => p.id === placeId)
-                ? [{ value: String(placeId), label: editing?.place_name || t('costs.privateVenue') }]
-                : []),
-              ...(venues || []).map(p => ({ value: String(p.id), label: p.name })),
-            ]}
-            style={{ width: '100%' }} />
-        </div>
-
-        <div>
           <label className={labelCls}>{t('costs.supplier')}</label>
           <CustomSelect value={supplierId != null ? String(supplierId) : ''} onChange={v => setSupplierId(v ? Number(v) : null)} searchable
             options={[
@@ -1669,18 +1693,6 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
             ]}
             style={{ width: '100%' }} />
         </div>
-
-        {!isPrivate && (
-        <div>
-          <label className={labelCls}>{t('costs.whoPaid')}</label>
-          <CustomSelect value={String(payerId)} onChange={v => setPayerId(Number(v))}
-            options={[
-              { value: '0', label: t('costs.noOnePaid') || 'Nobody (planning entry)' },
-              ...people.map(p => ({ value: String(p.id), label: p.id === me ? t('costs.you') : p.username }))
-            ]}
-            style={{ width: '100%' }} />
-        </div>
-        )}
 
         {canTogglePrivate && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignSelf: 'flex-start' }}>
@@ -1773,7 +1785,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                           style={{ width: '100%', minWidth: 0, border: 0, background: 'none', outline: 'none', fontSize: 13, fontWeight: 600, textAlign: 'right', padding: '6px 0' }}
                         />
                       </div>
-                      <button type="button" onClick={() => handleRemoveItem(item.id)} className="text-content-muted" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 4, flexShrink: 0 }}>
+                      <button type="button" onClick={() => handleRemoveItem(item.id)} aria-label={t('common.delete')} className="text-content-muted" style={{ background: 'none', border: 0, cursor: 'pointer', minWidth: 34, minHeight: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, margin: '-6px 0' }}>
                         <Trash2 size={15} />
                       </button>
                     </div>
@@ -1792,7 +1804,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                             type="button"
                             onClick={() => setTicketItems(prev => prev.map(it => it.id === item.id ? { ...it, participants: all ? new Set<number>() : new Set(people.map(p => p.id)) } : it))}
                             className={all ? 'bg-surface-card text-content border' : 'bg-surface-secondary text-content-muted border border-edge'}
-                            style={{ display: 'inline-flex', alignItems: 'center', padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', border: all ? '1px solid var(--text-primary)' : undefined }}
+                            style={{ display: 'inline-flex', alignItems: 'center', padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit', border: all ? '1px solid var(--text-primary)' : undefined }}
                           >
                             {t('costs.everyone')}
                           </button>
@@ -1806,11 +1818,11 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                             key={p.id}
                             onClick={() => handleToggleItemParticipant(item.id, p.id)}
                             className={active ? 'bg-surface-card text-content border' : 'bg-surface-secondary text-content-muted border border-edge'}
-                            style={{ display: 'inline-flex', alignItems: 'center', gap: 4, padding: '3px 8px', borderRadius: 999, fontSize: 11, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', border: active ? '1px solid var(--text-primary)' : undefined }}
+                            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 12px', borderRadius: 999, fontSize: 12, fontWeight: 500, cursor: 'pointer', fontFamily: 'inherit', border: active ? '1px solid var(--text-primary)' : undefined }}
                           >
                             {p.avatar_url
-                              ? <img src={p.avatar_url} alt="" style={{ width: 14, height: 14, borderRadius: '50%', objectFit: 'cover' }} />
-                              : <span style={{ width: 14, height: 14, borderRadius: '50%', background: SPLIT_COLORS[pIdx % SPLIT_COLORS.length].gradient, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 7, fontWeight: 700 }}>{(p.id === me ? t('costs.youShort') : p.username.charAt(0)).toUpperCase()}</span>}
+                              ? <img src={p.avatar_url} alt="" style={{ width: 18, height: 18, borderRadius: '50%', objectFit: 'cover' }} />
+                              : <span style={{ width: 18, height: 18, borderRadius: '50%', background: SPLIT_COLORS[pIdx % SPLIT_COLORS.length].gradient, color: '#fff', display: 'grid', placeItems: 'center', fontSize: 9, fontWeight: 700 }}>{(p.id === me ? t('costs.youShort') : p.username.charAt(0)).toUpperCase()}</span>}
                             <span>{p.id === me ? t('costs.you') : p.username}</span>
                           </button>
                         )
@@ -1888,7 +1900,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                     {participants.size > 0 && t('costs.splitSummary', { count: participants.size, amount: sym(currency) + each.toFixed(2) })}
                   </span>
                 ) : (
-                  <span style={{ fontWeight: 600, color: customBalanced ? '#16a34a' : '#dc2626' }}>
+                  <span style={{ fontWeight: 600, color: customBalanced ? 'var(--success)' : 'var(--danger)' }}>
                     {customBalanced 
                       ? t('costs.splitMatches')
                       : t('costs.splitProgress', {

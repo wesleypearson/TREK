@@ -1,4 +1,5 @@
-import React, { useEffect, useCallback, useRef } from 'react'
+import React, { useEffect, useCallback, useRef, useId } from 'react'
+import { useTranslation } from '../../i18n'
 import ReactDOM from 'react-dom'
 import { X } from 'lucide-react'
 
@@ -47,6 +48,9 @@ export default function Modal({
 
   const mouseDownTarget = useRef<EventTarget | null>(null)
 
+  const { t } = useTranslation()
+  const titleId = useId()
+
   if (!isOpen) return null
 
   return ReactDOM.createPortal(
@@ -68,13 +72,17 @@ export default function Modal({
           bg-surface-card
         `}
         onClick={e => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title != null ? titleId : undefined}
       >
         {/* Header — stays put even while the body scrolls */}
         <div className="flex items-center justify-between p-6 flex-shrink-0 border-b border-edge-secondary">
-          <h2 className="text-lg font-semibold text-content">{title}</h2>
+          <h2 id={titleId} className="text-[15px] font-semibold text-content tour-title">{title}</h2>
           {!hideCloseButton && (
             <button
               onClick={onClose}
+              aria-label={t('common.close')}
               className="p-2 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
             >
               <X className="w-5 h-5" />

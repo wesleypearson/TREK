@@ -192,6 +192,7 @@ const budget: TranslationStrings = {
     'This permanently deletes every expense, settlement and public tab link in this event. Crew members and guests stay. This cannot be undone.',
   'costs.resetConfirm': 'Delete everything',
   'costs.resetDone': 'Expenses reset',
+  'costs.saveHint': 'Add a name and amount — and put someone on every line — to save',
 
   'costs.sharesSummary': 'Individual shares summary',
   'costs.excluded': 'Excluded',

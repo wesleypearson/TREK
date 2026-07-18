@@ -195,6 +195,7 @@ const budget: TranslationStrings = {
     'Bu işlem, bu gezideki tüm harcamaları, hesaplaşmaları ve herkese açık hesap bağlantılarını kalıcı olarak siler. Üyeler ve misafirler kalır. Bu işlem geri alınamaz.',
   'costs.resetConfirm': 'Her şeyi sil',
   'costs.resetDone': 'Harcamalar sıfırlandı',
+  'costs.saveHint': 'Kaydetmek için ad ve tutar girin — ve her satıra birini atayın',
 
   'costs.sharesSummary': 'Kişi başı payların özeti',
   'costs.excluded': 'Hariç tutuldu',

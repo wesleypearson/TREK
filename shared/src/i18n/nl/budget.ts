@@ -194,6 +194,7 @@ const budget: TranslationStrings = {
     'Dit verwijdert permanent alle uitgaven, afrekeningen en openbare rekeninglinks in deze reis. Leden en gasten blijven. Dit kan niet ongedaan worden gemaakt.',
   'costs.resetConfirm': 'Alles verwijderen',
   'costs.resetDone': 'Uitgaven gereset',
+  'costs.saveHint': 'Vul een naam en bedrag in — en zet iemand op elke regel — om op te slaan',
 
   'costs.sharesSummary': 'Overzicht van individuele aandelen',
   'costs.excluded': 'Uitgesloten',

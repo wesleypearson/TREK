@@ -195,6 +195,7 @@ const budget: TranslationStrings = {
     "Cette action supprime définitivement toutes les dépenses, tous les règlements et tous les liens d'ardoise publics de ce voyage. Les membres et les invités sont conservés. Elle ne peut pas être annulée.",
   'costs.resetConfirm': 'Tout supprimer',
   'costs.resetDone': 'Dépenses réinitialisées',
+  'costs.saveHint': 'Ajoutez un nom et un montant — et quelqu’un sur chaque ligne — pour enregistrer',
 
   'costs.sharesSummary': 'Résumé des parts individuelles',
   'costs.excluded': 'Exclu',

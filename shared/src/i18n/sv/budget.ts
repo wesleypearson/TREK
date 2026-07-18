@@ -193,6 +193,7 @@ const budget: TranslationStrings = {
     'Detta raderar permanent alla kostnader, regleringar och offentliga notalänkar i den här resan. Medlemmar och gäster finns kvar. Det går inte att ångra.',
   'costs.resetConfirm': 'Radera allt',
   'costs.resetDone': 'Kostnaderna har återställts',
+  'costs.saveHint': 'Ange namn och belopp — och sätt någon på varje rad — för att spara',
 
   'costs.sharesSummary': 'Översikt över individuella andelar',
   'costs.excluded': 'Exkluderad',

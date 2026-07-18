@@ -194,6 +194,7 @@ const budget: TranslationStrings = {
     'Questa operazione elimina definitivamente tutte le spese, i saldi e i link pubblici dei conti di questo viaggio. Membri e ospiti restano. Non può essere annullata.',
   'costs.resetConfirm': 'Elimina tutto',
   'costs.resetDone': 'Spese azzerate',
+  'costs.saveHint': 'Aggiungi un nome e un importo — e qualcuno su ogni riga — per salvare',
 
   'costs.sharesSummary': 'Riepilogo delle quote individuali',
   'costs.excluded': 'Escluso',

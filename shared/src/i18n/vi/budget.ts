@@ -196,6 +196,7 @@ const budget: TranslationStrings = {
     'Thao tác này xóa vĩnh viễn mọi khoản chi, thanh toán và liên kết sổ công khai trong chuyến đi này. Thành viên và khách vẫn được giữ lại. Không thể hoàn tác.',
   'costs.resetConfirm': 'Xóa tất cả',
   'costs.resetDone': 'Đã đặt lại chi phí',
+  'costs.saveHint': 'Nhập tên và số tiền — và gán người cho từng dòng — để lưu',
 
   'costs.sharesSummary': 'Tóm tắt phần chia của từng người',
   'costs.excluded': 'Không tính',

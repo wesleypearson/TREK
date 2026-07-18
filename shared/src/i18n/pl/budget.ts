@@ -194,6 +194,7 @@ const budget: TranslationStrings = {
     'To trwale usunie wszystkie wydatki, rozliczenia i publiczne linki do rachunków w tej podróży. Członkowie i goście zostaną. Tego nie można cofnąć.',
   'costs.resetConfirm': 'Usuń wszystko',
   'costs.resetDone': 'Wydatki zresetowane',
+  'costs.saveHint': 'Aby zapisać, podaj nazwę i kwotę — i przypisz kogoś do każdej pozycji',
 
   'costs.sharesSummary': 'Podsumowanie indywidualnych udziałów',
   'costs.excluded': 'Wykluczono',

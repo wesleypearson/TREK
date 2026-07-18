@@ -193,6 +193,7 @@ const budget: TranslationStrings = {
     'この旅のすべての支出、精算、公開ツケリンクを完全に削除します。メンバーとゲストは残ります。この操作は取り消せません。',
   'costs.resetConfirm': 'すべて削除',
   'costs.resetDone': '支出をリセットしました',
+  'costs.saveHint': '保存するには名前と金額を入力し、各行に人を割り当ててください',
 
   'costs.sharesSummary': '一人ひとりの負担額まとめ',
   'costs.excluded': '対象外',

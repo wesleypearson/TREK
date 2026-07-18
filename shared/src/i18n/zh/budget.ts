@@ -189,6 +189,7 @@ const budget: TranslationStrings = {
   'costs.resetWarning': '这会永久删除本次旅行中的所有支出、结算和公开账单链接。成员和访客会保留。此操作无法撤销。',
   'costs.resetConfirm': '删除全部',
   'costs.resetDone': '支出已重置',
+  'costs.saveHint': '要保存，请填写名称和金额，并为每一行指定人员',
 
   'costs.sharesSummary': '每人分摊金额汇总',
   'costs.excluded': '不参与分摊',

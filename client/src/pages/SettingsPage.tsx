@@ -48,7 +48,7 @@ export default function SettingsPage(): React.ReactElement {
               <Settings className="w-5 h-5 text-content-secondary" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-content">{t('settings.title')}</h1>
+              <h1 className="text-xl text-content tour-title">{t('settings.title')}</h1>
               <p className="text-sm text-content-muted">{t('settings.subtitle')}</p>
             </div>
           </div>
