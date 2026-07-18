@@ -779,9 +779,10 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
   function MobileBody() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 8 }}>
-        {/* Total card */}
-        <section style={{ background: 'linear-gradient(135deg,#1f2937,#111827)', color: '#fff', borderRadius: 22, padding: '20px 20px 16px', boxShadow: '0 8px 24px -8px rgba(0,0,0,0.28)' }}>
-          <div style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{t('costs.totalSpend')}</div>
+        {/* Total card — poster treatment: hot gradient + halftone dots. */}
+        <section className="tour-gradient" style={{ color: '#fff', borderRadius: 22, padding: '20px 20px 16px', boxShadow: 'var(--shadow-lg)', position: 'relative', overflow: 'hidden' }}>
+          <div className="tour-halftone" />
+          <div className="tour-title" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.75)', position: 'relative' }}>{t('costs.totalSpend')}</div>
           <div style={{ fontSize: 'calc(44px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginTop: 8, display: 'flex', alignItems: 'baseline' }}>{bigMoney(totals.totalSpend, 24, 'rgba(255,255,255,0.6)')}</div>
           <div style={{ display: 'flex', gap: 18, marginTop: 12, fontSize: 'calc(12px * var(--fs-scale-body, 1))', color: 'rgba(255,255,255,0.6)', flexWrap: 'wrap' }}>
             <span>{t('costs.yourShare')} · <b style={{ color: '#fff', fontWeight: 600 }}>{fmt0(totals.myShare)}</b></span>
@@ -839,7 +840,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         {/* Expenses */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <div className="text-content" style={{ fontSize: 'calc(19px * var(--fs-scale-subtitle, 1))', fontWeight: 700, letterSpacing: '-0.02em' }}>{t('costs.expenses')}</div>
+            <div className="text-content tour-title" style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))' }}>{t('costs.expenses')}</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setGuideOpen(true)} title={t('costs.guide.title')}
                 className="bg-surface-card border border-edge text-content-muted"

@@ -3,6 +3,11 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  // The bundle carries its own version so the UI can show what's actually
+  // cached on the device (the PWA precache can lag the server after a deploy).
+  define: {
+    __APP_VERSION__: JSON.stringify(process.env.APP_VERSION || 'dev'),
+  },
   plugins: [
     react(),
     VitePWA({

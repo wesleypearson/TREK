@@ -6,6 +6,7 @@ const common: TranslationStrings = {
   'common.showLess': '收起',
   'common.cancel': '取消',
   'common.moreInfo': '更多資訊',
+  'common.staleBundle': 'v{version} 已發布 — 點按重新整理',
   'common.clear': '清除',
   'common.delete': '刪除',
   'common.preview': '預覽',

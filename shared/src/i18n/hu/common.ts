@@ -6,6 +6,7 @@ const common: TranslationStrings = {
   'common.showLess': 'Kevesebb',
   'common.cancel': 'Mégse',
   'common.moreInfo': 'További információ',
+  'common.staleBundle': 'Megjelent a v{version} — koppints a frissítéshez',
   'common.clear': 'Törlés',
   'common.delete': 'Törlés',
   'common.preview': 'Előnézet',

@@ -1,4 +1,5 @@
 import { useTranslation, SUPPORTED_LANGUAGES } from '../i18n'
+import { bundleVersion } from '../components/shared/AppFooter'
 import { useSettingsStore } from '../store/settingsStore'
 import {
   List, Grid, MapPin, Camera, BookOpen, Image, Clock, Play,
@@ -335,7 +336,8 @@ export default function JourneyPublicPage() {
   return (
     <div className="min-h-screen bg-zinc-50 dark:bg-zinc-950">
       {/* Hero */}
-      <div className="relative text-center text-white" style={{ background: 'linear-gradient(135deg, #000 0%, #0f172a 50%, #1e293b 100%)', padding: '32px 20px 28px', overflow: 'hidden' }}>
+      <div className="relative text-center text-white tour-gradient" style={{ padding: '32px 20px 28px', overflow: 'hidden' }}>
+        <div className="tour-halftone" />
         {journey.cover_image && (
           <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(/uploads/${journey.cover_image})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15 }} />
         )}
@@ -490,7 +492,7 @@ export default function JourneyPublicPage() {
       <div className="flex flex-col items-center py-8 gap-2">
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, background: 'white', border: '1px solid #e5e7eb', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
           <img src="/icons/icon.svg" alt="Travla" width={18} height={18} style={{ borderRadius: 4 }} />
-          <span style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', color: '#9ca3af' }}>{t('journey.public.sharedVia')} <strong style={{ color: '#6b7280' }}>Travla</strong></span>
+          <span style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', color: '#9ca3af' }}>{t('journey.public.sharedVia')} <strong style={{ color: '#6b7280' }}>Travla</strong> · v{bundleVersion}</span>
         </div>
       </div>
 

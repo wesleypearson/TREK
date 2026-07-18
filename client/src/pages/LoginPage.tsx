@@ -2,6 +2,7 @@ import React from 'react'
 import { SUPPORTED_LANGUAGES, useTranslation } from '../i18n'
 import { Plane, Eye, EyeOff, Mail, Lock, MapPin, Calendar, Package, User, Globe, Zap, Users, Wallet, Map, CheckSquare, BookMarked, FolderOpen, Route, Shield, KeyRound, ChevronDown, Fingerprint } from 'lucide-react'
 import { useLogin } from './login/useLogin'
+import { bundleVersion } from '../components/shared/AppFooter'
 import ToggleSwitch from '../components/Settings/ToggleSwitch'
 
 export default function LoginPage(): React.ReactElement {
@@ -346,7 +347,7 @@ export default function LoginPage(): React.ReactElement {
             <img src="/logo-light.svg" alt="Travla" style={{ height: 64 }} />
           </div>
 
-          <h2 style={{ margin: '0 0 12px', fontSize: 'calc(36px * var(--fs-scale-title, 1))', fontWeight: 700, color: 'white', lineHeight: 1.15, letterSpacing: '-0.02em', fontFamily: "'MuseoModerno', sans-serif", textTransform: 'lowercase' }}>
+          <h2 className="tour-title" style={{ margin: '0 0 12px', fontSize: 'calc(32px * var(--fs-scale-title, 1))', color: 'white', lineHeight: 1.12, textShadow: '3px 3px 0 rgba(224,25,125,0.55)' }}>
             {t('login.tagline')}
           </h2>
           <p style={{ margin: '0 0 44px', fontSize: 'calc(15px * var(--fs-scale-subtitle, 1))', color: 'rgba(255,255,255,0.5)', lineHeight: 1.7 }}>
@@ -375,7 +376,7 @@ export default function LoginPage(): React.ReactElement {
           </div>
 
           <p style={{ marginTop: 36, fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', color: 'rgba(255,255,255,0.25)', letterSpacing: '0.03em' }}>
-            {t('login.selfHosted')}
+            {t('login.selfHosted')} · v{bundleVersion}
           </p>
         </div>
       </div>

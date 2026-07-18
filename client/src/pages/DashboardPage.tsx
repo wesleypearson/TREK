@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useTranslation } from '../i18n'
 import Navbar from '../components/Layout/Navbar'
+import AppFooter from '../components/shared/AppFooter'
 import DemoBanner from '../components/Layout/DemoBanner'
 import TripFormModal from '../components/Trips/TripFormModal'
 import ConfirmDialog from '../components/shared/ConfirmDialog'
@@ -253,6 +254,7 @@ export default function DashboardPage(): React.ReactElement {
             </aside>
           )}
         </main>
+        <AppFooter />
       </div>
 
       <button

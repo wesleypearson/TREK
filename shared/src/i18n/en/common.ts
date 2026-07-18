@@ -6,6 +6,7 @@ const common: TranslationStrings = {
   'common.showLess': 'Show less',
   'common.cancel': 'Cancel',
   'common.moreInfo': 'More info',
+  'common.staleBundle': 'v{version} is out — tap to refresh',
   'common.clear': 'Clear',
   'common.delete': 'Delete',
   'common.preview': 'Preview',
