@@ -19,7 +19,11 @@ function seedAdminAccount(db: Database.Database): void {
     const env_admin_pw = process.env.ADMIN_PASSWORD;
     const adminEnvProvided = !!(env_admin_email || env_admin_pw);
 
-    const userCount = (db.prepare('SELECT COUNT(*) as count FROM users').get() as { count: number }).count;
+    // Count only REAL accounts: synthetic rows (temp guests, the travla-bot,
+    // which a migration seeds eagerly) must not make a fresh install look
+    // like one that already has users — that would silently skip first-run
+    // admin creation.
+    const userCount = (db.prepare('SELECT COUNT(*) as count FROM users WHERE COALESCE(is_guest, 0) = 0').get() as { count: number }).count;
     if (userCount > 0) {
       // ADMIN_EMAIL/ADMIN_PASSWORD only take effect on the first run (empty database). Once a
       // user exists they are silently ignored — a common trip-up: people add the vars after the
