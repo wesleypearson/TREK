@@ -35,8 +35,6 @@ import settings from './settings';
 import share from './share';
 import shared from './shared';
 import stats from './stats';
-import report from './report';
-import shifts from './shifts';
 import suppliers from './suppliers';
 import system_notice from './system_notice';
 import todo from './todo';
@@ -69,8 +67,6 @@ const locale = {
   ...map,
   ...budget,
   ...suppliers,
-  ...shifts,
-  ...report,
   ...capture,
   ...files,
   ...packing,
