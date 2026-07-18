@@ -30,6 +30,9 @@ export interface ParsedReceiptItem {
 
 export interface ParsedReceipt {
   merchant?: string | null;
+  merchant_address?: string | null;
+  merchant_phone?: string | null;
+  merchant_website?: string | null;
   date?: string | null;
   currency?: string | null;
   total?: number | null;
@@ -46,6 +49,9 @@ const RECEIPT_JSON_SCHEMA = {
       type: 'object',
       properties: {
         merchant: { type: 'string', description: 'Store / vendor name' },
+        merchant_address: { type: 'string', description: 'Street address of the business as printed in the header/footer (one line)' },
+        merchant_phone: { type: 'string', description: 'Business phone number as printed' },
+        merchant_website: { type: 'string', description: 'Business website or email domain as printed' },
         date: { type: 'string', description: 'Purchase date as YYYY-MM-DD' },
         currency: { type: 'string', description: 'ISO 4217 currency code, e.g. AUD' },
         total: { type: 'number', description: 'Grand total actually charged, after tax and discounts' },
@@ -79,6 +85,7 @@ const RECEIPT_PROMPT = [
   '- When a quantity is printed (e.g. "2 x", "QTY 3"), set quantity and unit_price so that quantity × unit_price equals the line price; never fold the quantity into the item name.',
   '- Skip subtotals, tax lines, tips, change, card/payment rows and loyalty points — but keep delivery/service fees as items since someone has to pay them.',
   '- If tax (GST/VAT) is charged on top of the items rather than included, add it as a final line item named "Tax".',
+  '- Receipts usually print the business address, phone and website/ABN block in the header or footer — extract merchant_address / merchant_phone / merchant_website when present.',
   '- Keep item names short and human (e.g. "Flat white", not SKU codes).',
   '- Amounts are plain numbers in the receipt currency, no symbols.',
   '- If a value is unreadable, omit the field rather than guessing.',
@@ -173,6 +180,9 @@ function normalizeReceipt(node: Record<string, unknown> | undefined): ParsedRece
   const out: ParsedReceipt = { merchant: null, date: null, currency: null, total: null, items: [] };
   if (!node || typeof node !== 'object') return out;
   if (typeof node.merchant === 'string' && node.merchant.trim()) out.merchant = node.merchant.trim().slice(0, 120);
+  if (typeof node.merchant_address === 'string' && node.merchant_address.trim()) out.merchant_address = node.merchant_address.trim().slice(0, 300);
+  if (typeof node.merchant_phone === 'string' && node.merchant_phone.trim()) out.merchant_phone = node.merchant_phone.trim().slice(0, 50);
+  if (typeof node.merchant_website === 'string' && node.merchant_website.trim()) out.merchant_website = node.merchant_website.trim().slice(0, 200);
   if (typeof node.date === 'string' && /^\d{4}-\d{2}-\d{2}/.test(node.date)) out.date = node.date.slice(0, 10);
   if (typeof node.currency === 'string' && /^[A-Za-z]{3}$/.test(node.currency.trim())) out.currency = node.currency.trim().toUpperCase();
   const total = Number(node.total);

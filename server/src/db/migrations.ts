@@ -3753,6 +3753,46 @@ function runMigrations(db: Database.Database): void {
       }
       db.exec('CREATE INDEX IF NOT EXISTS idx_budget_items_place_id ON budget_items (place_id)');
     },
+    () => {
+      // Suppliers (custom): the instance-wide vendor book behind the CRM.
+      // One row per business the crew deals with — auto-created from receipt
+      // scans (merchant extraction), enriched from Google Places + the
+      // configured AI, and linkable from expenses and venues. name_key is the
+      // dedupe handle (lowercased, squashed punctuation/whitespace).
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS suppliers (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          name TEXT NOT NULL,
+          name_key TEXT NOT NULL UNIQUE,
+          category TEXT,
+          phone TEXT,
+          email TEXT,
+          website TEXT,
+          address TEXT,
+          lat REAL,
+          lng REAL,
+          google_place_id TEXT,
+          ai_summary TEXT,
+          notes TEXT,
+          source TEXT NOT NULL DEFAULT 'manual',
+          enriched_at DATETIME,
+          created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      db.exec('CREATE INDEX IF NOT EXISTS idx_suppliers_name_key ON suppliers (name_key)');
+      const budgetCols = (db.prepare('PRAGMA table_info(budget_items)').all() as { name: string }[]).map(c => c.name);
+      if (!budgetCols.includes('supplier_id')) {
+        db.exec('ALTER TABLE budget_items ADD COLUMN supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL');
+      }
+      db.exec('CREATE INDEX IF NOT EXISTS idx_budget_items_supplier_id ON budget_items (supplier_id)');
+      const placeCols = (db.prepare('PRAGMA table_info(places)').all() as { name: string }[]).map(c => c.name);
+      if (!placeCols.includes('supplier_id')) {
+        db.exec('ALTER TABLE places ADD COLUMN supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL');
+      }
+      db.exec('CREATE INDEX IF NOT EXISTS idx_places_supplier_id ON places (supplier_id)');
+    },
   ];
 
   if (currentVersion < migrations.length) {
