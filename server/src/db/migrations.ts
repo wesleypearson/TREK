@@ -3842,6 +3842,21 @@ function runMigrations(db: Database.Database): void {
         db.exec('ALTER TABLE users ADD COLUMN contact_email TEXT');
       }
     },
+    () => {
+      // Integrity (custom): seed the Travla bot row EAGERLY. ensureBotUser()
+      // used to create it lazily on the first announcement, which left a window
+      // where a regular signup could register 'travla-bot' first and become the
+      // trusted system voice. Registration/rename now reject reserved names
+      // (authService), and the lookup insists on is_guest = 1 — so if some
+      // pre-existing REAL account already holds the name, leave it alone (the
+      // bot stays inert rather than hijacking or being hijacked).
+      const existing = db.prepare("SELECT id FROM users WHERE username = 'travla-bot'").get();
+      if (!existing) {
+        db.prepare(
+          "INSERT INTO users (username, email, password_hash, role, is_guest, display_name) VALUES ('travla-bot', 'travla-bot@guests.invalid', '', 'user', 1, 'Travla')"
+        ).run();
+      }
+    },
   ];
 
   if (currentVersion < migrations.length) {

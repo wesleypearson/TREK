@@ -15,6 +15,7 @@ import {
 } from './airtrailClient';
 import { canonicalHash, entityCode, mapFlightToReservation } from './airtrailMapper';
 import { getAirtrailCredentials, isAirtrailWriteEnabled } from './airtrailService';
+import { recordScheduleChange } from '../integrityService';
 
 /** Global on/off: the addon must be enabled and sync not explicitly turned off. */
 export function syncGloballyEnabled(): boolean {
@@ -82,12 +83,27 @@ async function syncOwner(uid: number): Promise<number> {
     const current = getReservation(row.id, row.trip_id);
     if (!current) continue;
     try {
-      updateReservation(row.id, row.trip_id, mapFlightToReservation(flight) as any, current as any);
+      const mapped = mapFlightToReservation(flight) as {
+        title?: string; reservation_time?: string | null; reservation_end_time?: string | null;
+      };
+      updateReservation(row.id, row.trip_id, mapped as any, current as any);
       db.prepare('UPDATE reservations SET external_hash = ?, external_synced_at = ? WHERE id = ?').run(
         hash,
         new Date().toISOString(),
         row.id,
       );
+      // Integrity watcher (custom): a sync that shifts flight timings is a
+      // schedule change like any other — announce it, attributed to the sync.
+      const before = current as { title?: string; reservation_time?: string | null; reservation_end_time?: string | null };
+      for (const field of ['reservation_time', 'reservation_end_time'] as const) {
+        if (mapped[field] !== undefined && (mapped[field] ?? null) !== (before[field] ?? null)) {
+          recordScheduleChange({
+            tripId: row.trip_id, source: 'sync', entity: 'reservation', entityId: row.id,
+            label: before.title || mapped.title || 'Flight', field,
+            oldValue: before[field] ?? null, newValue: mapped[field] ?? null,
+          });
+        }
+      }
       broadcastUpdated(row.trip_id, row.id);
       changed++;
     } catch (err) {

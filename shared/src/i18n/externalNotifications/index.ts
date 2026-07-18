@@ -22,9 +22,8 @@ import zh from '../zh/externalNotifications';
 import type {
   NotificationLocale,
   EmailStrings,
-  EventTextFn,
   PasswordResetStrings,
-  NotificationEventKey,
+  NotificationEventTexts,
 } from './types';
 
 export * from './types';
@@ -57,7 +56,7 @@ export const EMAIL_I18N: Record<string, EmailStrings> = Object.fromEntries(
   Object.entries(LOCALES).map(([k, v]) => [k, v.email]),
 );
 
-export const EVENT_TEXTS: Record<string, Record<NotificationEventKey, EventTextFn>> = Object.fromEntries(
+export const EVENT_TEXTS: Record<string, NotificationEventTexts> = Object.fromEntries(
   Object.entries(LOCALES).map(([k, v]) => [k, v.events]),
 );
 

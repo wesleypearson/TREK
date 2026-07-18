@@ -17,6 +17,7 @@ import { enrichImportedPlaces, type EnrichablePlace } from './placeEnrichment';
 import * as placePhotoCache from './placePhotoCache';
 import { searchUnsplashPhotos, getUnsplashKey } from './unsplashService';
 import { type UpdateConflict, isUpdateConflict } from './conflictResult';
+import { recordScheduleChange } from './integrityService';
 
 // Reclaim a deleted place's cached marker photo if nothing else references it.
 // The cache key is the Google place_id, or — for coordinate-only places — the
@@ -288,6 +289,24 @@ export function updatePlace(
     transport_mode || null,
     placeId,
   );
+
+  // Integrity watcher (custom): timing edits become crew-wide announcements.
+  {
+    const newPlaceTime = place_time !== undefined ? place_time : existingPlace.place_time;
+    const newEndTime = end_time !== undefined ? end_time : existingPlace.end_time;
+    const timingDiff: Array<[string, string | null, string | null]> = [
+      ['place_time', existingPlace.place_time ?? null, newPlaceTime ?? null],
+      ['end_time', existingPlace.end_time ?? null, newEndTime ?? null],
+    ];
+    for (const [field, oldValue, newValue] of timingDiff) {
+      if (oldValue !== newValue) {
+        recordScheduleChange({
+          tripId, actorUserId: viewerId ?? null, source: 'edit', entity: 'place', entityId: Number(placeId),
+          label: name || existingPlace.name, field, oldValue, newValue,
+        });
+      }
+    }
+  }
 
   // Visibility toggle (custom): only the creator may flip Private/Group; a
   // legacy place with no creator on record is claimed by the acting user when
