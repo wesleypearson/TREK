@@ -174,3 +174,33 @@ translated across all 22 locales.
   `GET /api/public/tabs/:token/items/:itemId/receipt`.
 - Payment details live in user settings keys `payment_bank`, `payment_payid`,
   `payment_venmo`, `payment_other`.
+
+## Suppliers (vendor CRM)
+
+Every receipt scan files its merchant into the instance-wide **suppliers**
+book (`suppliers` table, deduped on a normalized `name_key`): one row per
+business, shared across all events. The scan pipeline
+(`supplierEnrichment.autoSupplierAndVenue`) then:
+
+1. copies the docket's printed contact block (address/phone/website) onto
+   the row — the receipt is authoritative;
+2. resolves the business against **Google Places** text search (via the
+   existing `mapsService` key/quota plumbing, Nominatim fallback) — a hit is
+   only trusted when its name matches the supplier's, and fills coordinates,
+   category, phone, website and `google_place_id`;
+3. asks the configured AI for a two-line `ai_summary` + category
+   (fire-and-forget, never blocks the scan);
+4. **auto-creates a venue** on the event map when coordinates are known —
+   reusing any existing venue linked to the supplier or sharing its name.
+
+All enrichment is gap-fill only: a human edit is never overwritten. The scan
+response carries `supplier` + `place` so the expense modal links both on
+save (`budget_items.supplier_id`, guarded like `place_id`).
+
+The **Suppliers** page (`/suppliers`, global addon `suppliers`, enabled by
+default) is the CRM: searchable list with cross-event aggregates (expenses,
+events, venues, last interaction), detail view with editable contacts and
+notes, AI summary, spend-by-event (frozen ledger rates), interaction
+history and on-demand re-enrichment. Deleting a supplier releases links
+(`ON DELETE SET NULL`) — history survives. API: `/api/addons/suppliers`
+(list/create/detail/update/delete/enrich; delete = admin or creator).

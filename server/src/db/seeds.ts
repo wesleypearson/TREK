@@ -122,6 +122,7 @@ function seedAddons(db: Database.Database): void {
       { id: 'airtrail', name: 'AirTrail', description: 'Sync flights from your self-hosted AirTrail instance', type: 'integration', icon: 'Plane', enabled: 0, sort_order: 14 },
       { id: 'llm_parsing', name: 'AI Parsing', description: 'LLM fallback for booking imports kitinerary cannot read', type: 'integration', icon: 'Sparkles', enabled: 0, sort_order: 15 },
       { id: 'collections', name: 'Collections', description: 'Personal place library — save places across trips into named lists, copy into any trip, share with others', type: 'global', icon: 'Bookmark', enabled: 0, sort_order: 16 },
+      { id: 'suppliers', name: 'Suppliers', description: 'Instance-wide vendor book — auto-built from receipt scans, enriched with Google Places and AI, spend tracked across events', type: 'global', icon: 'Store', enabled: 1, sort_order: 17 },
     ];
     const insertAddon = db.prepare('INSERT OR IGNORE INTO addons (id, name, description, type, icon, enabled, sort_order) VALUES (?, ?, ?, ?, ?, ?, ?)');
     for (const a of defaultAddons) insertAddon.run(a.id, a.name, a.description, a.type, a.icon, a.enabled, a.sort_order);
