@@ -15,7 +15,9 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 const ENV_KEYS = ['ADMIN_EMAIL', 'ADMIN_PASSWORD', 'DEMO_MODE', 'OIDC_ONLY', 'OIDC_ISSUER', 'OIDC_CLIENT_ID'];
 
 function countUsers(db: Database.Database): number {
-  return (db.prepare('SELECT COUNT(*) as c FROM users').get() as { c: number }).c;
+  // Real accounts only — a migration eagerly seeds the synthetic travla-bot
+  // row (is_guest=1), which first-run logic deliberately ignores.
+  return (db.prepare('SELECT COUNT(*) as c FROM users WHERE COALESCE(is_guest, 0) = 0').get() as { c: number }).c;
 }
 
 function insertExistingUser(db: Database.Database): void {

@@ -15,6 +15,10 @@ const nl: NotificationLocale = {
       title: `Nieuwe boeking: ${p.booking}`,
       body: `${p.actor} heeft een boeking "${p.booking}" (${p.type}) toegevoegd aan "${p.trip}".`,
     }),
+    schedule_change: (p) => ({
+      title: `Tijden gewijzigd: ${p.trip}`,
+      body: `${p.count} tijdswijziging(en) in "${p.trip}":\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Reisherinnering: ${p.trip}`,
       body: `Je reis "${p.trip}" komt eraan!`,

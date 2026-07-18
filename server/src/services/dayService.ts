@@ -1,6 +1,7 @@
 import { db } from '../db/database';
 import { loadTagsByPlaceIds, loadParticipantsByAssignmentIds, formatAssignmentWithPlace } from './queryHelpers';
 import { AssignmentRow, Day, DayNote } from '../types';
+import { recordScheduleChange } from './integrityService';
 
 export { verifyTripAccess } from './tripAccess';
 
@@ -223,9 +224,9 @@ function restampReservationDates(
   newDateById: Map<number, string | null>,
 ): void {
   const reservations = db.prepare(
-    'SELECT id, day_id, end_day_id, reservation_time, reservation_end_time FROM reservations WHERE trip_id = ?'
+    'SELECT id, title, day_id, end_day_id, reservation_time, reservation_end_time FROM reservations WHERE trip_id = ?'
   ).all(tripId) as {
-    id: number; day_id: number | null; end_day_id: number | null;
+    id: number; title: string; day_id: number | null; end_day_id: number | null;
     reservation_time: string | null; reservation_end_time: string | null;
   }[];
 
@@ -235,11 +236,20 @@ function restampReservationDates(
   const setEndpointDate = db.prepare('UPDATE reservation_endpoints SET local_date = ? WHERE id = ?');
 
   for (const r of reservations) {
+    // Integrity watcher (custom): a reorder that moves a booking's date is a
+    // timing change the crew must hear about — one change per moved booking.
+    let recorded = false;
     if (r.day_id != null && r.reservation_time) {
       const oldDate = oldDateById.get(r.day_id);
       const newDate = newDateById.get(r.day_id);
       if (oldDate && newDate && oldDate !== newDate) {
-        setTime.run(withDatePart(r.reservation_time, newDate), r.id);
+        const restamped = withDatePart(r.reservation_time, newDate);
+        setTime.run(restamped, r.id);
+        recordScheduleChange({
+          tripId, source: 'reorder', entity: 'reservation', entityId: r.id,
+          label: r.title, field: 'reservation_time', oldValue: r.reservation_time, newValue: restamped,
+        });
+        recorded = true;
         // Shift each transport leg's local_date by the same number of days.
         const delta = dayDelta(oldDate, newDate);
         if (delta !== 0) {
@@ -253,7 +263,14 @@ function restampReservationDates(
       const oldDate = oldDateById.get(r.end_day_id);
       const newDate = newDateById.get(r.end_day_id);
       if (oldDate && newDate && oldDate !== newDate) {
-        setEndTime.run(withDatePart(r.reservation_end_time, newDate), r.id);
+        const restampedEnd = withDatePart(r.reservation_end_time, newDate);
+        setEndTime.run(restampedEnd, r.id);
+        if (!recorded) {
+          recordScheduleChange({
+            tripId, source: 'reorder', entity: 'reservation', entityId: r.id,
+            label: r.title, field: 'reservation_end_time', oldValue: r.reservation_end_time, newValue: restampedEnd,
+          });
+        }
       }
     }
   }

@@ -15,6 +15,10 @@ const gr: NotificationLocale = {
       title: `Νέα κράτηση: ${p.booking}`,
       body: `Ο/Η ${p.actor} πρόσθεσε μια νέα κράτηση "${p.booking}" (${p.type}) στο "${p.trip}".`,
     }),
+    schedule_change: (p) => ({
+      title: `Οι ώρες άλλαξαν: ${p.trip}`,
+      body: `${p.count} αλλαγές ώρας στο "${p.trip}":\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Υπενθύμιση ταξιδιού: ${p.trip}`,
       body: `Το ταξίδι σας "${p.trip}" πλησιάζει!`,

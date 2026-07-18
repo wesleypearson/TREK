@@ -14,6 +14,7 @@ import type { User } from '../../types';
 import { AssignmentsService } from './assignments.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { recordScheduleChange } from '../../services/integrityService';
 
 type Trip = NonNullable<ReturnType<AssignmentsService['verifyTripAccess']>>;
 
@@ -174,6 +175,19 @@ export class AssignmentOpsController {
       throw new HttpException({ error: 'Assignment not found' }, 404);
     }
     const assignment = this.assignments.updateTime(id, body.place_time, body.end_time);
+    // Integrity watcher (custom): timing edits become crew-wide announcements.
+    const oldTimes = existingForTime as { assignment_time?: string | null; assignment_end_time?: string | null };
+    const newTimes = assignment as ({ assignment_time?: string | null; assignment_end_time?: string | null; place_name?: string } | null);
+    if (newTimes) {
+      for (const field of ['assignment_time', 'assignment_end_time'] as const) {
+        if ((newTimes[field] ?? null) !== (oldTimes[field] ?? null)) {
+          recordScheduleChange({
+            tripId, actorUserId: user.id, source: 'edit', entity: 'assignment', entityId: Number(id),
+            label: newTimes.place_name || 'Schedule item', field, oldValue: oldTimes[field] ?? null, newValue: newTimes[field] ?? null,
+          });
+        }
+      }
+    }
     const timeAudience = this.assignments.placeEventAudience((existingForTime as { place_id?: number }).place_id);
     if (timeAudience != null) this.assignments.broadcast(tripId, 'assignment:updated', { assignment }, socketId, timeAudience);
     else this.assignments.broadcast(tripId, 'assignment:updated', { assignment }, socketId);

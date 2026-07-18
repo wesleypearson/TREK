@@ -64,5 +64,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Nie udało się awansować gościa',
   'members.transferTitle': 'Przekaż własność',
   'members.transferConfirm': 'Ustaw jako właściciela',
+
+  'members.guestEmail': 'E-mail kontaktowy',
+  'members.guestEmailHint': 'Aktualizacje i zmiany godzin są wysyłane e-mailem na ten adres',
+  'members.guestEmailSaved': 'Zapisano e-mail kontaktowy',
+  'members.guestEmailInvalid': 'Nieprawidłowy adres e-mail',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

@@ -15,6 +15,10 @@ const cs: NotificationLocale = {
       title: `Nová rezervace: ${p.booking}`,
       body: `${p.actor} přidal rezervaci "${p.booking}" (${p.type}) k "${p.trip}".`,
     }),
+    schedule_change: (p) => ({
+      title: `Změna časů: ${p.trip}`,
+      body: `${p.count} změn(y) času v "${p.trip}":\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Připomínka výletu: ${p.trip}`,
       body: `Váš výlet "${p.trip}" se blíží!`,

@@ -377,7 +377,13 @@ export const tripsApi = {
   removeMember: (id: number | string, userId: number) => apiClient.delete(`/trips/${id}/members/${userId}`).then(r => r.data),
   transferOwnership: (id: number | string, newOwnerId: number) => apiClient.post(`/trips/${id}/transfer`, { newOwnerId } satisfies TripTransferOwnershipRequest).then(r => r.data),
   createGuest: (id: number | string, name: string) => apiClient.post(`/trips/${id}/guests`, { name } satisfies TripCreateGuestRequest).then(r => r.data),
-  renameGuest: (id: number | string, userId: number, name: string) => apiClient.put(`/trips/${id}/guests/${userId}`, { name } satisfies TripRenameGuestRequest).then(r => r.data),
+  renameGuest: (id: number | string, userId: number, name: string, contactEmail?: string) =>
+    // contact_email rides the rename PUT only when the caller supplies it ('' clears) —
+    // plain renames stay a 1-field body and never touch the stored address.
+    apiClient.put(`/trips/${id}/guests/${userId}`, {
+      name,
+      ...(contactEmail !== undefined ? { contact_email: contactEmail } : {}),
+    } satisfies TripRenameGuestRequest).then(r => r.data),
   deleteGuest: (id: number | string, userId: number) => apiClient.delete(`/trips/${id}/guests/${userId}`).then(r => r.data),
   promoteGuest: (id: number | string, guestUserId: number, userId: number) =>
     apiClient.post(`/trips/${id}/guests/${guestUserId}/promote`, { user_id: userId }).then(r => r.data as { merged: true }),
@@ -1224,6 +1230,101 @@ export interface TravlaReleaseDto {
 export const updatesApi = {
   list: (): Promise<{ releases: TravlaReleaseDto[] }> =>
       apiClient.get('/updates').then(r => r.data),
+}
+
+// Shifts — the rostering timeclock (custom). One open shift per member per
+// event; coordinates are optional one-shot fixes at sign-on/sign-off.
+export interface Shift {
+  id: number
+  trip_id: number
+  user_id: number
+  started_at: string
+  ended_at: string | null
+  start_lat: number | null
+  start_lng: number | null
+  end_lat: number | null
+  end_lng: number | null
+  note: string | null
+  created_at?: string
+  username: string
+  avatar?: string | null
+}
+
+export interface ShiftTotal {
+  user_id: number
+  username: string
+  total_seconds: number
+  open: number
+}
+
+export const shiftsApi = {
+  list: (tripId: number | string): Promise<{ shifts: Shift[]; totals: ShiftTotal[] }> =>
+      apiClient.get(`/trips/${tripId}/shifts`).then(r => r.data),
+  start: (tripId: number | string, data?: { lat?: number; lng?: number; note?: string | null }): Promise<{ shift: Shift }> =>
+      apiClient.post(`/trips/${tripId}/shifts/start`, data ?? {}).then(r => r.data),
+  stop: (tripId: number | string, id: number, data?: { lat?: number; lng?: number }): Promise<{ shift: Shift }> =>
+      apiClient.post(`/trips/${tripId}/shifts/${id}/stop`, data ?? {}).then(r => r.data),
+  delete: (tripId: number | string, id: number): Promise<{ success: boolean }> =>
+      apiClient.delete(`/trips/${tripId}/shifts/${id}`).then(r => r.data),
+}
+
+// Production report (custom): the SM/PM digest — schedule changes, files
+// loaded, shift hours and the next 48 h of timings, shareable into the chat.
+export interface ReportChange {
+  id: number
+  actor_user_id: number | null
+  actor_name: string | null
+  source: string
+  entity: string
+  entity_id: number | null
+  label: string
+  field: string
+  old_value: string | null
+  new_value: string | null
+  created_at: string
+}
+
+export interface ReportFile {
+  id: number
+  original_name: string
+  file_size: number | null
+  mime_type: string | null
+  is_private: number
+  created_at: string
+  uploaded_by_name: string | null
+}
+
+export interface ReportUpcoming {
+  kind: 'reservation' | 'assignment'
+  id: number
+  title: string
+  time: string
+  day_date: string | null
+  type?: string
+  location?: string | null
+}
+
+export interface ProductionReport {
+  days: number
+  changes: ReportChange[]
+  files: ReportFile[]
+  shifts: ShiftTotal[]
+  upcoming: ReportUpcoming[]
+}
+
+/** Local wall-clock 'YYYY-MM-DDTHH:MM'. Planner datetimes are local-naive, so
+ *  the report's "next 48h" window must anchor on the viewer's clock, not UTC. */
+function localNaiveNow(): string {
+  const d = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+export const reportsApi = {
+  get: (tripId: number | string, days?: number): Promise<ProductionReport> =>
+      apiClient.get(`/trips/${tripId}/report`, { params: { ...(days != null ? { days } : {}), now: localNaiveNow() } }).then(r => r.data),
+  share: (tripId: number | string, days?: number): Promise<{ shared: boolean }> =>
+      apiClient.post(`/trips/${tripId}/report/share`, { ...(days != null ? { days } : {}), now: localNaiveNow() }).then(r => r.data),
 }
 
 export default apiClient

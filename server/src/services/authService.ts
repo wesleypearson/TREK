@@ -371,6 +371,18 @@ export function validateInviteToken(token: string): { error?: string; status?: n
   return { valid: true, max_uses: invite.max_uses, used_count: invite.used_count, expires_at: invite.expires_at };
 }
 
+// System-owned identities: the Travla bot plus the synthetic guest-*/bot-*
+// handles minted for is_guest rows. ensureBotUser() resolves the system voice
+// by username, so a real account must never be able to register or rename
+// into one of these — it would author every integrity announcement.
+const RESERVED_USERNAMES = new Set(['travla-bot']);
+const RESERVED_USERNAME_PREFIXES = ['guest-', 'bot-'];
+
+export function isReservedUsername(username: string): boolean {
+  const lower = username.trim().toLowerCase();
+  return RESERVED_USERNAMES.has(lower) || RESERVED_USERNAME_PREFIXES.some(p => lower.startsWith(p));
+}
+
 export function registerUser(body: {
   username?: string;
   email?: string;
@@ -400,6 +412,10 @@ export function registerUser(body: {
 
   if (!username || !email || !password) {
     return { error: 'Username, email and password are required', status: 400 };
+  }
+
+  if (isReservedUsername(username)) {
+    return { error: 'This username is reserved', status: 400 };
   }
 
   const pwCheck = validatePassword(password);
@@ -661,6 +677,9 @@ export function updateSettings(
     }
     if (!/^[a-zA-Z0-9_.-]+$/.test(trimmed)) {
       return { error: 'Username can only contain letters, numbers, underscores, dots and hyphens', status: 400 };
+    }
+    if (isReservedUsername(trimmed)) {
+      return { error: 'This username is reserved', status: 400 };
     }
     const conflict = db.prepare('SELECT id FROM users WHERE LOWER(username) = LOWER(?) AND id != ? AND COALESCE(is_guest, 0) = 0').get(trimmed, userId);
     if (conflict) return { error: 'Username already taken', status: 409 };

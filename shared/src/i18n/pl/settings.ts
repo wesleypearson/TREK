@@ -85,6 +85,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': 'Lista pakowania: przypisania',
   'settings.notifyWebhook': 'Powiadomienia Webhook',
   'settings.notifyVersionAvailable': 'Nowa wersja dostępna',
+  'settings.notifyScheduleChange': 'Zmiany godzin',
   'settings.on': 'Włączone',
   'settings.off': 'Wyłączone',
   'settings.mcp.title': 'Konfiguracja MCP',

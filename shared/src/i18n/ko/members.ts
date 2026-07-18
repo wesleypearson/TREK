@@ -64,5 +64,11 @@ const members: TranslationStrings = {
   'members.promoteError': '게스트 승격 실패',
   'members.transferTitle': '소유권 이전',
   'members.transferConfirm': '소유자로 지정',
+
+  'members.guestEmail': '연락 이메일',
+  'members.guestEmailHint': '업데이트와 시간 변경 사항이 이 주소로 발송됩니다',
+  'members.guestEmailSaved': '연락 이메일이 저장되었습니다',
+  'members.guestEmailInvalid': '올바르지 않은 이메일 주소입니다',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

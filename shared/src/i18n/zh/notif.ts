@@ -9,6 +9,8 @@ const notif: TranslationStrings = {
   'notif.trip_invite.text': '{actor} 邀请您加入 {trip}',
   'notif.booking_change.title': '预订已更新',
   'notif.booking_change.text': '{actor} 更新了 {trip} 中的预订',
+  'notif.schedule_change.title': '时间已变更',
+  'notif.schedule_change.text': '{trip} 中有 {count} 项时间变更',
   'notif.trip_reminder.title': '旅行提醒',
   'notif.trip_reminder.text': '您的旅行 {trip} 即将开始！',
   'notif.todo_due.title': '待办事项即将到期',

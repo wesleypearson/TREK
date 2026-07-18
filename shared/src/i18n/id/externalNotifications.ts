@@ -15,6 +15,10 @@ const id: NotificationLocale = {
       title: `Pemesanan baru: ${p.booking}`,
       body: `${p.actor} menambahkan "${p.booking}" (${p.type}) baru ke "${p.trip}".`,
     }),
+    schedule_change: (p) => ({
+      title: `Jadwal berubah: ${p.trip}`,
+      body: `${p.count} perubahan jadwal di "${p.trip}":\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Pengingat perjalanan: ${p.trip}`,
       body: `Perjalanan Anda "${p.trip}" akan segera tiba!`,

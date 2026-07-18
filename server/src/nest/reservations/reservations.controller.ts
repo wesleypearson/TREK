@@ -15,6 +15,7 @@ import { ReservationsService } from './reservations.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { pushReservationToAirtrail } from '../../services/airtrail/airtrailSync';
+import { recordScheduleChange } from '../../services/integrityService';
 
 type ReservationBody = Record<string, unknown> & {
   title?: string;
@@ -114,6 +115,17 @@ export class ReservationsController {
       this.reservations.broadcast(tripId, 'accommodation:updated', {}, socketId);
     }
     const cur = current as { title: string; type?: string };
+    // Integrity watcher (custom): timing edits become crew-wide announcements.
+    const oldTiming = current as { reservation_time?: string | null; reservation_end_time?: string | null };
+    const newTiming = reservation as { reservation_time?: string | null; reservation_end_time?: string | null };
+    for (const field of ['reservation_time', 'reservation_end_time'] as const) {
+      if ((newTiming[field] ?? null) !== (oldTiming[field] ?? null)) {
+        recordScheduleChange({
+          tripId, actorUserId: user.id, source: 'edit', entity: 'reservation', entityId: Number(id),
+          label: body.title || cur.title, field, oldValue: oldTiming[field] ?? null, newValue: newTiming[field] ?? null,
+        });
+      }
+    }
     this.reservations.syncBudgetOnUpdate(tripId, id, body.title ?? '', body.type, cur.title, cur.type, body.create_budget_entry, socketId);
     this.reservations.broadcast(tripId, 'reservation:updated', { reservation }, socketId);
     // Push a locally-edited AirTrail flight back to AirTrail (fire-and-forget,

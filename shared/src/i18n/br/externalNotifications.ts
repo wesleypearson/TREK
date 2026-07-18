@@ -15,6 +15,10 @@ const br: NotificationLocale = {
       title: `Nova reserva: ${p.booking}`,
       body: `${p.actor} adicionou uma reserva "${p.booking}" (${p.type}) em "${p.trip}".`,
     }),
+    schedule_change: (p) => ({
+      title: `Horários alterados: ${p.trip}`,
+      body: `${p.count} atualização(ões) de horário em "${p.trip}":\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Lembrete: ${p.trip}`,
       body: `Sua viagem "${p.trip}" está chegando!`,

@@ -555,4 +555,40 @@ describe('TripMembersModal', () => {
     // members.addedMetaBy = 'Added {date} · invited by {name}'
     expect(screen.getByText(/invited by owner/)).toBeInTheDocument();
   });
+
+  it('FE-COMP-MEMBERS-031: guest contact email is saved via the rename PUT and shown as a subline', async () => {
+    const user = userEvent.setup();
+    let putBody: Record<string, unknown> | null = null;
+    let storedEmail: string | null = null;
+    server.use(
+      http.get('/api/trips/1/members', () =>
+        HttpResponse.json({
+          owner: { id: ownerUser.id, username: ownerUser.username, avatar_url: null, is_guest: false },
+          members: [{ id: 7, username: 'Grandma', avatar_url: null, is_guest: true, contact_email: storedEmail }],
+          current_user_id: ownerUser.id,
+        })
+      ),
+      http.put('/api/trips/1/guests/:gid', async ({ request }) => {
+        putBody = (await request.json()) as Record<string, unknown>;
+        storedEmail = putBody.contact_email as string;
+        return HttpResponse.json({ success: true });
+      }),
+    );
+
+    render(<TripMembersModal {...defaultProps} />);
+    await screen.findByText('Grandma');
+
+    // Mail icon button opens the inline email editor (members.guestEmail = "Contact email").
+    await user.click(screen.getByTitle('Contact email'));
+    const input = screen.getByPlaceholderText('name@example.com');
+    await user.type(input, 'grandma@example.com{Enter}');
+
+    // PUT body carries the unchanged name plus the new contact_email.
+    await waitFor(() =>
+      expect(putBody).toEqual({ name: 'Grandma', contact_email: 'grandma@example.com' })
+    );
+
+    // After the roster reload the saved address shows as the muted subline.
+    await screen.findByText('grandma@example.com');
+  });
 });

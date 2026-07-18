@@ -249,6 +249,7 @@ const settings: TranslationStrings = {
   'settings.bookingLabelsHint':
     'Állomás- / repülőtér-nevek megjelenítése a térképen. Ha ki van kapcsolva, csak az ikon látszik.',
   'settings.notifyVersionAvailable': 'Új verzió elérhető',
+  'settings.notifyScheduleChange': 'Időpontváltozások',
   'settings.notificationPreferences.noChannels':
     'Nincsenek értesítési csatornák beállítva. Kérd meg a rendszergazdát, hogy állítson be e-mail vagy webhook értesítéseket.',
   'settings.webhookUrl.label': 'Webhook URL',

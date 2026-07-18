@@ -383,6 +383,37 @@ function startPlacePhotoCacheCleanup(): void {
   placePhotoCacheTask = cron.schedule('30 3 * * *', sweep, { timezone: tz });
 }
 
+// Integrity sweep: schedule_changes rows whose in-memory 5s debounce timer died
+// with the process (deploy/restart) would otherwise never be announced — or be
+// flushed days later as if fresh. Sweep on boot and every 5 minutes: recent
+// orphans are announced, stale ones stamped silently (integrityService owns the
+// cutoffs). Boot also seeds the Travla bot row eagerly so the system voice
+// exists before any request can race to claim its username.
+let integritySweepTask: ScheduledTask | null = null;
+
+function startIntegritySweep(): void {
+  if (integritySweepTask) { integritySweepTask.stop(); integritySweepTask = null; }
+
+  const sweep = () => {
+    try {
+      const { sweepPendingScheduleChanges } = require('./services/integrityService');
+      void sweepPendingScheduleChanges();
+    } catch (err: unknown) {
+      logError(`Integrity sweep: ${err instanceof Error ? err.message : err}`);
+    }
+  };
+
+  try {
+    const { ensureBotUser } = require('./services/integrityService');
+    ensureBotUser();
+  } catch (err: unknown) {
+    logError(`Integrity bot seed: ${err instanceof Error ? err.message : err}`);
+  }
+  sweep();
+
+  integritySweepTask = cron.schedule('*/5 * * * *', sweep);
+}
+
 // AirTrail sync: poll connected instances on an interval and reconcile linked
 // flights both ways (#214). The per-tick enable gate (addon + setting) lives in
 // runAirtrailSync, so toggling the addon takes effect without a restart.
@@ -416,7 +447,8 @@ function stop(): void {
   if (idempotencyCleanupTask) { idempotencyCleanupTask.stop(); idempotencyCleanupTask = null; }
   if (trekPhotoCacheTask) { trekPhotoCacheTask.stop(); trekPhotoCacheTask = null; }
   if (placePhotoCacheTask) { placePhotoCacheTask.stop(); placePhotoCacheTask = null; }
+  if (integritySweepTask) { integritySweepTask.stop(); integritySweepTask = null; }
   if (airtrailSyncTask) { airtrailSyncTask.stop(); airtrailSyncTask = null; }
 }
 
-export { start, stop, startDemoReset, startTripReminders, startTodoReminders, startVersionCheck, startIdempotencyCleanup, purgeExpiredIdempotencyKeys, startTrekPhotoCacheCleanup, startPlacePhotoCacheCleanup, startAirTrailSync, loadSettings, saveSettings, VALID_INTERVALS };
+export { start, stop, startDemoReset, startTripReminders, startTodoReminders, startVersionCheck, startIdempotencyCleanup, purgeExpiredIdempotencyKeys, startTrekPhotoCacheCleanup, startPlacePhotoCacheCleanup, startIntegritySweep, startAirTrailSync, loadSettings, saveSettings, VALID_INTERVALS };

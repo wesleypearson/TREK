@@ -9,6 +9,8 @@ const notif: TranslationStrings = {
   'notif.trip_invite.text': '{actor} meghívott a(z) {trip} utazásra',
   'notif.booking_change.title': 'Foglalás frissítve',
   'notif.booking_change.text': '{actor} frissített egy foglalást a(z) {trip} utazásban',
+  'notif.schedule_change.title': 'Időpontok módosultak',
+  'notif.schedule_change.text': '{count} időpontváltozás a(z) {trip} utazásban',
   'notif.trip_reminder.title': 'Utazás emlékeztető',
   'notif.trip_reminder.text': 'A(z) {trip} utazás hamarosan kezdődik!',
   'notif.todo_due.title': 'Teendő esedékes',

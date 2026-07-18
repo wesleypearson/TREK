@@ -66,5 +66,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Αποτυχία προβιβασμού επισκέπτη',
   'members.transferTitle': 'Μεταβίβαση ιδιοκτησίας',
   'members.transferConfirm': 'Ορισμός ως κάτοχο',
+
+  'members.guestEmail': 'Email επικοινωνίας',
+  'members.guestEmailHint': 'Οι ενημερώσεις και οι αλλαγές ώρας αποστέλλονται εδώ με email',
+  'members.guestEmailSaved': 'Το email επικοινωνίας αποθηκεύτηκε',
+  'members.guestEmailInvalid': 'Μη έγκυρη διεύθυνση email',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

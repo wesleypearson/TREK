@@ -65,5 +65,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Gagal mempromosikan tamu',
   'members.transferTitle': 'Alihkan kepemilikan',
   'members.transferConfirm': 'Jadikan pemilik',
+
+  'members.guestEmail': 'Email kontak',
+  'members.guestEmailHint': 'Pembaruan dan perubahan jadwal dikirim lewat email ke sini',
+  'members.guestEmailSaved': 'Email kontak disimpan',
+  'members.guestEmailInvalid': 'Alamat email tidak valid',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

@@ -247,6 +247,7 @@ const settings: TranslationStrings = {
   'settings.bookingLabelsHint':
     'Отображает названия станций / аэропортов на карте. Если выключено, показывается только значок.',
   'settings.notifyVersionAvailable': 'Доступна новая версия',
+  'settings.notifyScheduleChange': 'Изменения времени',
   'settings.notificationPreferences.noChannels':
     'Каналы уведомлений не настроены. Попросите администратора настроить уведомления по электронной почте или через webhook.',
   'settings.webhookUrl.label': 'URL вебхука',

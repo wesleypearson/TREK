@@ -13,6 +13,7 @@ import { listItems as listPackingItems } from './packingService';
 import { listReservations, loadEndpointsByTrip, resyncReservationDays } from './reservationService';
 import { listNotes as listCollabNotes } from './collabService';
 import { shiftOwnerEntriesForTripWindow } from './vacayService';
+import { recordScheduleChange } from './integrityService';
 
 export const MS_PER_DAY = 86400000;
 export const MAX_TRIP_DAYS = 365;
@@ -270,8 +271,21 @@ export function updateTrip(tripId: string | number, userId: number, data: Update
 
   const changes: Record<string, unknown> = {};
   if (title && title !== trip.title) changes.title = title;
-  if (newStart !== trip.start_date) changes.start_date = newStart;
-  if (newEnd !== trip.end_date) changes.end_date = newEnd;
+  if (newStart !== trip.start_date) {
+    changes.start_date = newStart;
+    // Integrity watcher (custom): event window changes announce to the crew.
+    recordScheduleChange({
+      tripId, actorUserId: userId, source: 'edit', entity: 'trip', entityId: Number(tripId),
+      label: newTitle, field: 'start_date', oldValue: trip.start_date ?? null, newValue: newStart ?? null,
+    });
+  }
+  if (newEnd !== trip.end_date) {
+    changes.end_date = newEnd;
+    recordScheduleChange({
+      tripId, actorUserId: userId, source: 'edit', entity: 'trip', entityId: Number(tripId),
+      label: newTitle, field: 'end_date', oldValue: trip.end_date ?? null, newValue: newEnd ?? null,
+    });
+  }
   if (newReminder !== oldReminder) changes.reminder_days = newReminder === 0 ? 'none' : `${newReminder} days`;
   if (is_archived !== undefined && newArchived !== trip.is_archived) changes.archived = !!newArchived;
 
@@ -355,7 +369,7 @@ export function listMembers(tripId: string | number, tripOwnerId: number) {
   // u.is_guest rides along (#1362) so guests stay assignable everywhere a member is,
   // while the UI can badge them and suppress owner-only actions. The owner is never a guest.
   const members = db.prepare(`
-    SELECT u.id, COALESCE(u.display_name, u.username) AS username, u.email, u.avatar, u.is_guest,
+    SELECT u.id, COALESCE(u.display_name, u.username) AS username, u.email, u.avatar, u.is_guest, u.contact_email,
       CASE WHEN u.id = ? THEN 'owner' ELSE 'member' END as role,
       m.added_at,
       COALESCE(ib.display_name, ib.username) as invited_by_username
@@ -364,13 +378,21 @@ export function listMembers(tripId: string | number, tripOwnerId: number) {
     LEFT JOIN users ib ON ib.id = m.invited_by
     WHERE m.trip_id = ?
     ORDER BY m.added_at ASC
-  `).all(tripOwnerId, tripId) as { id: number; username: string; email: string; avatar: string | null; is_guest: number; role: string; added_at: string; invited_by_username: string | null }[];
+  `).all(tripOwnerId, tripId) as { id: number; username: string; email: string; avatar: string | null; is_guest: number; contact_email: string | null; role: string; added_at: string; invited_by_username: string | null }[];
 
   const owner = db.prepare('SELECT id, username, email, avatar FROM users WHERE id = ?').get(tripOwnerId) as Pick<User, 'id' | 'username' | 'email' | 'avatar'>;
 
   return {
     owner: { ...owner, role: 'owner', is_guest: false, avatar_url: avatarUrl(owner) },
-    members: members.map(m => ({ ...m, is_guest: !!m.is_guest, avatar_url: avatarUrl(m) })),
+    // contact_email is exposed for GUESTS only — a real account's contact
+    // address is its own business, so it's stripped from non-guest rows
+    // (undefined keys drop out of the JSON response).
+    members: members.map(m => ({
+      ...m,
+      is_guest: !!m.is_guest,
+      avatar_url: avatarUrl(m),
+      contact_email: m.is_guest ? m.contact_email : undefined,
+    })),
   };
 }
 
@@ -512,7 +534,12 @@ function guestOfTrip(tripId: string | number, guestUserId: number): boolean {
   ).get(guestUserId, tripId);
 }
 
-export function renameGuest(tripId: string | number, guestUserId: number, name: string): boolean {
+export function renameGuest(
+  tripId: string | number,
+  guestUserId: number,
+  name: string,
+  options?: { contactEmail?: string | null }
+): boolean {
   const display = (name || '').trim();
   if (!display) throw new ValidationError('Guest name is required');
   if (display.length > 50) throw new ValidationError('Guest name must be 50 characters or fewer');
@@ -520,7 +547,14 @@ export function renameGuest(tripId: string | number, guestUserId: number, name: 
 
   // Rename only the display name — no global-uniqueness dedup, so a rename to a name
   // another trip's guest already uses no longer produces "Name 2" (#1446).
-  db.prepare('UPDATE users SET display_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND is_guest = 1').run(display, guestUserId);
+  if (options && options.contactEmail !== undefined) {
+    // Guest contact email rides along with the rename: where integrity updates
+    // reach off-platform guests (validated in the controller; null clears it).
+    db.prepare('UPDATE users SET display_name = ?, contact_email = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND is_guest = 1')
+      .run(display, options.contactEmail, guestUserId);
+  } else {
+    db.prepare('UPDATE users SET display_name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND is_guest = 1').run(display, guestUserId);
+  }
   return true;
 }
 

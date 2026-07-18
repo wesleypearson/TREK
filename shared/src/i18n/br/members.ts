@@ -64,5 +64,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Falha ao promover convidado',
   'members.transferTitle': 'Transferir propriedade',
   'members.transferConfirm': 'Tornar proprietário',
+
+  'members.guestEmail': 'E-mail de contato',
+  'members.guestEmailHint': 'Atualizações e alterações de horário são enviadas para este endereço',
+  'members.guestEmailSaved': 'E-mail de contato salvo',
+  'members.guestEmailInvalid': 'Endereço de e-mail inválido',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

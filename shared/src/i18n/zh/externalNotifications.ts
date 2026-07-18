@@ -15,6 +15,10 @@ const zh: NotificationLocale = {
       title: `新预订：${p.booking}`,
       body: `${p.actor} 在"${p.trip}"中添加了预订"${p.booking}"（${p.type}）。`,
     }),
+    schedule_change: (p) => ({
+      title: `时间变更：${p.trip}`,
+      body: `"${p.trip}"中有 ${p.count} 项时间变更：\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `旅行提醒：${p.trip}`,
       body: `你的旅行"${p.trip}"即将开始！`,

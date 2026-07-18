@@ -68,5 +68,12 @@ const members: TranslationStrings = {
   'members.promoteError': 'Failed to promote guest',
   'members.transferTitle': 'Transfer ownership',
   'members.transferConfirm': 'Make owner',
+
+  // Guest contact email — where integrity updates reach off-platform guests.
+  'members.guestEmail': 'Contact email',
+  'members.guestEmailHint': 'Updates and timing changes are emailed here',
+  'members.guestEmailSaved': 'Contact email saved',
+  'members.guestEmailInvalid': 'Invalid email address',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

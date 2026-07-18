@@ -15,6 +15,10 @@ const ko: NotificationLocale = {
       title: `새 예약: ${p.booking}`,
       body: `${p.actor}이(가) "${p.trip}"에 "${p.booking}" (${p.type}) 예약을 추가했습니다.`,
     }),
+    schedule_change: (p) => ({
+      title: `시간 변경: ${p.trip}`,
+      body: `"${p.trip}"의 시간 변경 ${p.count}건:\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `여행 알림: ${p.trip}`,
       body: `"${p.trip}" 여행이 곧 시작됩니다!`,

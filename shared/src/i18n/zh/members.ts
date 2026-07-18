@@ -63,5 +63,11 @@ const members: TranslationStrings = {
   'members.promoteError': '升级访客失败',
   'members.transferTitle': '转移所有权',
   'members.transferConfirm': '设为所有者',
+
+  'members.guestEmail': '联系邮箱',
+  'members.guestEmailHint': '更新和时间变更将通过邮件发送到此邮箱',
+  'members.guestEmailSaved': '联系邮箱已保存',
+  'members.guestEmailInvalid': '邮箱地址无效',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

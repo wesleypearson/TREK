@@ -80,6 +80,7 @@ const onListen = () => {
   scheduler.startIdempotencyCleanup();
   scheduler.startTrekPhotoCacheCleanup();
   scheduler.startPlacePhotoCacheCleanup();
+  scheduler.startIntegritySweep();
   scheduler.startAirTrailSync();
   const { startTokenCleanup } = require('./services/ephemeralTokens');
   startTokenCleanup();

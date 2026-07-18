@@ -26,6 +26,7 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { MAX_FILE_SIZE, MAX_VIDEO_SIZE, BLOCKED_EXTENSIONS, filesDir, getAllowedExtensions, isVideoExtension } from '../../services/fileService';
 import { isDemoEmail } from '../../services/demo';
+import { postBotMessage } from '../../services/integrityService';
 
 const UPLOAD = {
   storage: diskStorage({
@@ -160,6 +161,14 @@ export class FilesController {
       is_private: isPrivate,
     });
     this.broadcastFileEvent(tripId, 'file:created', { file: created }, created, socketId);
+    // Integrity watcher (custom): a GROUP-visible load is announced by the bot
+    // in the event chat. Private files are never announced — they don't exist
+    // to the rest of the crew.
+    if (!created.is_private) {
+      const uploaderName = (user as { display_name?: string | null }).display_name || user.username;
+      const loadedName = (created as { original_name?: string | null }).original_name || file.originalname;
+      postBotMessage(tripId, `📎 ${uploaderName} loaded ${loadedName}`);
+    }
     return { file: created };
   }
 

@@ -3793,6 +3793,70 @@ function runMigrations(db: Database.Database): void {
       }
       db.exec('CREATE INDEX IF NOT EXISTS idx_places_supplier_id ON places (supplier_id)');
     },
+    () => {
+      // Integrity + rostering (custom): the epic's shared schema.
+      // schedule_changes — every timing-relevant write, old→new, whoever and
+      // whatever caused it (user edit, day reorder, sync job). The integrity
+      // watcher reads this to broadcast "timings changed" to the whole crew.
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS schedule_changes (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          trip_id INTEGER NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+          actor_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          source TEXT NOT NULL DEFAULT 'edit',
+          entity TEXT NOT NULL,
+          entity_id INTEGER,
+          label TEXT NOT NULL,
+          field TEXT NOT NULL,
+          old_value TEXT,
+          new_value TEXT,
+          broadcast_at DATETIME,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      db.exec('CREATE INDEX IF NOT EXISTS idx_schedule_changes_trip ON schedule_changes (trip_id, created_at)');
+
+      // shifts — the rostering timeclock: sign-on/sign-off per crew member per
+      // event, with the location captured at each end (consent-first, like the
+      // Capture tool). ended_at NULL = on shift right now.
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS shifts (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          trip_id INTEGER NOT NULL REFERENCES trips(id) ON DELETE CASCADE,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          ended_at DATETIME,
+          start_lat REAL, start_lng REAL,
+          end_lat REAL, end_lng REAL,
+          note TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      db.exec('CREATE INDEX IF NOT EXISTS idx_shifts_trip ON shifts (trip_id, started_at)');
+      db.exec('CREATE UNIQUE INDEX IF NOT EXISTS idx_shifts_open_per_user ON shifts (trip_id, user_id) WHERE ended_at IS NULL');
+
+      // Guests can now carry a REAL contact address (their login email stays
+      // the synthetic guest-*@guests.invalid) so integrity updates reach them.
+      const userCols = (db.prepare('PRAGMA table_info(users)').all() as { name: string }[]).map(c => c.name);
+      if (!userCols.includes('contact_email')) {
+        db.exec('ALTER TABLE users ADD COLUMN contact_email TEXT');
+      }
+    },
+    () => {
+      // Integrity (custom): seed the Travla bot row EAGERLY. ensureBotUser()
+      // used to create it lazily on the first announcement, which left a window
+      // where a regular signup could register 'travla-bot' first and become the
+      // trusted system voice. Registration/rename now reject reserved names
+      // (authService), and the lookup insists on is_guest = 1 — so if some
+      // pre-existing REAL account already holds the name, leave it alone (the
+      // bot stays inert rather than hijacking or being hijacked).
+      const existing = db.prepare("SELECT id FROM users WHERE username = 'travla-bot'").get();
+      if (!existing) {
+        db.prepare(
+          "INSERT INTO users (username, email, password_hash, role, is_guest, display_name) VALUES ('travla-bot', 'travla-bot@guests.invalid', '', 'user', 1, 'Travla')"
+        ).run();
+      }
+    },
   ];
 
   if (currentVersion < migrations.length) {

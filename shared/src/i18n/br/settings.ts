@@ -247,6 +247,7 @@ const settings: TranslationStrings = {
   'settings.bookingLabels': 'Rótulos das rotas de reservas',
   'settings.bookingLabelsHint': 'Mostra nomes de estações / aeroportos no mapa. Desativado, apenas o ícone aparece.',
   'settings.notifyVersionAvailable': 'Nova versão disponível',
+  'settings.notifyScheduleChange': 'Alterações de horário',
   'settings.notificationPreferences.noChannels':
     'Nenhum canal de notificação configurado. Peça a um administrador para configurar notificações por e-mail ou webhook.',
   'settings.webhookUrl.label': 'URL do webhook',

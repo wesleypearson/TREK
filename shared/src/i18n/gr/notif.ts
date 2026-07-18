@@ -9,6 +9,8 @@ const notif: TranslationStrings = {
   'notif.trip_invite.text': 'Ο/Η {actor} σας προσκάλεσε στο {trip}',
   'notif.booking_change.title': 'Η Κράτηση Ενημερώθηκε',
   'notif.booking_change.text': 'Ο/Η {actor} ενημέρωσε μια κράτηση στο {trip}',
+  'notif.schedule_change.title': 'Οι Ώρες Άλλαξαν',
+  'notif.schedule_change.text': '{count} αλλαγές ώρας στο {trip}',
   'notif.trip_reminder.title': 'Υπενθύμιση Ταξιδιού',
   'notif.trip_reminder.text': 'Το ταξίδι σας {trip} πλησιάζει!',
   'notif.todo_due.title': 'Εργασία προς λήξη',

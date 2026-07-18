@@ -9,6 +9,8 @@ const notif: TranslationStrings = {
   'notif.trip_invite.text': '{actor} te invitó a {trip}',
   'notif.booking_change.title': 'Reserva actualizada',
   'notif.booking_change.text': '{actor} actualizó una reserva en {trip}',
+  'notif.schedule_change.title': 'Horarios modificados',
+  'notif.schedule_change.text': '{count} cambio(s) de horario en {trip}',
   'notif.trip_reminder.title': 'Recordatorio de viaje',
   'notif.trip_reminder.text': '¡Tu viaje {trip} se acerca!',
   'notif.todo_due.title': 'Tarea pendiente',

@@ -391,6 +391,7 @@ export interface NtfyConfig {
 const NTFY_EVENT_META: Partial<Record<NotifEventType, { priority: 1 | 2 | 3 | 4 | 5; tags: string[] }>> = {
   trip_invite:              { priority: 4, tags: ['loudspeaker'] },
   booking_change:           { priority: 3, tags: ['calendar'] },
+  schedule_change:          { priority: 4, tags: ['warning', 'calendar'] },
   trip_reminder:            { priority: 4, tags: ['bell', 'alarm_clock'] },
   vacay_invite:             { priority: 4, tags: ['palm_tree'] },
   photos_shared:            { priority: 3, tags: ['camera'] },

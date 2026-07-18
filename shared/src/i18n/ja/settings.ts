@@ -86,6 +86,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': '持ち物リスト：割り当て',
   'settings.notifyWebhook': 'Webhook通知',
   'settings.notifyVersionAvailable': '新しいバージョン',
+  'settings.notifyScheduleChange': '時間の変更',
   'settings.notificationPreferences.email': 'メール',
   'settings.notificationPreferences.webhook': 'Webhook',
   'settings.notificationPreferences.inapp': 'アプリ内',

@@ -30,11 +30,13 @@ import CostsPanel, { ExpenseModal, type ExpensePrefill } from '../components/Bud
 import type { BookingExpenseRequest } from '../components/Planner/BookingCostsSection.types'
 import type { BudgetItem } from '../types'
 import CollabPanel from '../components/Collab/CollabPanel'
+import ShiftsPanel from '../components/Shifts/ShiftsPanel'
+import ProductionReportModal from '../components/Reports/ProductionReportModal'
 import PluginFrame from '../components/Plugins/PluginFrame'
 import TripWarningsBanner from '../components/Planner/TripWarningsBanner'
 import Navbar from '../components/Layout/Navbar'
 import { useToast } from '../components/shared/Toast'
-import { Map, X, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Ticket, PackageCheck, Wallet, FolderOpen, Users, Train } from 'lucide-react'
+import { Map, X, PanelLeftClose, PanelLeftOpen, PanelRightClose, PanelRightOpen, Ticket, PackageCheck, Wallet, FolderOpen, Users, Train, FileText } from 'lucide-react'
 import { useTranslation } from '../i18n'
 import { addonsApi, accommodationsApi, authApi, tripsApi, assignmentsApi, mapsApi } from '../api/client'
 import { accommodationRepo } from '../repo/accommodationRepo'
@@ -218,6 +220,9 @@ export default function TripPlannerPage(): React.ReactElement | null {
   const [glMap, setGlMap] = useState<CompassMap | null>(null)
   const poiPillEnabled = useSettingsStore(s => s.settings.map_poi_pill_enabled) !== false
 
+  // Production report (custom): the SM/PM digest modal, opened from the header.
+  const [showReport, setShowReport] = useState<boolean>(false)
+
   // Costs expense editor opened from a booking modal (save-then-open). Lives at the
   // page level so it has tripMembers / base currency / current user available.
   const meId = useAuthStore(s => s.user?.id ?? -1)
@@ -298,6 +303,21 @@ export default function TripPlannerPage(): React.ReactElement | null {
           activeTab={activeTab}
           onChange={handleTabChange}
         />
+        {/* Production report (custom) — header action opening the SM/PM digest. */}
+        <button
+          onClick={() => setShowReport(true)}
+          aria-label={t('report.title')}
+          title={t('report.title')}
+          className="text-content-muted hover:text-content"
+          style={{
+            position: 'absolute', right: 10, top: '50%', transform: 'translateY(-50%)',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            width: 32, height: 32, padding: 0, background: 'none', border: 0,
+            borderRadius: 8, cursor: 'pointer', transition: 'color 0.15s',
+          }}
+        >
+          <FileText size={17} />
+        </button>
       </div>
 
       {/* Offset by navbar + tab bar (44px) */}
@@ -724,6 +744,12 @@ export default function TripPlannerPage(): React.ReactElement | null {
           </div>
         )}
 
+        {activeTab === 'shifts' && (
+          <div style={{ height: '100%', overflowY: 'auto', overscrollBehavior: 'contain', width: '100%', paddingBottom: 'var(--bottom-nav-h)' }}>
+            <ShiftsPanel tripId={tripId} />
+          </div>
+        )}
+
         {activeTab.startsWith('plugin:') && (
           <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 'var(--bottom-nav-h)', overflow: 'hidden' }}>
             <PluginFrame pluginId={activeTab.slice('plugin:'.length)} tripId={String(tripId)} fill className="w-full h-full" />
@@ -740,6 +766,7 @@ export default function TripPlannerPage(): React.ReactElement | null {
         onCoverUpdate={(_, coverUrl) => useTripStore.setState(state => ({ trip: state.trip ? { ...state.trip, cover_image: coverUrl } : state.trip }))}
       />
       <TripMembersModal isOpen={showMembersModal} onClose={() => setShowMembersModal(false)} tripId={tripId} tripTitle={trip?.title} onMembersChanged={refreshMembers} />
+      <ProductionReportModal tripId={tripId} isOpen={showReport} onClose={() => setShowReport(false)} />
       <ReservationModal isOpen={showReservationModal} onClose={() => { if (importReviewActive) { advanceImportReview() } else { setShowReservationModal(false); setEditingReservation(null); setBookingForAssignmentId(null) } }} onSave={async (data) => { const r = await handleSaveReservation(data); if (importReviewActive && r) advanceImportReview(); return r }} reservation={editingReservation} prefill={reservationPrefill} days={days} places={places} assignments={assignments} selectedDayId={selectedDayId} files={files} onFileUpload={canUploadFiles ? (fd) => tripActions.addFile(tripId, fd) : undefined} onFileDelete={(id) => tripActions.deleteFile(tripId, id)} accommodations={tripAccommodations} defaultAssignmentId={bookingForAssignmentId} onOpenExpense={openBookingExpense} />
       {showTransportModal && <TransportModal isOpen={showTransportModal} onClose={() => { if (importReviewActive) { advanceImportReview() } else { setShowTransportModal(false); setEditingTransport(null); setTransportModalDayId(null); setTransportModalAutomated(false); setTransitPrefill(null) } }} onSave={async (data) => { const r = await handleSaveTransport(data); if (importReviewActive && r) advanceImportReview(); return r }} reservation={editingTransport} prefill={transportPrefill} days={days} selectedDayId={transportModalDayId} files={files} onFileUpload={canUploadFiles ? (fd) => tripActions.addFile(tripId, fd) : undefined} onFileDelete={(id) => tripActions.deleteFile(tripId, id)} onOpenExpense={openBookingExpense} places={places} assignments={assignments} accommodations={tripAccommodations} initialAutomated={transportModalAutomated} transitPrefill={transitPrefill} tripHasDates={tripHasDates} />}
       {/* Journey view for a saved public-transit entry (#1065) */}

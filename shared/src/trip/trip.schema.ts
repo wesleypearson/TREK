@@ -57,6 +57,9 @@ export const tripMemberSchema = z.object({
   invited_by_username: z.string().nullable().optional(),
   // Guest members (#1362): accountless participant, assignable but never able to log in.
   is_guest: z.boolean().optional(),
+  // Guest contact email: where integrity updates reach off-platform guests.
+  // Surfaced by listMembers for guests only; never present on real accounts.
+  contact_email: z.string().nullable().optional(),
 });
 export type TripMember = z.infer<typeof tripMemberSchema>;
 
@@ -68,6 +71,9 @@ export type TripCreateGuestRequest = z.infer<typeof tripCreateGuestRequestSchema
 
 export const tripRenameGuestRequestSchema = z.object({
   name: z.string().min(1).max(50),
+  // Optional guest contact email — empty string clears it; the server enforces
+  // a sane email shape (≤254 chars) and rejects anything else with 400.
+  contact_email: z.string().max(254).optional(),
 });
 export type TripRenameGuestRequest = z.infer<typeof tripRenameGuestRequestSchema>;
 

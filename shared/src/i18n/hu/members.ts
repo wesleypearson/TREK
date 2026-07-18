@@ -65,5 +65,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Nem sikerült előléptetni a vendéget',
   'members.transferTitle': 'Tulajdonjog átruházása',
   'members.transferConfirm': 'Tulajdonossá tétel',
+
+  'members.guestEmail': 'Kapcsolattartási e-mail',
+  'members.guestEmailHint': 'Ide küldjük e-mailben a frissítéseket és az időpontváltozásokat',
+  'members.guestEmailSaved': 'Kapcsolattartási e-mail mentve',
+  'members.guestEmailInvalid': 'Érvénytelen e-mail-cím',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

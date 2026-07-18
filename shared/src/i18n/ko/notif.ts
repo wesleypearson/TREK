@@ -9,6 +9,8 @@ const notif: TranslationStrings = {
   'notif.trip_invite.text': '{actor}이(가) {trip}에 초대했습니다',
   'notif.booking_change.title': '예약 업데이트됨',
   'notif.booking_change.text': '{actor}이(가) {trip}의 예약을 업데이트했습니다',
+  'notif.schedule_change.title': '시간 변경됨',
+  'notif.schedule_change.text': '{trip}의 시간 변경 {count}건',
   'notif.trip_reminder.title': '여행 리마인더',
   'notif.trip_reminder.text': '여행 {trip}이(가) 곧 시작됩니다!',
   'notif.todo_due.title': '할 일 마감',

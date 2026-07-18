@@ -248,6 +248,7 @@ const settings: TranslationStrings = {
   'settings.mfa.toastDisabled': 'Zwei-Faktor-Authentifizierung deaktiviert',
   'settings.mfa.demoBlocked': 'In der Demo nicht verfügbar',
   'settings.notifyVersionAvailable': 'Neue Version verfügbar',
+  'settings.notifyScheduleChange': 'Zeitänderungen',
   'settings.notificationPreferences.noChannels':
     'Keine Benachrichtigungskanäle konfiguriert. Bitte einen Administrator, E-Mail- oder Webhook-Benachrichtigungen einzurichten.',
   'settings.webhookUrl.label': 'Webhook-URL',

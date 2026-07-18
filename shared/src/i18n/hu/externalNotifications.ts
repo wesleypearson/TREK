@@ -15,6 +15,10 @@ const hu: NotificationLocale = {
       title: `Új foglalás: ${p.booking}`,
       body: `${p.actor} hozzáadott egy "${p.booking}" (${p.type}) foglalást a(z) "${p.trip}" utazáshoz.`,
     }),
+    schedule_change: (p) => ({
+      title: `Időpontváltozás: ${p.trip}`,
+      body: `${p.count} időpontváltozás a(z) "${p.trip}" utazásban:\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `Utazás emlékeztető: ${p.trip}`,
       body: `A(z) "${p.trip}" utazás hamarosan kezdődik!`,

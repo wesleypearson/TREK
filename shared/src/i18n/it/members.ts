@@ -65,5 +65,11 @@ const members: TranslationStrings = {
   'members.promoteError': "Impossibile promuovere l'ospite",
   'members.transferTitle': 'Trasferisci proprietà',
   'members.transferConfirm': 'Rendi proprietario',
+
+  'members.guestEmail': 'Email di contatto',
+  'members.guestEmailHint': 'Aggiornamenti e modifiche agli orari vengono inviati via email qui',
+  'members.guestEmailSaved': 'Email di contatto salvata',
+  'members.guestEmailInvalid': 'Indirizzo email non valido',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;

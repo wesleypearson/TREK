@@ -16,7 +16,7 @@ import { getPhotoProviderConfig } from './memories/helpersService';
 import { ADDON_IDS } from '../addons';
 import { prepareLlmAddonConfigForWrite, maskLlmAddonConfig } from './llmConfig';
 import { send as sendNotification } from './notificationService';
-import { resolveAuthToggles } from './authService';
+import { resolveAuthToggles, isReservedUsername } from './authService';
 import { TRAVLA_RELEASES, LATEST_TRAVLA_VERSION } from './travlaReleases';
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -98,6 +98,8 @@ export function createUser(data: { username: string; email: string; password: st
     return { error: 'Invalid role', status: 400 };
   }
 
+  if (isReservedUsername(username)) return { error: 'This username is reserved', status: 400 };
+
   // Guests (#1362) live in a reserved synthetic namespace; never let one block a real account.
   const existingUsername = db.prepare('SELECT id FROM users WHERE username = ? AND COALESCE(is_guest, 0) = 0').get(username);
   if (existingUsername) return { error: 'Username already taken', status: 409 };
@@ -135,6 +137,7 @@ export function updateUser(id: string, data: { username?: string; email?: string
   }
 
   if (username && username !== user.username) {
+    if (isReservedUsername(username)) return { error: 'This username is reserved', status: 400 };
     const conflict = db.prepare('SELECT id FROM users WHERE username = ? AND id != ? AND COALESCE(is_guest, 0) = 0').get(username, id);
     if (conflict) return { error: 'Username already taken', status: 409 };
   }

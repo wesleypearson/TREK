@@ -22,6 +22,7 @@ export const INAPP_CHANNEL = 'inapp';
 export type NotifEventType =
   | 'trip_invite'
   | 'booking_change'
+  | 'schedule_change'
   | 'trip_reminder'
   | 'todo_due'
   | 'vacay_invite'
@@ -37,6 +38,7 @@ export type NotifEventType =
 export const ALL_EVENT_TYPES: NotifEventType[] = [
   'trip_invite',
   'booking_change',
+  'schedule_change',
   'trip_reminder',
   'todo_due',
   'vacay_invite',

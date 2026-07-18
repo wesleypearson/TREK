@@ -15,6 +15,10 @@ const zhTW: NotificationLocale = {
       title: `新預訂：${p.booking}`,
       body: `${p.actor} 在「${p.trip}」中新增了預訂「${p.booking}」（${p.type}）。`,
     }),
+    schedule_change: (p) => ({
+      title: `時間變更：${p.trip}`,
+      body: `「${p.trip}」中有 ${p.count} 項時間變更：\n${p.summary}`,
+    }),
     trip_reminder: (p) => ({
       title: `行程提醒：${p.trip}`,
       body: `您的行程「${p.trip}」即將開始！`,

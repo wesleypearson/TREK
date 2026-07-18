@@ -20,9 +20,11 @@ export interface PasswordResetStrings {
   ignore: string;
 }
 
-export type NotificationEventKey =
+/** Events every locale has translations for. */
+export type CoreNotificationEventKey =
   | 'trip_invite'
   | 'booking_change'
+  | 'schedule_change'
   | 'trip_reminder'
   | 'todo_due'
   | 'vacay_invite'
@@ -34,8 +36,12 @@ export type NotificationEventKey =
   | 'synology_session_cleared'
   | 'plugin_notification';
 
+export type NotificationEventKey = CoreNotificationEventKey;
+
+export type NotificationEventTexts = Record<CoreNotificationEventKey, EventTextFn>;
+
 export interface NotificationLocale {
   email: EmailStrings;
-  events: Record<NotificationEventKey, EventTextFn>;
+  events: NotificationEventTexts;
   passwordReset: PasswordResetStrings;
 }

@@ -17,15 +17,10 @@ import ru from '../ru/externalNotifications';
 import sv from '../sv/externalNotifications';
 import tr from '../tr/externalNotifications';
 import uk from '../uk/externalNotifications';
+import vi from '../vi/externalNotifications';
 import zhTW from '../zh-TW/externalNotifications';
 import zh from '../zh/externalNotifications';
-import type {
-  NotificationLocale,
-  EmailStrings,
-  EventTextFn,
-  PasswordResetStrings,
-  NotificationEventKey,
-} from './types';
+import type { NotificationLocale, EmailStrings, PasswordResetStrings, NotificationEventTexts } from './types';
 
 export * from './types';
 
@@ -51,13 +46,14 @@ const LOCALES = {
   uk,
   gr,
   sv,
+  vi,
 } satisfies Record<string, NotificationLocale>;
 
 export const EMAIL_I18N: Record<string, EmailStrings> = Object.fromEntries(
   Object.entries(LOCALES).map(([k, v]) => [k, v.email]),
 );
 
-export const EVENT_TEXTS: Record<string, Record<NotificationEventKey, EventTextFn>> = Object.fromEntries(
+export const EVENT_TEXTS: Record<string, NotificationEventTexts> = Object.fromEntries(
   Object.entries(LOCALES).map(([k, v]) => [k, v.events]),
 );
 

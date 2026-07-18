@@ -86,6 +86,7 @@ const settings: TranslationStrings = {
   'settings.notifyPackingTagged': '짐 목록: 배정',
   'settings.notifyWebhook': '웹훅 알림',
   'settings.notifyVersionAvailable': '새 버전 사용 가능',
+  'settings.notifyScheduleChange': '시간 변경',
   'settings.notificationPreferences.email': '이메일',
   'settings.notificationPreferences.webhook': '웹훅',
   'settings.notificationPreferences.inapp': '앱 내',

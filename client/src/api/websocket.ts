@@ -2,12 +2,14 @@
 
 type WebSocketListener = (event: Record<string, unknown>) => void
 type RefetchCallback = (tripId: string) => void
+type ReconnectListener = () => void
 
 let socket: WebSocket | null = null
 let reconnectTimer: ReturnType<typeof setTimeout> | null = null
 let reconnectDelay = 1000
 const MAX_RECONNECT_DELAY = 30000
 const listeners = new Set<WebSocketListener>()
+const reconnectListeners = new Set<ReconnectListener>()
 const activeTrips = new Set<string>()
 let shouldReconnect = false
 let refetchCallback: RefetchCallback | null = null
@@ -90,7 +92,7 @@ function scheduleReconnect(): void {
   reconnectDelay = Math.min(reconnectDelay * 2, MAX_RECONNECT_DELAY)
 }
 
-async function connectInternal(_isReconnect = false): Promise<void> {
+async function connectInternal(isReconnect = false): Promise<void> {
   if (connecting) return
   if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
     return
@@ -132,6 +134,14 @@ async function connectInternal(_isReconnect = false): Promise<void> {
           doRefetch()
         }
       }
+    }
+    // Components that keep live state OUTSIDE the trip store (e.g. the shifts
+    // roster) re-sync here — events dropped while the socket was down are
+    // otherwise lost until the component remounts.
+    if (isReconnect) {
+      reconnectListeners.forEach(fn => {
+        try { fn() } catch (err: unknown) { console.error('WebSocket reconnect listener error:', err) }
+      })
     }
   }
 
@@ -193,4 +203,14 @@ export function addListener(fn: WebSocketListener): void {
 
 export function removeListener(fn: WebSocketListener): void {
   listeners.delete(fn)
+}
+
+/** Fires after a RE-connect has re-joined rooms — refetch state kept outside
+ *  the trip store here, since WS events during the outage were dropped. */
+export function addReconnectListener(fn: ReconnectListener): void {
+  reconnectListeners.add(fn)
+}
+
+export function removeReconnectListener(fn: ReconnectListener): void {
+  reconnectListeners.delete(fn)
 }

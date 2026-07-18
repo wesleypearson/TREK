@@ -64,5 +64,11 @@ const members: TranslationStrings = {
   'members.promoteError': 'Misafir yükseltilemedi',
   'members.transferTitle': 'Sahipliği devret',
   'members.transferConfirm': 'Sahip yap',
+
+  'members.guestEmail': 'İletişim e-postası',
+  'members.guestEmailHint': 'Güncellemeler ve saat değişiklikleri bu adrese e-postayla gönderilir',
+  'members.guestEmailSaved': 'İletişim e-postası kaydedildi',
+  'members.guestEmailInvalid': 'Geçersiz e-posta adresi',
+  'members.guestEmailPlaceholder': 'name@example.com',
 };
 export default members;
