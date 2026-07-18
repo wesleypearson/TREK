@@ -29,6 +29,13 @@ const rel = (tag: string, name: string, date: string, body: string): TravlaRelea
 });
 
 export const TRAVLA_RELEASES: TravlaRelease[] = [
+  rel('v4.2.0', 'Shift rostering, integrity broadcasts & production reports', '2026-07-19', [
+    '- Shifts: a rostering timeclock on every event — geolocated sign-on/off, live on-shift roster, hours per crew member, announced in the event chat',
+    '- Timing changes announce themselves: any edit to schedule times (accidental or deliberate) is broadcast to the whole crew — chat, notifications, and email to guests with a contact address',
+    '- Production report for SMs/PMs: recent changes, files loaded, shift hours and the next 48 hours in one view, shareable to chat',
+    '- Guests can carry a contact email in crew admin; file loads are announced too (private files never)',
+    '- The Travla bot: one consistent voice for all automated updates',
+  ].join('\n')),
   rel('v4.1.0', 'Capture, analytics & release notes for everyone', '2026-07-18', [
     '- What’s new: tap the version in any page footer (or Settings → About) to read these release notes — for the whole crew, not just admins',
     '- Capture: a consent-first sensing tool (location trail, motion, battery, network) recording to our own analytics instance while the app is open',
