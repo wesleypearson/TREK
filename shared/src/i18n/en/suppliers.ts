@@ -2,7 +2,8 @@ import type { TranslationStrings } from '../types';
 
 const suppliers: TranslationStrings = {
   'suppliers.title': 'Suppliers',
-  'suppliers.subtitle': 'Every business the crew deals with — built automatically from receipt scans, tracked across every event.',
+  'suppliers.subtitle':
+    'Every business the crew deals with — built automatically from receipt scans, tracked across every event.',
   'suppliers.searchPlaceholder': 'Search suppliers…',
   'suppliers.add': 'Add supplier',
   'suppliers.empty': 'No suppliers yet',
