@@ -350,7 +350,7 @@ export default function SharedTripPage() {
           return (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {/* Total card */}
-              <div className="text-white" style={{ background: 'linear-gradient(135deg, #000 0%, #1a1a2e 100%)', borderRadius: 14, padding: '20px 24px' }}>
+              <div className="text-white tour-gradient" style={{ borderRadius: 14, padding: '20px 24px', position: 'relative', overflow: 'hidden' }}>
                 <div style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 500, letterSpacing: 1, textTransform: 'uppercase', opacity: 0.5 }}>{t('shared.totalBudget')}</div>
                 <div style={{ fontSize: 'calc(28px * var(--fs-scale-title, 1))', fontWeight: 700, marginTop: 4 }}>{total.toLocaleString(locale, { minimumFractionDigits: 2 })} {base}</div>
               </div>

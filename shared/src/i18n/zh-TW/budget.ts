@@ -189,6 +189,7 @@ const budget: TranslationStrings = {
   'costs.resetWarning': '這會永久刪除此旅程中的所有支出、結算與公開帳單連結。成員和訪客會保留。此操作無法復原。',
   'costs.resetConfirm': '刪除全部',
   'costs.resetDone': '支出已重設',
+  'costs.saveHint': '要儲存，請填寫名稱和金額，並為每一列指定人員',
 
   'costs.sharesSummary': '每人分攤金額摘要',
   'costs.excluded': '不列入分攤',

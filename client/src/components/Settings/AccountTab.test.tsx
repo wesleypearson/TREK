@@ -515,6 +515,48 @@ describe('AccountTab – Account deletion', () => {
   });
 });
 
+// ── Analytics opt-out toggle ─────────────────────────────────────────────────
+
+describe('AccountTab – Analytics toggle', () => {
+  it('shows the analytics toggle with its label and hint', () => {
+    render(<AccountTab />);
+    expect(screen.getByText('Share anonymous usage analytics')).toBeInTheDocument();
+    expect(screen.getByText(/Helps the crew improve Travla/i)).toBeInTheDocument();
+  });
+
+  it('defaults to on when no opt-out flag is stored', () => {
+    render(<AccountTab />);
+    const toggle = screen.getByRole('button', { name: 'Share anonymous usage analytics' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+  });
+
+  it('starts off when the opt-out flag is stored', () => {
+    localStorage.setItem('travla_analytics_optout', 'true');
+    render(<AccountTab />);
+    const toggle = screen.getByRole('button', { name: 'Share anonymous usage analytics' });
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  it('toggling off persists the opt-out flag', async () => {
+    const user = userEvent.setup();
+    render(<AccountTab />);
+    const toggle = screen.getByRole('button', { name: 'Share anonymous usage analytics' });
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'false');
+    expect(localStorage.getItem('travla_analytics_optout')).toBe('true');
+  });
+
+  it('toggling back on clears the opt-out flag', async () => {
+    const user = userEvent.setup();
+    localStorage.setItem('travla_analytics_optout', 'true');
+    render(<AccountTab />);
+    const toggle = screen.getByRole('button', { name: 'Share anonymous usage analytics' });
+    await user.click(toggle);
+    expect(toggle).toHaveAttribute('aria-pressed', 'true');
+    expect(localStorage.getItem('travla_analytics_optout')).toBeNull();
+  });
+});
+
 // ── Role / OIDC display (047–048) ─────────────────────────────────────────────
 
 describe('AccountTab – Role / OIDC display', () => {

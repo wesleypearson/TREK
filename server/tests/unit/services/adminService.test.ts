@@ -42,6 +42,7 @@ vi.mock('../../../src/demo/demo-reset', () => ({
   saveBaseline: vi.fn(),
 }));
 
+import { TRAVLA_RELEASES, LATEST_TRAVLA_VERSION } from '../../../src/services/travlaReleases';
 import { createTables } from '../../../src/db/schema';
 import { runMigrations } from '../../../src/db/migrations';
 import { resetTestDb } from '../../helpers/test-db';
@@ -76,6 +77,7 @@ import {
   saveDemoBaseline,
   getGithubReleases,
   checkVersion,
+  __clearVersionCacheForTests,
   listAddons,
   updateAddon,
   updateCollabFeatures,
@@ -515,53 +517,51 @@ describe('getGithubReleases', () => {
     vi.unstubAllGlobals();
   });
 
-  it('ADMIN-SVC-052 — returns empty array when fetch fails', async () => {
+  it('ADMIN-SVC-052 — serves the local Travla changelog without touching the network', async () => {
+    // Any fetch would blow up — proving the release feed is fully local now.
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
-    const result = await getGithubReleases();
+    const result = await getGithubReleases() as any[];
     expect(Array.isArray(result)).toBe(true);
-    expect(result).toHaveLength(0);
+    expect(result.length).toBeGreaterThan(0);
+    expect(result[0].tag_name).toBe(`v${LATEST_TRAVLA_VERSION}`);
+    expect(result[0].body).toContain('-');
   });
 
-  it('ADMIN-SVC-053 — returns releases array when fetch succeeds', async () => {
-    const mockReleases = [
-      { id: 1, tag_name: 'v3.0.0', name: 'Release 3.0.0', html_url: 'https://github.com/example/releases/tag/v3.0.0' },
-      { id: 2, tag_name: 'v2.9.9', name: 'Release 2.9.9', html_url: 'https://github.com/example/releases/tag/v2.9.9' },
-    ];
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => mockReleases,
-    }));
-    const result = await getGithubReleases();
-    expect(Array.isArray(result)).toBe(true);
-    expect(result).toHaveLength(2);
-    expect((result as any[])[0].tag_name).toBe('v3.0.0');
+  it('ADMIN-SVC-053 — honors per-page/page slicing over the local list', async () => {
+    const page1 = await getGithubReleases('2', '1') as any[];
+    const page2 = await getGithubReleases('2', '2') as any[];
+    expect(page1).toHaveLength(2);
+    expect(page1[0].tag_name).toBe(TRAVLA_RELEASES[0].tag_name);
+    expect(page2[0].tag_name).toBe(TRAVLA_RELEASES[2].tag_name);
   });
 });
 
 // ── checkVersion ──────────────────────────────────────────────────────────────
 
 describe('checkVersion', () => {
+  const originalVersion = process.env.APP_VERSION;
   afterEach(() => {
+    process.env.APP_VERSION = originalVersion;
+    __clearVersionCacheForTests();
     vi.unstubAllGlobals();
   });
 
-  it('ADMIN-SVC-054 — returns update_available:false when fetch fails', async () => {
+  it('ADMIN-SVC-054 — running the newest local release means no update, even offline', async () => {
     vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
+    process.env.APP_VERSION = LATEST_TRAVLA_VERSION;
+    __clearVersionCacheForTests();
     const result = await checkVersion() as any;
     expect(result.update_available).toBe(false);
-    expect(result.current).toBeDefined();
-    expect(result.latest).toBeDefined();
+    expect(result.current).toBe(LATEST_TRAVLA_VERSION);
+    expect(result.latest).toBe(LATEST_TRAVLA_VERSION);
   });
 
-  it('ADMIN-SVC-055 — returns update_available:true when latest version is greater than current', async () => {
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ tag_name: 'v999.0.0', html_url: 'https://github.com/example/releases/tag/v999.0.0' }),
-    }));
+  it('ADMIN-SVC-055 — a container behind the local changelog reports the update', async () => {
+    process.env.APP_VERSION = '0.0.1';
+    __clearVersionCacheForTests();
     const result = await checkVersion() as any;
     expect(result.update_available).toBe(true);
-    expect(result.latest).toBe('999.0.0');
-    expect(result.release_url).toBe('https://github.com/example/releases/tag/v999.0.0');
+    expect(result.latest).toBe(LATEST_TRAVLA_VERSION);
   });
 });
 

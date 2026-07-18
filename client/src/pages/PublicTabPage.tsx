@@ -88,7 +88,7 @@ export default function PublicTabPage() {
           -36px overlap paints on top of the gradient, not underneath it. */}
       <div style={{ maxWidth: 560, margin: '-36px auto 0', padding: '0 16px 40px', display: 'flex', flexDirection: 'column', gap: 14, position: 'relative', zIndex: 1 }}>
         {/* Balance hero */}
-        <div className="bg-white" style={{ borderRadius: 18, padding: '22px 24px', boxShadow: '0 10px 30px -12px rgba(0,0,0,0.25)', textAlign: 'center' }}>
+        <div className="bg-white" style={{ borderRadius: 18, padding: '22px 24px', boxShadow: 'var(--shadow-lg)', textAlign: 'center' }}>
           <div className="text-[#6b7280]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{t('publicTab.balance')}</div>
           <div style={{ fontSize: 'calc(42px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.03em', marginTop: 6, color: owing ? '#dc2626' : '#16a34a' }}>
             {heroFmt(Math.max(balance, 0))}
@@ -106,7 +106,7 @@ export default function PublicTabPage() {
 
         {/* One-time name confirmation */}
         {!data.claimed && (
-          <div className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: 'var(--shadow-sm)' }}>
             <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{t('publicTab.claimTitle', { owner: data.owner_name })}</div>
             <div className="text-[#6b7280]" style={{ fontSize: 'calc(12px * var(--fs-scale-caption, 1))', marginTop: 3, lineHeight: 1.5 }}>{t('publicTab.claimHint')}</div>
             <div style={{ display: 'flex', gap: 8, marginTop: 12, flexWrap: 'wrap' }}>
@@ -133,7 +133,7 @@ export default function PublicTabPage() {
         {live && live.owed.map(o => {
           const entries = PAYMENT_META.filter(m => o.payment_methods[m.key])
           return (
-            <div key={o.user_id} className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+            <div key={o.user_id} className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: 'var(--shadow-sm)' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 10, marginBottom: entries.length ? 12 : 0 }}>
                 <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{t('publicTab.youOwe', { name: o.name })}</div>
                 <div className="text-[#dc2626]" style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>{heroFmt(o.amount)}</div>
@@ -167,7 +167,7 @@ export default function PublicTabPage() {
         {/* Standalone tab, owner without details on file: say so instead of
             leaving the payer with an amount and no way to act on it. */}
         {!live && owing && paymentEntries.length === 0 && (
-          <div className="bg-white" style={{ borderRadius: 16, padding: '16px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white" style={{ borderRadius: 16, padding: '16px 20px', boxShadow: 'var(--shadow-sm)' }}>
             <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700, marginBottom: 4 }}>{t('publicTab.payWith', { owner: data.owner_name })}</div>
             <div className="text-[#6b7280]" style={{ fontSize: 'calc(12.5px * var(--fs-scale-body, 1))', lineHeight: 1.5 }}>{t('publicTab.noMethods', { name: data.owner_name })}</div>
           </div>
@@ -175,7 +175,7 @@ export default function PublicTabPage() {
 
         {/* How to pay (standalone tabs: the tab owner's details) */}
         {!live && owing && paymentEntries.length > 0 && (
-          <div className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white" style={{ borderRadius: 16, padding: '18px 20px', boxShadow: 'var(--shadow-sm)' }}>
             <div className="text-[#111827]" style={{ fontSize: 'calc(14px * var(--fs-scale-body, 1))', fontWeight: 700, marginBottom: 12 }}>{t('publicTab.payWith', { owner: data.owner_name })}</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {paymentEntries.map(({ key, labelKey, Icon }) => (
@@ -198,7 +198,7 @@ export default function PublicTabPage() {
         )}
 
         {/* Charges */}
-        <div className="bg-white" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+        <div className="bg-white" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
           <div className="bg-[#f9fafb] text-[#6b7280]" style={{ padding: '10px 20px', fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 6 }}>
             <ArrowDownRight size={13} /> {t('publicTab.charges')} · {live ? live.charges.length : sortedItems.length}
           </div>
@@ -235,7 +235,7 @@ export default function PublicTabPage() {
 
         {/* Payments made / received */}
         {(live ? live.payments.length : data.payments.length) > 0 && (
-          <div className="bg-white" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.06)' }}>
+          <div className="bg-white" style={{ borderRadius: 16, overflow: 'hidden', boxShadow: 'var(--shadow-sm)' }}>
             <div className="bg-[#f9fafb] text-[#6b7280]" style={{ padding: '10px 20px', fontSize: 'calc(11px * var(--fs-scale-caption, 1))', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', gap: 6 }}>
               <ArrowUpRight size={13} /> {t('publicTab.payments')} · {live ? live.payments.length : data.payments.length}
             </div>
@@ -276,7 +276,7 @@ export default function PublicTabPage() {
 
         {/* Footer */}
         <div style={{ textAlign: 'center', padding: '20px 0 4px' }}>
-          <div className="bg-white border border-[#e5e7eb]" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
+          <div className="bg-white border border-[#e5e7eb]" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, boxShadow: 'var(--shadow-sm)' }}>
             <img src="/icons/icon.svg" alt="Travla" width="18" height="18" style={{ borderRadius: 4 }} />
             <span className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{t('shared.sharedVia')} <strong className="text-[#6b7280]">Travla</strong> · v{bundleVersion}</span>
           </div>

@@ -476,6 +476,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'Jiné platební pokyny',
   'settings.paymentSaved': 'Platební údaje uloženy',
+  'settings.analytics': 'Sdílet anonymní analytiku používání',
+  'settings.analyticsHint':
+    'Pomáhá týmu vylepšovat aplikaci Travla sdílením anonymních vzorců používání s naší vlastní self-hosted analytikou. S třetími stranami se nesdílí nic.',
 };
 
 export default settings;

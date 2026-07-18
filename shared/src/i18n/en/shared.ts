@@ -48,5 +48,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'This tab tracks your share of the event’s shared bills in real time.',
   'publicTab.noMethods': '{name} hasn’t added payment details yet — ask them directly for the best way to pay.',
   'publicTab.credit': 'Fronted for the group',
+  'updates.title': "What's new",
+  'updates.open': "What's new",
+  'updates.error': "Couldn't load the release notes — try again later.",
 };
 export default shared;

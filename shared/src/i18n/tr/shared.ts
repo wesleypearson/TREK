@@ -49,5 +49,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'Bu hesap, gezinin ortak masraflarındaki payınızı gerçek zamanlı takip eder.',
   'publicTab.noMethods': '{name} henüz ödeme bilgisi eklemedi — en iyi ödeme yolunu doğrudan kendisine sorun.',
   'publicTab.credit': 'Grup için önden ödendi',
+  'updates.title': 'Yenilikler',
+  'updates.open': 'Yenilikler',
+  'updates.error': 'Sürüm notları yüklenemedi — daha sonra tekrar deneyin.',
 };
 export default shared;

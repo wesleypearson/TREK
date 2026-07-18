@@ -35,17 +35,14 @@ import { runMigrations } from '../../../src/db/migrations';
 import { resetTestDb } from '../../helpers/test-db';
 import { createAdmin } from '../../helpers/factories';
 import { checkAndNotifyVersion, __clearVersionCacheForTests } from '../../../src/services/adminService';
+import { LATEST_TRAVLA_VERSION } from '../../../src/services/travlaReleases';
 
-// Helper: mock the GitHub releases/latest endpoint
-function mockGitHubLatest(tagName: string, ok = true): void {
-  vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-    ok,
-    json: async () => ({ tag_name: tagName, html_url: `https://github.com/mauriceboe/TREK/releases/tag/${tagName}` }),
-  }));
-}
-
-function mockGitHubFetchFailure(): void {
-  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
+// The update check compares the running APP_VERSION against the LOCAL Travla
+// changelog now — no GitHub. These helpers set what the container "runs".
+const originalAppVersion = process.env.APP_VERSION;
+function setRunningVersion(v: string): void {
+  process.env.APP_VERSION = v;
+  __clearVersionCacheForTests();
 }
 
 function getLastNotifiedVersion(): string | undefined {
@@ -68,6 +65,7 @@ beforeEach(() => {
 });
 
 afterAll(() => {
+  process.env.APP_VERSION = originalAppVersion;
   testDb.close();
   vi.unstubAllGlobals();
 });
@@ -80,8 +78,7 @@ describe('checkAndNotifyVersion', () => {
   it('VNOTIF-001 — does nothing when no update is available', async () => {
     createAdmin(testDb);
     // GitHub reports same version as package.json (or older) → update_available: false
-    const { version } = require('../../../package.json');
-    mockGitHubLatest(`v${version}`);
+    setRunningVersion(LATEST_TRAVLA_VERSION);
 
     await checkAndNotifyVersion();
 
@@ -92,7 +89,7 @@ describe('checkAndNotifyVersion', () => {
   it('VNOTIF-002 — creates a navigate notification for all admins when update available', async () => {
     const { user: admin1 } = createAdmin(testDb);
     const { user: admin2 } = createAdmin(testDb);
-    mockGitHubLatest('v99.0.0');
+    setRunningVersion('0.0.1');
 
     await checkAndNotifyVersion();
 
@@ -107,16 +104,16 @@ describe('checkAndNotifyVersion', () => {
 
   it('VNOTIF-003 — sets last_notified_version in app_settings after notifying', async () => {
     createAdmin(testDb);
-    mockGitHubLatest('v99.1.0');
+    setRunningVersion('0.0.1');
 
     await checkAndNotifyVersion();
 
-    expect(getLastNotifiedVersion()).toBe('99.1.0');
+    expect(getLastNotifiedVersion()).toBe(LATEST_TRAVLA_VERSION);
   });
 
   it('VNOTIF-004 — does NOT create duplicate notification if last_notified_version matches', async () => {
     createAdmin(testDb);
-    mockGitHubLatest('v99.2.0');
+    setRunningVersion('0.0.1');
 
     // First call notifies
     await checkAndNotifyVersion();
@@ -131,18 +128,18 @@ describe('checkAndNotifyVersion', () => {
   it('VNOTIF-005 — creates new notification when last_notified_version is an older version', async () => {
     createAdmin(testDb);
     // Simulate having been notified about an older version
-    testDb.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)').run('last_notified_version', '98.0.0');
-    mockGitHubLatest('v99.3.0');
+    testDb.prepare('INSERT OR REPLACE INTO app_settings (key, value) VALUES (?, ?)').run('last_notified_version', '0.0.0');
+    setRunningVersion('0.0.1');
 
     await checkAndNotifyVersion();
 
     expect(getNotificationCount()).toBe(1);
-    expect(getLastNotifiedVersion()).toBe('99.3.0');
+    expect(getLastNotifiedVersion()).toBe(LATEST_TRAVLA_VERSION);
   });
 
   it('VNOTIF-006 — notification has correct type, scope, and navigate_target', async () => {
     createAdmin(testDb);
-    mockGitHubLatest('v99.4.0');
+    setRunningVersion('0.0.1');
 
     await checkAndNotifyVersion();
 
@@ -162,11 +159,12 @@ describe('checkAndNotifyVersion', () => {
     expect(notif.navigate_text_key).toBe('notif.action.view_admin');
   });
 
-  it('VNOTIF-007 — silently handles GitHub API fetch failure (no crash, no notification)', async () => {
+  it('VNOTIF-007 — fully offline: a dead network never crashes or notifies spuriously', async () => {
     createAdmin(testDb);
-    mockGitHubFetchFailure();
+    vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('Network error')));
+    setRunningVersion(LATEST_TRAVLA_VERSION);
 
-    // Should not throw
+    // Should not throw — and no update exists, so nothing fires.
     await expect(checkAndNotifyVersion()).resolves.toBeUndefined();
     expect(getNotificationCount()).toBe(0);
     expect(getLastNotifiedVersion()).toBeUndefined();

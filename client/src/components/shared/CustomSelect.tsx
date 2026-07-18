@@ -54,8 +54,16 @@ export default function CustomSelect({
       if (dropRef.current?.contains(e.target as Node)) return
       setOpen(false)
     }
-    if (open) document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    // Esc closes too — outside-click alone leaves keyboard users trapped.
+    const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    if (open) {
+      document.addEventListener('mousedown', handleClick)
+      document.addEventListener('keydown', handleKey)
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClick)
+      document.removeEventListener('keydown', handleKey)
+    }
   }, [open])
 
   const selected = options.find(o => o.value === value)
@@ -92,6 +100,8 @@ export default function CustomSelect({
       <button
         type="button"
         disabled={disabled}
+        aria-haspopup="listbox"
+        aria-expanded={open}
         onClick={() => { if (!disabled) { setOpen(o => !o); setSearch('') } }}
         style={{
           width: '100%', display: 'flex', alignItems: 'center', gap: 8,
@@ -139,7 +149,7 @@ export default function CustomSelect({
           WebkitBackdropFilter: 'blur(24px) saturate(180%)',
           border: '1px solid var(--border-primary)',
           borderRadius: 10,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.12)',
+          boxShadow: 'var(--shadow-dropdown)',
           overflow: 'hidden',
           animation: 'trek-menu-enter 200ms cubic-bezier(0.23, 1, 0.32, 1)',
           transformOrigin: 'top center',

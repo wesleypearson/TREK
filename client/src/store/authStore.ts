@@ -10,6 +10,7 @@ import { setAuthed } from '../sync/authGate'
 import { unregisterSyncTriggers } from '../sync/syncTriggers'
 import { useSystemNoticeStore } from './systemNoticeStore.js'
 import { clearAppearanceSnapshot } from '../theme/applyAppearance'
+import { identifyUser, resetAnalytics } from '../analytics/posthog'
 
 interface AuthResponse {
   user: User
@@ -77,8 +78,10 @@ let authSequence = 0
  * Mark the session authenticated and point the offline DB at this user's scoped
  * database before any background sync runs, so cached data never crosses users.
  */
-async function onAuthSuccess(userId: number): Promise<void> {
+async function onAuthSuccess(userId: number, username?: string): Promise<void> {
   setAuthed(true)
+  // Tie analytics to the account on login/session restore (no-op when disabled).
+  if (username) identifyUser(userId, username)
   try {
     await reopenForUser(userId)
   } catch (err) {
@@ -121,7 +124,7 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false,
         error: null,
       })
-      await onAuthSuccess(data.user.id)
+      await onAuthSuccess(data.user.id, data.user.username)
       connect()
       tripSyncManager.syncAll().catch(console.error)
       if (!data.user?.must_change_password) {
@@ -146,7 +149,7 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false,
         error: null,
       })
-      await onAuthSuccess(data.user.id)
+      await onAuthSuccess(data.user.id, data.user.username)
       connect()
       tripSyncManager.syncAll().catch(console.error)
       if (!data.user?.must_change_password) {
@@ -171,7 +174,7 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false,
         error: null,
       })
-      await onAuthSuccess(data.user.id)
+      await onAuthSuccess(data.user.id, data.user.username)
       connect()
       tripSyncManager.syncAll().catch(console.error)
       useSystemNoticeStore.getState().fetch()
@@ -191,6 +194,8 @@ export const useAuthStore = create<AuthState>()(
     unregisterSyncTriggers()
     // 3. Tear down the live connection.
     disconnect()
+    // Unlink analytics from the account (no-op when analytics is disabled).
+    resetAnalytics()
     useSystemNoticeStore.getState().reset()
     // Drop the per-device appearance snapshot so the next user on a shared
     // browser doesn't get a pre-paint flash of this user's theme.
@@ -228,7 +233,7 @@ export const useAuthStore = create<AuthState>()(
         isLoading: false,
         authCheckFailed: false,
       })
-      await onAuthSuccess(data.user.id)
+      await onAuthSuccess(data.user.id, data.user.username)
       connect()
     } catch (err: unknown) {
       if (seq !== authSequence) return // stale response — ignore
@@ -332,7 +337,7 @@ export const useAuthStore = create<AuthState>()(
         demoMode: true,
         error: null,
       })
-      await onAuthSuccess(data.user.id)
+      await onAuthSuccess(data.user.id, data.user.username)
       connect()
       return data
     } catch (err: unknown) {

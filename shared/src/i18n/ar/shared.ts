@@ -48,5 +48,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'يتتبع هذا الحساب حصتك من الفواتير المشتركة للرحلة في الوقت الفعلي.',
   'publicTab.noMethods': 'لم يُضِف {name} تفاصيل الدفع بعد — اسأله مباشرة عن أفضل طريقة للدفع.',
   'publicTab.credit': 'مدفوع مقدمًا عن المجموعة',
+  'updates.title': 'ما الجديد',
+  'updates.open': 'ما الجديد',
+  'updates.error': 'تعذّر تحميل ملاحظات الإصدار — حاول مرة أخرى لاحقًا.',
 };
 export default shared;

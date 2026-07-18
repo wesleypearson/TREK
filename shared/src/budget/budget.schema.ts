@@ -123,6 +123,9 @@ export const budgetItemSchema = z.object({
   // venue's name hydrated by the server when the viewer may see that venue.
   place_id: z.number().nullable().optional(),
   place_name: z.string().nullable().optional(),
+  // Supplier link (custom): the instance-wide vendor this expense belongs to.
+  supplier_id: z.number().nullable().optional(),
+  supplier_name: z.string().nullable().optional(),
   sort_order: z.number().optional(),
   created_at: z.string().optional(),
   members: z.array(budgetItemMemberSchema).optional(),
@@ -162,6 +165,8 @@ export const budgetCreateItemRequestSchema = z.object({
   receipt_file_id: z.number().nullable().optional(),
   // Link this expense to a venue (places row) in the same event.
   place_id: z.number().nullable().optional(),
+  // Link this expense to a supplier (instance-wide vendor book).
+  supplier_id: z.number().nullable().optional(),
   // Link this expense to a reservation (e.g. created from a booking's
   // "add expense" flow). The server stores it on budget_items.reservation_id.
   reservation_id: z.number().optional(),
@@ -188,6 +193,8 @@ export const budgetUpdateItemRequestSchema = z.object({
   receipt_file_id: z.number().nullable().optional(),
   // Venue link: set to a places id to pin the expense, null to unpin.
   place_id: z.number().nullable().optional(),
+  // Supplier link: vendor-book id, null to unlink.
+  supplier_id: z.number().nullable().optional(),
 });
 export type BudgetUpdateItemRequest = z.infer<typeof budgetUpdateItemRequestSchema>;
 

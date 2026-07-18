@@ -273,7 +273,7 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
           const balCur = tab.live ? tab.live.currency : tab.currency
           return (
             <div key={tab.id} className="bg-surface-card border border-edge" style={{ borderRadius: 14, overflow: 'hidden' }}>
-              <div style={{ padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => { setExpanded(open ? null : tab.id); setPayAmount(''); setPayNote(''); setConfirmDeleteId(null) }}>
+              <button type="button" aria-expanded={open} style={{ width: '100%', textAlign: 'left', background: 'none', border: 0, color: 'inherit', font: 'inherit', padding: '13px 16px', display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }} onClick={() => { setExpanded(open ? null : tab.id); setPayAmount(''); setPayNote(''); setConfirmDeleteId(null) }}>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                     <span className="text-content" style={{ fontSize: 'calc(14.5px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{tabName(tab)}</span>
@@ -282,7 +282,7 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
                       <span className="bg-surface-secondary border border-edge text-content-muted" style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', fontWeight: 700 }}>{t('costs.tabLinked')}</span>
                     )}
                     {tab.claimed_at && (
-                      <span className="bg-[rgba(22,163,74,0.12)] text-[#16a34a]" style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', fontWeight: 700 }}>{t('costs.tabClaimed')}</span>
+                      <span className="bg-[rgba(22,163,74,0.12)] text-[var(--success)]" style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', fontWeight: 700 }}>{t('costs.tabClaimed')}</span>
                     )}
                     {tab.revoked_at && (
                       <span className="bg-[rgba(217,119,6,0.14)] text-[#d97706]" style={{ padding: '2px 8px', borderRadius: 999, fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', fontWeight: 700 }}>{t('costs.tabRevoked')}</span>
@@ -293,17 +293,17 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
                   </div>
                 </div>
                 <div style={{ textAlign: 'right', whiteSpace: 'nowrap' }}>
-                  <div style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))', fontWeight: 700, color: balance > 0.004 ? '#dc2626' : '#16a34a' }}>{fmt(balance, balCur)}</div>
+                  <div style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))', fontWeight: 700, color: balance > 0.004 ? 'var(--danger)' : 'var(--success)' }}>{fmt(balance, balCur)}</div>
                 </div>
                 {open ? <ChevronUp size={16} className="text-content-faint" /> : <ChevronDown size={16} className="text-content-faint" />}
-              </div>
+              </button>
 
               {open && (
                 <div className="border-edge" style={{ borderTop: '1px solid var(--border-faint, #e5e7eb)', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {/* actions */}
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     <button onClick={() => copyLink(tab)} className={iconBtn} style={iconBtnStyle}>
-                      {copiedId === tab.id ? <Check size={13} className="text-[#16a34a]" /> : <Copy size={13} />} {copiedId === tab.id ? t('costs.tabLinkCopied') : t('costs.tabCopyLink')}
+                      {copiedId === tab.id ? <Check size={13} className="text-[var(--success)]" /> : <Copy size={13} />} {copiedId === tab.id ? t('costs.tabLinkCopied') : t('costs.tabCopyLink')}
                     </button>
                     <a href={linkFor(tab)} target="_blank" rel="noopener noreferrer" className={iconBtn} style={{ ...iconBtnStyle, textDecoration: 'none' }}>
                       <ExternalLink size={13} /> {t('costs.tabOpen')}
@@ -319,8 +319,8 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
                         if (confirmDeleteId !== tab.id) { setConfirmDeleteId(tab.id); return }
                         try { await expenseTabsApi.delete(tripId, tab.id); setConfirmDeleteId(null); await load() } catch { toast.error(t('common.unknownError')) }
                       }}
-                      className={confirmDeleteId === tab.id ? 'bg-[#dc2626] text-white border border-[#dc2626]' : iconBtn}
-                      style={{ ...iconBtnStyle, color: confirmDeleteId === tab.id ? '#fff' : '#dc2626' }}>
+                      className={confirmDeleteId === tab.id ? 'bg-[var(--danger)] text-white border border-[#dc2626]' : iconBtn}
+                      style={{ ...iconBtnStyle, color: confirmDeleteId === tab.id ? '#fff' : 'var(--danger)' }}>
                       <Trash2 size={13} /> {confirmDeleteId === tab.id ? t('costs.tabDeleteConfirm') : t('costs.tabDelete')}
                     </button>
                   </div>
@@ -338,7 +338,7 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
                       {tab.live.owed.map(o => (
                         <div key={o.user_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '5px 0' }}>
                           <span className="text-content" style={{ flex: 1, fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 500 }}>{o.name}</span>
-                          <span className="text-[#dc2626]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{fmt(o.amount, tab.live!.currency)}</span>
+                          <span className="text-[var(--danger)]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700 }}>{fmt(o.amount, tab.live!.currency)}</span>
                         </div>
                       ))}
                     </div>
@@ -367,8 +367,9 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
                             </div>
                             <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>{fmt(item.amount, item.currency)}</span>
                             <button onClick={async () => { try { await expenseTabsApi.removeItem(tripId, tab.id, item.id); await load() } catch { toast.error(t('common.unknownError')) } }}
-                              className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 2, display: 'inline-flex' }}>
-                              <Trash2 size={13} />
+                              aria-label={t('common.delete')}
+                              className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', minWidth: 34, minHeight: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', margin: '-8px -6px' }}>
+                              <Trash2 size={15} />
                             </button>
                           </div>
                         ))}
@@ -384,7 +385,7 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
                               <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))' }}>{t('costs.tabPaidTo', { name: p.to_name })}</span>
                               <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(p.created_at)}</span>
                             </div>
-                            <span className="text-[#16a34a]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{fmt(p.amount, p.currency || tab.live!.currency)}</span>
+                            <span className="text-[var(--success)]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{fmt(p.amount, p.currency || tab.live!.currency)}</span>
                           </div>
                         ))
                       : tab.payments.map(p => (
@@ -393,10 +394,11 @@ export default function ExpenseTabsModal({ tripId, base, locale, people = [], me
                               <span className="text-content" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))' }}>{p.note || t('costs.tabPayments')}</span>
                               <span className="text-content-faint" style={{ marginLeft: 8, fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{fmtDate(p.created_at)}</span>
                             </div>
-                            <span className="text-[#16a34a]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{fmt(p.amount, tab.currency)}</span>
+                            <span className="text-[var(--success)]" style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', fontWeight: 700, whiteSpace: 'nowrap' }}>−{fmt(p.amount, tab.currency)}</span>
                             <button onClick={async () => { try { await expenseTabsApi.removePayment(tripId, tab.id, p.id); await load() } catch { toast.error(t('common.unknownError')) } }}
-                              className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', padding: 2, display: 'inline-flex' }}>
-                              <Trash2 size={13} />
+                              aria-label={t('common.delete')}
+                              className="text-content-faint" style={{ background: 'none', border: 0, cursor: 'pointer', minWidth: 34, minHeight: 34, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', margin: '-8px -6px' }}>
+                              <Trash2 size={15} />
                             </button>
                           </div>
                         ))}

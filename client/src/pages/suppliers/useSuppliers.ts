@@ -4,6 +4,7 @@ import { useToast } from '../../components/shared/Toast'
 import { getApiErrorMessage } from '../../types'
 import { suppliersApi } from '../../api/client'
 import type { SupplierDetail, SupplierListEntry } from '../../api/client'
+import { captureEvent } from '../../analytics/posthog'
 
 /** The editable contact form mirrored in the detail modal. */
 export interface SupplierFormState {
@@ -106,6 +107,7 @@ export function useSuppliers() {
     setCreating(true)
     try {
       const data = await suppliersApi.create({ name })
+      captureEvent('supplier_created')
       setShowCreate(false)
       setNewName('')
       void load(search)

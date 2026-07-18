@@ -195,6 +195,7 @@ const budget: TranslationStrings = {
     'Ez véglegesen töröl minden költséget, elszámolást és nyilvános számlalinket ebben az utazásban. A tagok és a vendégek megmaradnak. A művelet nem vonható vissza.',
   'costs.resetConfirm': 'Összes törlése',
   'costs.resetDone': 'Költségek nullázva',
+  'costs.saveHint': 'A mentéshez adj meg nevet és összeget — és rendelj valakit minden tételhez',
 
   'costs.sharesSummary': 'Egyéni részek összegzése',
   'costs.excluded': 'Kihagyva',

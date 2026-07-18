@@ -10,6 +10,8 @@ import type { UserWithOidc } from '../../types'
 import Section from './Section'
 import PasskeysSection from './PasskeysSection'
 import PaymentDetailsSection from './PaymentDetailsSection'
+import ToggleSwitch from './ToggleSwitch'
+import { isAnalyticsOptedOut, setAnalyticsOptOut } from '../../analytics/posthog'
 
 const MFA_BACKUP_SESSION_KEY = 'trek_mfa_backup_codes_pending'
 
@@ -23,6 +25,14 @@ export default function AccountTab(): React.ReactElement {
 
   const [saving, setSaving] = useState(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean | 'blocked'>(false)
+
+  // Analytics opt-out (PostHog) — toggle reflects the persisted preference.
+  const [analyticsOn, setAnalyticsOn] = useState(() => !isAnalyticsOptedOut())
+  const toggleAnalytics = () => {
+    const next = !analyticsOn
+    setAnalyticsOn(next)
+    setAnalyticsOptOut(!next)
+  }
 
   // Profile
   const [username, setUsername] = useState<string>(user?.username || '')
@@ -399,6 +409,17 @@ export default function AccountTab(): React.ReactElement {
 
         {/* Passkeys */}
         <PasskeysSection demoMode={demoMode} />
+
+        {/* Privacy — anonymous usage analytics */}
+        <div className="pt-4 mt-4 border-t border-edge-secondary">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('settings.analytics')}</label>
+              <p className="text-xs m-0 text-content-muted" style={{ lineHeight: 1.5 }}>{t('settings.analyticsHint')}</p>
+            </div>
+            <ToggleSwitch on={analyticsOn} onToggle={toggleAnalytics} label={t('settings.analytics')} />
+          </div>
+        </div>
 
         {/* Avatar */}
         <div className="flex items-center gap-4">

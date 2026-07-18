@@ -472,6 +472,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': '기타 결제 안내',
   'settings.paymentSaved': '결제 정보가 저장되었습니다',
+  'settings.analytics': '익명 사용 통계 공유',
+  'settings.analyticsHint':
+    '익명 사용 패턴을 자체 호스팅하는 분석 서버로만 공유해 Travla를 개선하는 데 도움이 됩니다. 제3자에게는 아무것도 공유되지 않습니다.',
 };
 
 export default settings;

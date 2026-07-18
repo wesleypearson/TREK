@@ -194,6 +194,7 @@ const budget: TranslationStrings = {
     'Isso exclui permanentemente todas as despesas, acertos e links públicos de comanda desta viagem. Membros e convidados permanecem. Isso não pode ser desfeito.',
   'costs.resetConfirm': 'Excluir tudo',
   'costs.resetDone': 'Despesas redefinidas',
+  'costs.saveHint': 'Adicione um nome e um valor — e alguém em cada linha — para salvar',
 
   'costs.sharesSummary': 'Resumo das partes individuais',
   'costs.excluded': 'Excluído',

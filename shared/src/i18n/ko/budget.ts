@@ -192,6 +192,7 @@ const budget: TranslationStrings = {
     '이 여행의 모든 지출, 정산, 공개 장부 링크가 영구적으로 삭제됩니다. 멤버와 게스트는 유지됩니다. 이 작업은 되돌릴 수 없습니다.',
   'costs.resetConfirm': '전부 삭제',
   'costs.resetDone': '지출이 초기화되었습니다',
+  'costs.saveHint': '저장하려면 이름과 금액을 입력하고 각 항목에 사람을 지정하세요',
 
   'costs.sharesSummary': '개인별 부담액 요약',
   'costs.excluded': '제외됨',

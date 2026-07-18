@@ -455,6 +455,8 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': '其他付款說明',
   'settings.paymentSaved': '收款方式已儲存',
+  'settings.analytics': '分享匿名使用分析',
+  'settings.analyticsHint': '透過與我們自行架設的分析系統分享匿名使用模式，協助團隊改進 Travla。不會與任何第三方分享。',
 };
 
 export default settings;

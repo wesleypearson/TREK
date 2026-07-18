@@ -193,6 +193,7 @@ const budget: TranslationStrings = {
     'Esto elimina permanentemente todos los gastos, pagos saldados y enlaces públicos de cuentas de este viaje. Los miembros e invitados se conservan. No se puede deshacer.',
   'costs.resetConfirm': 'Eliminar todo',
   'costs.resetDone': 'Gastos restablecidos',
+  'costs.saveHint': 'Añade un nombre y un importe — y asigna a alguien en cada línea — para guardar',
 
   'costs.sharesSummary': 'Resumen de las partes individuales',
   'costs.excluded': 'Excluido',

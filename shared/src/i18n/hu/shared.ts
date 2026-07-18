@@ -51,5 +51,8 @@ const shared: TranslationStrings = {
   'publicTab.noMethods':
     '{name} még nem adott meg fizetési adatokat — kérdezd meg tőle közvetlenül a legjobb fizetési módot.',
   'publicTab.credit': 'Megelőlegezve a csoportnak',
+  'updates.title': 'Újdonságok',
+  'updates.open': 'Újdonságok',
+  'updates.error': 'Nem sikerült betölteni a kiadási megjegyzéseket — próbáld újra később.',
 };
 export default shared;

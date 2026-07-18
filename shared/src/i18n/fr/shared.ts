@@ -51,5 +51,8 @@ const shared: TranslationStrings = {
   'publicTab.noMethods':
     '{name} n’a pas encore ajouté de coordonnées de paiement — demandez-lui directement le meilleur moyen de payer.',
   'publicTab.credit': 'Avancé pour le groupe',
+  'updates.title': 'Nouveautés',
+  'updates.open': 'Nouveautés',
+  'updates.error': 'Impossible de charger les notes de version — réessayez plus tard.',
 };
 export default shared;

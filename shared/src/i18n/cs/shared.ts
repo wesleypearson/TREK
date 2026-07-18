@@ -50,5 +50,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'Tento účet sleduje váš podíl na společných útratách cesty v reálném čase.',
   'publicTab.noMethods': '{name} zatím nepřidal(a) platební údaje — zeptejte se přímo na nejlepší způsob platby.',
   'publicTab.credit': 'Založeno za skupinu',
+  'updates.title': 'Co je nového',
+  'updates.open': 'Co je nového',
+  'updates.error': 'Poznámky k vydání se nepodařilo načíst — zkuste to prosím později.',
 };
 export default shared;

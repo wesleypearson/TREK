@@ -3,7 +3,7 @@ import { useAddonStore } from '../../store/addonStore'
 import { usePluginStore } from '../../store/pluginStore'
 import { useSettingsStore } from '../../store/settingsStore'
 import { useTranslation } from '../../i18n'
-import { LayoutGrid, CalendarDays, Globe, Compass, Bookmark, Plus, Blocks, Store } from 'lucide-react'
+import { LayoutGrid, CalendarDays, Globe, Compass, Bookmark, Plus, Blocks, Store, Radio } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
 const ADDON_NAV: Record<string, { icon: LucideIcon; labelKey: string }> = {
@@ -13,6 +13,7 @@ const ADDON_NAV: Record<string, { icon: LucideIcon; labelKey: string }> = {
   collections: { icon: Bookmark,     labelKey: 'admin.addons.catalog.collections.name' },
   // No admin.addons.catalog entry for suppliers yet — the page title key is the label.
   suppliers:   { icon: Store,        labelKey: 'suppliers.title' },
+  capture:     { icon: Radio,        labelKey: 'capture.title' },
 }
 
 interface NavItem { to: string; label: string; icon: LucideIcon }

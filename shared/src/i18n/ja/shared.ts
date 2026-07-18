@@ -48,5 +48,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'このツケは、旅の割り勘費用のあなたの負担分をリアルタイムで反映します。',
   'publicTab.noMethods': '{name} はまだ支払い情報を追加していません — 最適な支払い方法を直接確認してください。',
   'publicTab.credit': 'グループの立て替え',
+  'updates.title': '新着情報',
+  'updates.open': '新着情報',
+  'updates.error': 'リリースノートを読み込めませんでした。しばらくしてからもう一度お試しください。',
 };
 export default shared;

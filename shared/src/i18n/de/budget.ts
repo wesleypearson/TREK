@@ -197,6 +197,7 @@ const budget: TranslationStrings = {
     'Dies löscht dauerhaft alle Ausgaben, Ausgleiche und öffentlichen Deckel-Links dieser Reise. Mitglieder und Gäste bleiben erhalten. Das lässt sich nicht rückgängig machen.',
   'costs.resetConfirm': 'Alles löschen',
   'costs.resetDone': 'Ausgaben zurückgesetzt',
+  'costs.saveHint': 'Zum Speichern Name und Betrag angeben — und jede Position jemandem zuweisen',
 
   'costs.sharesSummary': 'Übersicht der einzelnen Anteile',
   'costs.excluded': 'Ausgeschlossen',

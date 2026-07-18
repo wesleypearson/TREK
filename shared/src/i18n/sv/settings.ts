@@ -481,6 +481,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'Övriga betalningsinstruktioner',
   'settings.paymentSaved': 'Betalningsuppgifter sparade',
+  'settings.analytics': 'Dela anonym användningsstatistik',
+  'settings.analyticsHint':
+    'Hjälper teamet att förbättra Travla genom att dela anonyma användningsmönster med vår egen självhostade analys. Inget delas med tredje part.',
 };
 
 export default settings;

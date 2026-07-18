@@ -195,6 +195,7 @@ const budget: TranslationStrings = {
     'Ini akan menghapus secara permanen semua pengeluaran, pelunasan, dan tautan tagihan publik di perjalanan ini. Anggota dan tamu tetap ada. Tindakan ini tidak dapat dibatalkan.',
   'costs.resetConfirm': 'Hapus semuanya',
   'costs.resetDone': 'Pengeluaran direset',
+  'costs.saveHint': 'Isi nama dan jumlah — dan tetapkan orang di setiap baris — untuk menyimpan',
 
   'costs.sharesSummary': 'Ringkasan bagian per orang',
   'costs.excluded': 'Dikecualikan',

@@ -192,6 +192,7 @@ const budget: TranslationStrings = {
     'Tímto trvale smažete všechny výdaje, vyrovnání a veřejné odkazy na účty v této cestě. Členové a hosté zůstanou. Tuto akci nelze vrátit zpět.',
   'costs.resetConfirm': 'Smazat vše',
   'costs.resetDone': 'Výdaje byly resetovány',
+  'costs.saveHint': 'Pro uložení zadejte název a částku — a ke každé položce někoho přiřaďte',
 
   'costs.sharesSummary': 'Přehled jednotlivých podílů',
   'costs.excluded': 'Vyloučeno',

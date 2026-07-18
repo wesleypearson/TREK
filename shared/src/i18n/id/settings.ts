@@ -482,6 +482,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'Instruksi pembayaran lainnya',
   'settings.paymentSaved': 'Detail pembayaran disimpan',
+  'settings.analytics': 'Bagikan analitik penggunaan anonim',
+  'settings.analyticsHint':
+    'Membantu tim menyempurnakan Travla dengan membagikan pola penggunaan anonim ke analitik self-hosted milik kami sendiri. Tidak ada yang dibagikan ke pihak ketiga.',
 };
 
 export default settings;

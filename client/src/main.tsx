@@ -29,11 +29,14 @@ import './index.css'
 import { maybeInstallTouchDragPolyfill } from './utils/touchDragPolyfill'
 import { startConnectivityProbe } from './sync/connectivity'
 import { requestPersistentStorage } from './sync/persistentStorage'
+import { initAnalytics } from './analytics/posthog'
 
 maybeInstallTouchDragPolyfill()
 startConnectivityProbe()
 // Keep offline data (map tiles, file blobs, IndexedDB) exempt from eviction.
 requestPersistentStorage()
+// PostHog product analytics — production builds only, opt-out respected.
+initAnalytics()
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
