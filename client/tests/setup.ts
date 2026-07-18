@@ -4,6 +4,20 @@ import { cleanup } from '@testing-library/react';
 import { afterAll, afterEach, beforeAll, vi } from 'vitest';
 import { server } from './helpers/msw/server';
 
+// Mock posthog-js so tests never load (or talk to) the real analytics SDK.
+// initAnalytics() is also env-gated off in tests (import.meta.env.PROD is
+// false), so nothing would init anyway — this keeps the module itself out.
+vi.mock('posthog-js', () => ({
+  default: {
+    init: vi.fn(),
+    identify: vi.fn(),
+    reset: vi.fn(),
+    capture: vi.fn(),
+    opt_in_capturing: vi.fn(),
+    opt_out_capturing: vi.fn(),
+  },
+}));
+
 // Mock the websocket module so stores don't try to open real connections
 vi.mock('../src/api/websocket', () => ({
   connect: vi.fn(),
