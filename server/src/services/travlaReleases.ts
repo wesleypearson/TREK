@@ -29,11 +29,12 @@ const rel = (tag: string, name: string, date: string, body: string): TravlaRelea
 });
 
 export const TRAVLA_RELEASES: TravlaRelease[] = [
-  rel('v4.1.0', 'Faster lodging, Travla release notes', '2026-07-18', [
-    '- Who paid and Venue now lead the expense form — the two answers you know first',
-    '- Supplier shown on every expense row, so the ledger answers "who did we pay"',
-    '- This release history: the admin Updates section now tracks Travla itself',
-    '- Design polish: poster total card on desktop, marquee modal titles, dark-mode-correct reds/greens, bigger split chips and delete buttons, smarter phone keyboards',
+  rel('v4.1.0', 'Capture, analytics & release notes for everyone', '2026-07-18', [
+    '- What’s new: tap the version in any page footer (or Settings → About) to read these release notes — for the whole crew, not just admins',
+    '- Capture: a consent-first sensing tool (location trail, motion, battery, network) recording to our own analytics instance while the app is open',
+    '- Usage analytics on our self-hosted PostHog — identified crew only, opt-out in Settings, nothing third-party',
+    '- Who paid and Venue now lead the expense form; supplier shown on every ledger row',
+    '- Design polish: poster total card on desktop, marquee modal titles, dark-mode-correct reds/greens, bigger split chips, smarter phone keyboards',
     '- Accessibility: proper dialog semantics on every modal, labelled buttons and inputs',
   ].join('\n')),
   rel('v4.0.0', 'Suppliers CRM, auto-venues, Tour ’95', '2026-07-18', [

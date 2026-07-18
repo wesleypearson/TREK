@@ -1212,4 +1212,18 @@ export const inAppNotificationsApi = {
       apiClient.post(`/notifications/in-app/${id}/respond`, { response }).then(r => r.data),
 }
 
+// Crew-visible release notes ("What's new") — the local Travla changelog,
+// served to every signed-in user (unlike the admin-gated github-releases).
+export interface TravlaReleaseDto {
+  tag_name: string
+  name: string
+  body: string
+  published_at: string
+}
+
+export const updatesApi = {
+  list: (): Promise<{ releases: TravlaReleaseDto[] }> =>
+      apiClient.get('/updates').then(r => r.data),
+}
+
 export default apiClient
