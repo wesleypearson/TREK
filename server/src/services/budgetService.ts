@@ -206,6 +206,7 @@ export function createBudgetItem(
     reservation_id?: number | null;
     is_private?: boolean | number; receipt_file_id?: number | null;
     place_id?: number | null;
+    supplier_id?: number | null;
   },
   createdBy?: number,
 ) {
@@ -231,7 +232,7 @@ export function createBudgetItem(
   const total = data.payers && data.payers.length > 0 ? payerTotal : (data.total_price || 0);
 
   const result = db.prepare(
-    'INSERT INTO budget_items (trip_id, category, name, total_price, currency, exchange_rate, persons, days, note, sort_order, expense_date, reservation_id, created_by, is_private, receipt_file_id, place_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+    'INSERT INTO budget_items (trip_id, category, name, total_price, currency, exchange_rate, persons, days, note, sort_order, expense_date, reservation_id, created_by, is_private, receipt_file_id, place_id, supplier_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
   ).run(
     tripId,
     cat,
@@ -250,6 +251,7 @@ export function createBudgetItem(
     data.is_private ? 1 : 0,
     data.receipt_file_id != null ? data.receipt_file_id : null,
     data.place_id != null ? data.place_id : null,
+    data.supplier_id != null ? data.supplier_id : null,
   );
 
   const itemId = result.lastInsertRowid as number;
@@ -283,11 +285,21 @@ export function getBudgetItem(id: string | number, tripId: string | number, view
 
 /** Attach place_name for a venue-linked expense, hiding venues the viewer can't see. */
 function hydratePlaceName(item: BudgetItem & { place_id?: number | null; place_name?: string | null }, viewerId?: number) {
+  // Supplier first — it must hydrate even when no venue is pinned.
+  hydrateSupplierName(item as BudgetItem & { supplier_id?: number | null; supplier_name?: string | null });
   item.place_name = null;
   if (item.place_id == null) return;
   const place = db.prepare('SELECT name, is_private, created_by FROM places WHERE id = ?')
     .get(item.place_id) as { name: string; is_private?: number; created_by?: number | null } | undefined;
   if (place && (viewerId == null || canViewPlace(place, viewerId))) item.place_name = place.name;
+}
+
+/** Attach supplier_name for a vendor-linked expense (suppliers are instance-visible). */
+function hydrateSupplierName(item: BudgetItem & { supplier_id?: number | null; supplier_name?: string | null }) {
+  item.supplier_name = null;
+  if (item.supplier_id == null) return;
+  const s = db.prepare('SELECT name FROM suppliers WHERE id = ?').get(item.supplier_id) as { name: string } | undefined;
+  if (s) item.supplier_name = s.name;
 }
 
 /**
@@ -324,6 +336,7 @@ export function updateBudgetItem(
     persons?: number | null; days?: number | null; note?: string | null; sort_order?: number; expense_date?: string | null;
     is_private?: boolean | number; receipt_file_id?: number | null;
     place_id?: number | null;
+    supplier_id?: number | null;
   },
   actingUserId?: number,
 ) {
@@ -373,6 +386,9 @@ export function updateBudgetItem(
   }
   if (data.place_id !== undefined) {
     db.prepare('UPDATE budget_items SET place_id = ? WHERE id = ?').run(data.place_id, id);
+  }
+  if (data.supplier_id !== undefined) {
+    db.prepare('UPDATE budget_items SET supplier_id = ? WHERE id = ?').run(data.supplier_id, id);
   }
 
   // Personal expenses carry no split — force owner-only payers/members, and

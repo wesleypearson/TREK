@@ -6,6 +6,7 @@ const common: TranslationStrings = {
   'common.showLess': 'Zobrazit méně',
   'common.cancel': 'Zrušit',
   'common.moreInfo': 'Více informací',
+  'common.staleBundle': 'Vyšla v{version} — klepnutím obnovíte',
   'common.clear': 'Vymazat',
   'common.delete': 'Smazat',
   'common.preview': 'Náhled',

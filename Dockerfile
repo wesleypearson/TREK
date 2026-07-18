@@ -23,6 +23,10 @@ COPY client/package.json ./client/
 RUN npm ci --workspace=client
 COPY --from=shared-builder /app/shared/dist ./shared/dist
 COPY client/ ./client/
+# Baked into the bundle (vite define) so every page can show which build a
+# device is actually running — the cache-staleness tracker in the footer.
+ARG APP_VERSION=dev
+ENV APP_VERSION=${APP_VERSION}
 RUN npm run build --workspace=client
 
 # ── Stage 3: server ──────────────────────────────────────────────────────────

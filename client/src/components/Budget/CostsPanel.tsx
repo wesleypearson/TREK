@@ -7,7 +7,7 @@ import { useSettingsStore } from '../../store/settingsStore'
 import { useCanDo } from '../../store/permissionsStore'
 import { useToast } from '../shared/Toast'
 import { useTranslation } from '../../i18n'
-import { budgetApi, tripsApi, placesApi } from '../../api/client'
+import { budgetApi, tripsApi, placesApi, suppliersApi } from '../../api/client'
 import { useExchangeRates } from '../../hooks/useExchangeRates'
 import { useIsMobile } from '../../hooks/useIsMobile'
 import { formatMoney, currencyDecimals, currencyLocale } from '../../utils/formatters'
@@ -160,12 +160,18 @@ interface ReceiptScanResponse {
   file?: { id?: number }
   receipt?: {
     merchant?: string | null
+    merchant_address?: string | null
+    merchant_phone?: string | null
+    merchant_website?: string | null
     date?: string | null
     currency?: string | null
     total?: number | null
     items?: { name: string; price: number; quantity?: number | null; unit_price?: number | null }[]
   }
   warnings?: string[]
+  // Auto-created (or matched) by the scan: the vendor-book entry and the venue.
+  supplier?: { id: number; name: string; created: boolean } | null
+  place?: { id: number; name: string; created: boolean } | null
 }
 
 interface CostsPanelProps {
@@ -779,9 +785,10 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
   function MobileBody() {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingTop: 8 }}>
-        {/* Total card */}
-        <section style={{ background: 'linear-gradient(135deg,#1f2937,#111827)', color: '#fff', borderRadius: 22, padding: '20px 20px 16px', boxShadow: '0 8px 24px -8px rgba(0,0,0,0.28)' }}>
-          <div style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', textTransform: 'uppercase', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{t('costs.totalSpend')}</div>
+        {/* Total card — poster treatment: hot gradient + halftone dots. */}
+        <section className="tour-gradient" style={{ color: '#fff', borderRadius: 22, padding: '20px 20px 16px', boxShadow: 'var(--shadow-lg)', position: 'relative', overflow: 'hidden' }}>
+          <div className="tour-halftone" />
+          <div className="tour-title" style={{ fontSize: 'calc(11.5px * var(--fs-scale-caption, 1))', letterSpacing: '0.12em', color: 'rgba(255,255,255,0.75)', position: 'relative' }}>{t('costs.totalSpend')}</div>
           <div style={{ fontSize: 'calc(44px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: '-0.04em', lineHeight: 1, marginTop: 8, display: 'flex', alignItems: 'baseline' }}>{bigMoney(totals.totalSpend, 24, 'rgba(255,255,255,0.6)')}</div>
           <div style={{ display: 'flex', gap: 18, marginTop: 12, fontSize: 'calc(12px * var(--fs-scale-body, 1))', color: 'rgba(255,255,255,0.6)', flexWrap: 'wrap' }}>
             <span>{t('costs.yourShare')} · <b style={{ color: '#fff', fontWeight: 600 }}>{fmt0(totals.myShare)}</b></span>
@@ -839,7 +846,7 @@ export default function CostsPanel({ tripId, tripMembers = [] }: CostsPanelProps
         {/* Expenses */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <div className="text-content" style={{ fontSize: 'calc(19px * var(--fs-scale-subtitle, 1))', fontWeight: 700, letterSpacing: '-0.02em' }}>{t('costs.expenses')}</div>
+            <div className="text-content tour-title" style={{ fontSize: 'calc(17px * var(--fs-scale-subtitle, 1))' }}>{t('costs.expenses')}</div>
             <div style={{ display: 'flex', gap: 8 }}>
               <button onClick={() => setGuideOpen(true)} title={t('costs.guide.title')}
                 className="bg-surface-card border border-edge text-content-muted"
@@ -1284,6 +1291,18 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
     return () => { live = false }
   }, [tripId])
 
+  // Supplier link: the instance-wide vendor book. Auto-set by a receipt scan;
+  // the list loads lazily like venues.
+  const [supplierId, setSupplierId] = useState<number | null>((editing as { supplier_id?: number | null } | null)?.supplier_id ?? null)
+  const [supplierList, setSupplierList] = useState<{ id: number; name: string }[] | null>(null)
+  useEffect(() => {
+    let live = true
+    suppliersApi.list()
+      .then((res: { suppliers?: { id: number; name: string }[] }) => { if (live) setSupplierList(res.suppliers || []) })
+      .catch(() => { if (live) setSupplierList([]) })
+    return () => { live = false }
+  }, [])
+
   // A personal expense is never split — ticket mode (and its derived total)
   // only applies while the expense is a group one.
   const isTicketMode = splitMode === 'ticket' && !isPrivate
@@ -1396,6 +1415,18 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
       }
       const res: ReceiptScanResponse = await budgetApi.scanReceipt(tripId, fd)
       if (res.file?.id) setReceiptFileId(res.file.id)
+      // The merchant landed in the vendor book (and maybe on the map): link
+      // supplier + venue on this expense and refresh the pickers.
+      if (res.supplier) {
+        setSupplierId(res.supplier.id)
+        setSupplierList(list => list && !list.some(s => s.id === res.supplier!.id) ? [...list, { id: res.supplier!.id, name: res.supplier!.name }] : list)
+      }
+      if (res.place) {
+        setPlaceId(res.place.id)
+        setVenues(list => list && !list.some(v => v.id === res.place!.id) ? [...list, { id: res.place!.id, name: res.place!.name }] : list)
+      }
+      if (res.place) toast.success(t('costs.autoLinked', { name: res.place.name }))
+      else if (res.supplier) toast.success(t('costs.autoLinkedSupplier', { name: res.supplier.name }))
       const receipt = res.receipt
       if (receipt?.merchant && !name.trim()) setName(receipt.merchant)
       if (receipt?.date) setDay(receipt.date)
@@ -1504,6 +1535,7 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
       // member's private venue id (hydrated nameless) would read as unknown to
       // the server and 400 the whole save.
       ...(placeId !== (editing?.place_id ?? null) ? { place_id: placeId } : {}),
+      ...(supplierId !== ((editing as { supplier_id?: number | null } | null)?.supplier_id ?? null) ? { supplier_id: supplierId } : {}),
       note: isTicketMode ? 'TICKETJSON:' + JSON.stringify({
         items: ticketItems.map(item => ({
           name: item.name,
@@ -1621,6 +1653,19 @@ export function ExpenseModal({ tripId, base, people, me, editing, prefill, onCre
                 ? [{ value: String(placeId), label: editing?.place_name || t('costs.privateVenue') }]
                 : []),
               ...(venues || []).map(p => ({ value: String(p.id), label: p.name })),
+            ]}
+            style={{ width: '100%' }} />
+        </div>
+
+        <div>
+          <label className={labelCls}>{t('costs.supplier')}</label>
+          <CustomSelect value={supplierId != null ? String(supplierId) : ''} onChange={v => setSupplierId(v ? Number(v) : null)} searchable
+            options={[
+              { value: '', label: t('costs.noSupplier') },
+              ...(supplierId != null && supplierList != null && !supplierList.some(s => s.id === supplierId)
+                ? [{ value: String(supplierId), label: (editing as { supplier_name?: string | null } | null)?.supplier_name || String(supplierId) }]
+                : []),
+              ...(supplierList || []).map(s => ({ value: String(s.id), label: s.name })),
             ]}
             style={{ width: '100%' }} />
         </div>

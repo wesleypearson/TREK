@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { avatarSrc } from '../utils/avatarSrc'
+import { bundleVersion } from '../components/shared/AppFooter'
 import { MapContainer, TileLayer, Marker, Tooltip, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import { useTranslation, SUPPORTED_LANGUAGES } from '../i18n'
@@ -75,7 +76,8 @@ export default function SharedTripPage() {
   return (
     <div className="bg-surface-secondary" style={{ minHeight: '100vh', fontFamily: "var(--font-system)" }}>
       {/* Header */}
-      <div className="text-white" style={{ background: 'linear-gradient(135deg, #000 0%, #0f172a 50%, #1e293b 100%)', padding: '32px 20px 28px', textAlign: 'center', position: 'relative' }}>
+      <div className="text-white tour-gradient" style={{ padding: '32px 20px 28px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div className="tour-halftone" />
         {/* Cover image background */}
         {trip.cover_image && (
           <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${trip.cover_image.startsWith('http') ? trip.cover_image : trip.cover_image.startsWith('/') ? trip.cover_image : '/uploads/' + trip.cover_image})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.15 }} />
@@ -91,7 +93,7 @@ export default function SharedTripPage() {
 
         <div style={{ fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, letterSpacing: 3, textTransform: 'uppercase', opacity: 0.35, marginBottom: 12 }}>Your events. Your plan. Your server.</div>
 
-        <h1 style={{ margin: '0 0 4px', fontSize: 'calc(26px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: -0.5 }}>{trip.title}</h1>
+        <h1 className="tour-title" style={{ margin: '0 0 6px', fontSize: 'calc(24px * var(--fs-scale-title, 1))', position: 'relative', textShadow: '2px 2px 0 rgba(0,0,0,0.3)' }}>{trip.title}</h1>
 
         {trip.description && (
           <div style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', opacity: 0.5, maxWidth: 400, margin: '0 auto', lineHeight: 1.5 }}>{trip.description}</div>
@@ -412,7 +414,7 @@ export default function SharedTripPage() {
         <div style={{ textAlign: 'center', padding: '40px 0 20px' }}>
           <div className="bg-surface-card border border-edge-faint" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <img src="/icons/icon.svg" alt="Travla" width="18" height="18" style={{ borderRadius: 4 }} />
-            <span className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{t('shared.sharedVia')} <strong className="text-[#6b7280]">Travla</strong></span>
+            <span className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{t('shared.sharedVia')} <strong className="text-[#6b7280]">Travla</strong> · v{bundleVersion}</span>
           </div>
         </div>
       </div>

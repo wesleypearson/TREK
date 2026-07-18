@@ -18,6 +18,7 @@ const common: TranslationStrings = {
   'common.showLess': 'Visa mindre',
   'common.cancel': 'Avbryt',
   'common.moreInfo': 'Mer info',
+  'common.staleBundle': 'v{version} är ute — tryck för att uppdatera',
   'common.clear': 'Rensa',
   'common.delete': 'Ta bort',
   'common.preview': 'Förhandsvisning',

@@ -3,6 +3,7 @@ import { useTranslation } from '../i18n'
 import { publicTabApi, type PublicTabData } from '../api/client'
 import { formatMoney } from '../utils/formatters'
 import { usePublicTab } from './publicTab/usePublicTab'
+import { bundleVersion } from '../components/shared/AppFooter'
 
 /**
  * /public/tab/:token — the hosted repayment page (custom expense tabs).
@@ -65,16 +66,20 @@ export default function PublicTabPage() {
     // edge — without it iOS Safari widens the layout viewport and the whole
     // page drifts sideways under a finger.
     <div className="bg-[#f3f4f6]" style={{ minHeight: '100vh', fontFamily: 'var(--font-system)', overflowX: 'hidden' }}>
-      {/* Header */}
-      <div className="text-white" style={{ background: 'linear-gradient(135deg, #000 0%, #0f172a 50%, #1e293b 100%)', padding: '32px 20px 60px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+      {/* Header — gig-poster treatment: hot gradient, halftone dots, marquee type. */}
+      <div className="text-white tour-gradient" style={{ padding: '32px 20px 60px', textAlign: 'center', position: 'relative', overflow: 'hidden' }}>
+        <div className="tour-halftone" />
         <div className="bg-[rgba(255,255,255,0.03)]" style={{ position: 'absolute', top: -60, right: -60, width: 200, height: 200, borderRadius: '50%' }} />
-        <div className="bg-[rgba(255,255,255,0.08)]" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, backdropFilter: 'blur(8px)', marginBottom: 12, border: '1px solid rgba(255,255,255,0.1)' }}>
+        <div className="bg-[rgba(255,255,255,0.12)]" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 44, height: 44, borderRadius: 12, backdropFilter: 'blur(8px)', marginBottom: 12, border: '1px solid rgba(255,255,255,0.18)', position: 'relative' }}>
           <img src="/icons/icon-white.svg" alt="Travla" width="26" height="26" />
         </div>
-        <h1 style={{ margin: '0 0 6px', fontSize: 'calc(24px * var(--fs-scale-title, 1))', fontWeight: 700, letterSpacing: -0.5 }}>
+        <h1 className="tour-title" style={{ margin: '0 0 8px', fontSize: 'calc(23px * var(--fs-scale-title, 1))', position: 'relative', textShadow: '2px 2px 0 rgba(0,0,0,0.3)' }}>
           {t('publicTab.hello', { name: data.first_name })}
         </h1>
-        <div style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', opacity: 0.6, maxWidth: 420, margin: '0 auto', lineHeight: 1.5 }}>
+        <div style={{ position: 'relative', marginBottom: 10 }}>
+          <span className="tour-sticker">{data.trip_title}</span>
+        </div>
+        <div style={{ fontSize: 'calc(13px * var(--fs-scale-body, 1))', opacity: 0.75, maxWidth: 420, margin: '0 auto', lineHeight: 1.5, position: 'relative' }}>
           {t('publicTab.intro', { owner: data.owner_name, trip: data.trip_title })}
         </div>
       </div>
@@ -273,7 +278,7 @@ export default function PublicTabPage() {
         <div style={{ textAlign: 'center', padding: '20px 0 4px' }}>
           <div className="bg-white border border-[#e5e7eb]" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px', borderRadius: 20, boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}>
             <img src="/icons/icon.svg" alt="Travla" width="18" height="18" style={{ borderRadius: 4 }} />
-            <span className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{t('shared.sharedVia')} <strong className="text-[#6b7280]">Travla</strong></span>
+            <span className="text-[#9ca3af]" style={{ fontSize: 'calc(11px * var(--fs-scale-caption, 1))' }}>{t('shared.sharedVia')} <strong className="text-[#6b7280]">Travla</strong> · v{bundleVersion}</span>
           </div>
         </div>
       </div>

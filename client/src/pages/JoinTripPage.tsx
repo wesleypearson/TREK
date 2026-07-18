@@ -1,5 +1,6 @@
 import { Users, Check, X } from 'lucide-react'
 import { useTranslation } from '../i18n'
+import AppFooter from '../components/shared/AppFooter'
 import { useJoinTrip } from './join/useJoinTrip'
 
 /**
@@ -16,10 +17,10 @@ export default function JoinTripPage() {
   const { state, title, accept, goToDashboard } = useJoinTrip()
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-surface" style={{ padding: 24 }}>
+    <div className="min-h-screen flex flex-col items-center justify-center bg-surface" style={{ padding: 24 }}>
       <div
         className="bg-surface-card border border-edge text-content"
-        style={{ width: '100%', maxWidth: 420, borderRadius: 16, padding: '28px 24px', textAlign: 'center', boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+        style={{ width: '100%', maxWidth: 420, borderRadius: 16, padding: '28px 24px', textAlign: 'center', boxShadow: 'var(--shadow-lg)' }}
       >
         <div
           className="bg-surface-hover"
@@ -44,7 +45,7 @@ export default function JoinTripPage() {
           </>
         ) : (
           <>
-            <h1 style={{ fontSize: 18, fontWeight: 700, marginBottom: 8 }}>{t('trip.invite.joinHeading')}</h1>
+            <h1 className="tour-title" style={{ fontSize: 17, marginBottom: 8 }}>{t('trip.invite.joinHeading')}</h1>
             <p className="text-content-secondary" style={{ fontSize: 14, marginBottom: 22, minHeight: 20 }}>
               {state === 'loading' ? t('common.loading') : t('trip.invite.joinPrompt', { title })}
             </p>
@@ -69,6 +70,7 @@ export default function JoinTripPage() {
           </>
         )}
       </div>
+      <AppFooter public />
     </div>
   )
 }

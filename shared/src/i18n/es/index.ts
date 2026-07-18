@@ -34,6 +34,7 @@ import settings from './settings';
 import share from './share';
 import shared from './shared';
 import stats from './stats';
+import suppliers from './suppliers';
 import system_notice from './system_notice';
 import todo from './todo';
 import transport from './transport';
@@ -62,6 +63,7 @@ const locale = {
   ...inspector,
   ...reservations,
   ...budget,
+  ...suppliers,
   ...files,
   ...packing,
   ...members,

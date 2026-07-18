@@ -18,6 +18,7 @@ const common: TranslationStrings = {
   'common.showLess': 'Hiển thị ít hơn',
   'common.cancel': 'Hủy',
   'common.moreInfo': 'Thêm thông tin',
+  'common.staleBundle': 'Đã có v{version} — chạm để tải lại',
   'common.clear': 'Xóa',
   'common.delete': 'Xóa bỏ',
   'common.preview': 'Xem trước',

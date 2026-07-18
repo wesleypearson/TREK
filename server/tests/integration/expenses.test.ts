@@ -60,6 +60,14 @@ vi.mock('../../src/services/exchangeRateService', () => ({
   convertWithRates: (amount: number) => amount,
 }));
 
+// The scan pipeline now also resolves the merchant against Google Places for
+// the supplier book — stub it out so these tests stay off the network.
+vi.mock('../../src/services/mapsService', async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
+  getMapsKey: vi.fn(() => null),
+  searchPlaces: vi.fn(async () => ({ places: [], source: 'google' })),
+}));
+
 // Receipt scanning: pretend an admin configured a vision-capable OpenAI model,
 // and stub the LLM client so `extract` returns a canned parsed receipt.
 vi.mock('../../src/nest/llm-parse/llm-config.resolver', () => ({
@@ -433,9 +441,10 @@ describe('Receipt scanning (EXP)', () => {
     expect(res.body.files).toHaveLength(2);
     expect(res.body.file.id).toBe(res.body.files[0].id);
     expect(res.body.receipt.items.length).toBeGreaterThan(0);
-    // The LLM got BOTH pages in one call.
-    const input = extractMock.mock.calls.at(-1)![0];
-    expect(input.file).toBeTruthy();
+    // The LLM got BOTH pages in one call. (The scan may fire a SECOND extract
+    // for the supplier-book summary, so pick the call that carried the image.)
+    const input = extractMock.mock.calls.map(c => c[0]).find(i => (i as { file?: unknown }).file) as { file: unknown; files: unknown[] };
+    expect(input).toBeTruthy();
     expect(input.files).toHaveLength(1);
     // Page 2 is stored and labeled as the following page of the same receipt.
     const desc = testDb.prepare('SELECT description FROM trip_files WHERE id = ?').get(res.body.files[1].id) as { description: string };

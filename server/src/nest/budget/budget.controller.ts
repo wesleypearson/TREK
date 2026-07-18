@@ -19,6 +19,7 @@ import { memoryStorage } from 'multer';
 import type { User } from '../../types';
 import { BudgetService } from './budget.service';
 import { ReceiptScanService, ReceiptScanUnavailableError } from './receipt-scan.service';
+import { autoSupplierAndVenue, type AutoSupplierResult } from '../../services/supplierEnrichment';
 
 // Receipt photos/PDFs only; 15 MB covers any phone photo.
 const RECEIPT_UPLOAD = { storage: memoryStorage(), limits: { fileSize: 15 * 1024 * 1024 } };
@@ -67,6 +68,14 @@ export class BudgetController {
     if (placeId == null) return;
     if (!Number.isInteger(placeId) || !this.budget.canLinkPlace(tripId, placeId, user.id)) {
       throw new HttpException({ error: 'Venue not found' }, 400);
+    }
+  }
+
+  /** Suppliers are instance-wide; a link just has to point at a real row. */
+  private requireLinkableSupplier(supplierId: number | null | undefined): void {
+    if (supplierId == null) return;
+    if (!Number.isInteger(supplierId) || !this.budget.supplierExists(supplierId)) {
+      throw new HttpException({ error: 'Supplier not found' }, 400);
     }
   }
 
@@ -218,7 +227,23 @@ export class BudgetController {
     const stored = files.map((f, i) => this.receipts.storeReceiptFile(tripId, user.id, f, i));
     try {
       const { receipt, warnings } = await this.receipts.parseReceipt(user.id, files);
-      return { file: stored[0], files: stored, receipt, warnings };
+      // The merchant becomes (or matches) a supplier and, when locatable, an
+      // auto-created venue on the event map — never fatal to the scan itself.
+      let auto: AutoSupplierResult | null = null;
+      try {
+        auto = await autoSupplierAndVenue(tripId, user.id, receipt);
+        if (auto?.place?.created) {
+          const place = this.budget.getPlace(auto.place.id);
+          if (place) this.budget.broadcast(tripId, 'place:created', { place }, undefined);
+        }
+      } catch (autoErr) {
+        console.error('[receipt-scan] supplier/venue auto-create failed:', autoErr instanceof Error ? autoErr.message : autoErr);
+      }
+      return {
+        file: stored[0], files: stored, receipt, warnings,
+        supplier: auto ? { id: auto.supplier.id, name: auto.supplier.name, created: auto.supplier.created } : null,
+        place: auto?.place ?? null,
+      };
     } catch (err) {
       if (err instanceof ReceiptScanUnavailableError) {
         throw new HttpException({ error: err.message, file: stored[0] }, 409);
@@ -232,7 +257,7 @@ export class BudgetController {
   async create(
     @CurrentUser() user: User,
     @Param('tripId') tripId: string,
-    @Body() body: { name?: string; category?: string; total_price?: number; persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null; reservation_id?: number; is_private?: boolean; receipt_file_id?: number | null; place_id?: number | null },
+    @Body() body: { name?: string; category?: string; total_price?: number; persons?: number | null; days?: number | null; note?: string | null; expense_date?: string | null; reservation_id?: number; is_private?: boolean; receipt_file_id?: number | null; place_id?: number | null; supplier_id?: number | null },
     @Headers('x-socket-id') socketId?: string,
   ) {
     const trip = this.requireTrip(tripId, user);
@@ -241,6 +266,7 @@ export class BudgetController {
       throw new HttpException({ error: 'Name is required' }, 400);
     }
     this.requireLinkablePlace(tripId, body.place_id, user);
+    this.requireLinkableSupplier(body.supplier_id);
     const item = await this.budget.create(tripId, body as { name: string }, user.id);
     // A personal expense (custom) is only its creator's business — scope the event.
     this.budget.broadcast(tripId, 'budget:created', { item }, socketId, item.is_private ? user.id : undefined);
@@ -290,6 +316,7 @@ export class BudgetController {
       throw new HttpException({ error: 'Budget item not found' }, 404);
     }
     this.requireLinkablePlace(tripId, body.place_id as number | null | undefined, user);
+    this.requireLinkableSupplier(body.supplier_id as number | null | undefined);
     const updated = await this.budget.update(id, tripId, body, user.id);
     if (!updated) {
       throw new HttpException({ error: 'Budget item not found' }, 404);

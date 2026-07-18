@@ -61,6 +61,14 @@ export class BudgetService {
     return svc.canLinkPlace(tripId, placeId, userId);
   }
 
+  getPlace(placeId: number): Record<string, unknown> | undefined {
+    return db.prepare('SELECT * FROM places WHERE id = ?').get(placeId) as Record<string, unknown> | undefined;
+  }
+
+  supplierExists(supplierId: number): boolean {
+    return !!db.prepare('SELECT id FROM suppliers WHERE id = ?').get(supplierId);
+  }
+
   remove(id: string, tripId: string, viewerId?: number): boolean {
     return svc.deleteBudgetItem(id, tripId, viewerId);
   }
