@@ -994,6 +994,61 @@ describe('Trip members', () => {
     expect(invite.status).toBe(404);
   });
 
+  it('TRIP-GUEST-008 — guest contact email: set, invalid, clear; listMembers carries it for guests only', async () => {
+    const { user: owner } = createUser(testDb);
+    const { user: member } = createUser(testDb);
+    const trip = createTrip(testDb, owner.id, { title: 'Load-in' });
+    addTripMember(testDb, trip.id, member.id);
+    const created = await request(app)
+      .post(`/api/trips/${trip.id}/guests`).set('Cookie', authCookie(owner.id)).send({ name: 'Grandma' });
+    const guestId = created.body.member.id;
+    const contactEmail = () =>
+      (testDb.prepare('SELECT contact_email FROM users WHERE id = ?').get(guestId) as any).contact_email;
+
+    // Set: rename PUT additionally accepts contact_email.
+    const set = await request(app)
+      .put(`/api/trips/${trip.id}/guests/${guestId}`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Grandma', contact_email: 'grandma@example.com' });
+    expect(set.status).toBe(200);
+    expect(contactEmail()).toBe('grandma@example.com');
+
+    // listMembers carries it for the guest…
+    testDb.prepare('UPDATE users SET contact_email = ? WHERE id = ?').run('crew@example.com', member.id);
+    const members = await request(app).get(`/api/trips/${trip.id}/members`).set('Cookie', authCookie(owner.id));
+    const guestRow = members.body.members.find((m: any) => m.id === guestId);
+    expect(guestRow.contact_email).toBe('grandma@example.com');
+    // …but never for a real account (their contact address is not the roster's business).
+    const memberRow = members.body.members.find((m: any) => m.id === member.id);
+    expect(memberRow.contact_email).toBeUndefined();
+    expect(members.body.owner.contact_email).toBeUndefined();
+
+    // Invalid address → 400, stored value untouched.
+    const invalid = await request(app)
+      .put(`/api/trips/${trip.id}/guests/${guestId}`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Grandma', contact_email: 'not-an-email' });
+    expect(invalid.status).toBe(400);
+    expect(invalid.body.error).toBe('Invalid email');
+    expect(contactEmail()).toBe('grandma@example.com');
+
+    // Plain rename (no contact_email field) leaves the address alone.
+    const renameOnly = await request(app)
+      .put(`/api/trips/${trip.id}/guests/${guestId}`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Granny' });
+    expect(renameOnly.status).toBe(200);
+    expect(contactEmail()).toBe('grandma@example.com');
+
+    // Empty string clears back to NULL.
+    const cleared = await request(app)
+      .put(`/api/trips/${trip.id}/guests/${guestId}`)
+      .set('Cookie', authCookie(owner.id))
+      .send({ name: 'Granny', contact_email: '' });
+    expect(cleared.status).toBe(200);
+    expect(contactEmail()).toBeNull();
+  });
+
   it('TRIP-013 — Non-owner member cannot add other members when member_manage is trip_owner', async () => {
     const { user: owner } = createUser(testDb);
     const { user: member } = createUser(testDb);

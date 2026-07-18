@@ -354,13 +354,36 @@ export class TripsController {
   }
 
   @Put(':id/guests/:userId')
-  renameGuest(@CurrentUser() user: User, @Param('id') id: string, @Param('userId') userId: string, @Body('name') name: unknown) {
+  renameGuest(
+    @CurrentUser() user: User,
+    @Param('id') id: string,
+    @Param('userId') userId: string,
+    @Body('name') name: unknown,
+    @Body('contact_email') contactEmail?: unknown,
+  ) {
     this.requireGuestManage(id, user);
     if (typeof name !== 'string' || !name.trim()) {
       throw new HttpException({ error: 'Guest name is required' }, 400);
     }
+    // Optional guest contact email — where integrity updates reach off-platform
+    // guests. Empty string (or null) clears it back to NULL; anything else must
+    // look like an email and stay within the RFC address length cap.
+    let options: { contactEmail: string | null } | undefined;
+    if (contactEmail !== undefined) {
+      if (contactEmail !== null && typeof contactEmail !== 'string') {
+        throw new HttpException({ error: 'Invalid email' }, 400);
+      }
+      const trimmed = typeof contactEmail === 'string' ? contactEmail.trim() : '';
+      if (!trimmed) {
+        options = { contactEmail: null };
+      } else if (trimmed.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+        throw new HttpException({ error: 'Invalid email' }, 400);
+      } else {
+        options = { contactEmail: trimmed };
+      }
+    }
     try {
-      if (!this.trips.renameGuest(id, parseInt(userId), name)) {
+      if (!this.trips.renameGuest(id, parseInt(userId), name, options)) {
         throw new HttpException({ error: 'Guest not found' }, 404);
       }
       return { success: true };

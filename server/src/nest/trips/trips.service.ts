@@ -103,8 +103,12 @@ export class TripsService {
     return tripSvc.createGuest(tripId, name, invitedBy);
   }
 
-  renameGuest(tripId: string, guestUserId: number, name: string): boolean {
-    return tripSvc.renameGuest(tripId, guestUserId, name);
+  renameGuest(tripId: string, guestUserId: number, name: string, options?: { contactEmail?: string | null }): boolean {
+    // Forward the options arg only when present so existing 3-arg call sites
+    // (and their spies) see the exact legacy signature.
+    return options === undefined
+      ? tripSvc.renameGuest(tripId, guestUserId, name)
+      : tripSvc.renameGuest(tripId, guestUserId, name, options);
   }
 
   promoteGuest(tripId: string, guestUserId: number, targetUserId: number) {

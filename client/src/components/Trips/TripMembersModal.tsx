@@ -7,7 +7,7 @@ import { useToast } from '../shared/Toast'
 import { useAuthStore } from '../../store/authStore'
 import { useCanDo } from '../../store/permissionsStore'
 import { useTripStore } from '../../store/tripStore'
-import { Crown, UserMinus, UserPlus, UserCheck, Users, LogOut, Link2, Trash2, Copy, Check, UserRound, Pencil, Plus } from 'lucide-react'
+import { Crown, UserMinus, UserPlus, UserCheck, Users, LogOut, Link2, Trash2, Copy, Check, UserRound, Pencil, Plus, Mail } from 'lucide-react'
 import { useTranslation } from '../../i18n'
 import { getApiErrorMessage } from '../../types'
 import CustomSelect from '../shared/CustomSelect'
@@ -305,6 +305,8 @@ interface MemberEntry {
   is_guest?: boolean
   added_at?: string | null
   invited_by_username?: string | null
+  /** Guests only: where integrity updates reach off-platform guests. */
+  contact_email?: string | null
 }
 
 interface MembersData {
@@ -360,6 +362,9 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
   const [addingGuest, setAddingGuest] = useState(false)
   const [renamingGuestId, setRenamingGuestId] = useState<number | null>(null)
   const [renameValue, setRenameValue] = useState('')
+  // Guest contact email inline edit (mirrors the rename pattern)
+  const [emailEditingGuestId, setEmailEditingGuestId] = useState<number | null>(null)
+  const [emailValue, setEmailValue] = useState('')
   // Confirm dialogs (remove/leave/transfer/delete-guest) + guest promotion
   const [confirmAction, setConfirmAction] = useState<ConfirmAction | null>(null)
   const [promoteTarget, setPromoteTarget] = useState<MemberEntry | null>(null)
@@ -462,6 +467,21 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
       await loadMembers(true)
     } catch (err: unknown) {
       toast.error(getApiErrorMessage(err, t('members.guestRenameError')))
+    }
+  }
+
+  const handleSaveGuestEmail = async (guest: MemberEntry) => {
+    const email = emailValue.trim()
+    // No change (including still-empty) → just close the editor, no request.
+    if (email === (guest.contact_email ?? '')) { setEmailEditingGuestId(null); return }
+    try {
+      // The rename PUT carries the address; '' clears it. Name is re-sent unchanged.
+      await tripsApi.renameGuest(tripId, guest.id, guest.username, email)
+      setEmailEditingGuestId(null)
+      await loadMembers(true)
+      toast.success(t('members.guestEmailSaved'))
+    } catch (err: unknown) {
+      toast.error(getApiErrorMessage(err, t('members.guestEmailInvalid')))
     }
   }
 
@@ -727,21 +747,54 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
                     className="bg-surface border border-edge text-content"
                     style={{ flex: 1, minWidth: 0, fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', padding: '4px 8px', borderRadius: 8, outline: 'none', fontFamily: 'inherit' }}
                   />
+                ) : emailEditingGuestId === g.id ? (
+                  /* Inline contact-email edit — Enter/blur saves, Escape cancels (like rename). '' clears. */
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <input
+                      autoFocus
+                      type="email"
+                      value={emailValue}
+                      onChange={e => setEmailValue(e.target.value)}
+                      onKeyDown={e => { if (e.key === 'Enter') handleSaveGuestEmail(g); if (e.key === 'Escape') setEmailEditingGuestId(null) }}
+                      onBlur={() => handleSaveGuestEmail(g)}
+                      maxLength={254}
+                      placeholder={t('members.guestEmailPlaceholder')}
+                      className="bg-surface border border-edge text-content"
+                      style={{ width: '100%', fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', padding: '4px 8px', borderRadius: 8, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
+                    />
+                    <div className="text-content-faint" style={{ fontSize: 'calc(10.5px * var(--fs-scale-caption, 1))', marginTop: 3 }}>
+                      {t('members.guestEmailHint')}
+                    </div>
+                  </div>
                 ) : (
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                    <span className="text-content" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{g.username}</span>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--bg-tertiary)', padding: '1px 6px', borderRadius: 99 }}>
-                      <UserRound size={9} /> {t('members.guest')}
-                    </span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span className="text-content" style={{ fontSize: 'calc(13.5px * var(--fs-scale-body, 1))', fontWeight: 600 }}>{g.username}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3, fontSize: 'calc(10px * var(--fs-scale-caption, 1))', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--bg-tertiary)', padding: '1px 6px', borderRadius: 99 }}>
+                        <UserRound size={9} /> {t('members.guest')}
+                      </span>
+                    </div>
+                    {g.contact_email && (
+                      <div className="text-content-faint" style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 'calc(11px * var(--fs-scale-caption, 1))', marginTop: 1, minWidth: 0 }}>
+                        <Mail size={10} style={{ flexShrink: 0 }} />
+                        <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{g.contact_email}</span>
+                      </div>
+                    )}
                   </div>
                 )}
-                {canManageMembers && renamingGuestId !== g.id && (
+                {canManageMembers && renamingGuestId !== g.id && emailEditingGuestId !== g.id && (
                   <>
                     <IconBtn
                       title={t('common.rename')}
                       onClick={() => { setRenamingGuestId(g.id); setRenameValue(g.username) }}
                     >
                       <Pencil size={15} />
+                    </IconBtn>
+                    <IconBtn
+                      title={t('members.guestEmail')}
+                      onClick={() => { setEmailEditingGuestId(g.id); setEmailValue(g.contact_email ?? '') }}
+                    >
+                      <Mail size={15} />
                     </IconBtn>
                     <IconBtn
                       title={t('members.promote')}
