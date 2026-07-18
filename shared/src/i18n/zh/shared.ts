@@ -48,5 +48,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': '此账单会实时跟踪您在旅行共同消费中的份额。',
   'publicTab.noMethods': '{name} 尚未添加收款信息 — 请直接询问对方最合适的付款方式。',
   'publicTab.credit': '为团队垫付',
+  'updates.title': '更新内容',
+  'updates.open': '更新内容',
+  'updates.error': '无法加载更新说明，请稍后重试。',
 };
 export default shared;

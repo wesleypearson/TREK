@@ -486,6 +486,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'Hướng dẫn thanh toán khác',
   'settings.paymentSaved': 'Đã lưu thông tin thanh toán',
+  'settings.analytics': 'Chia sẻ dữ liệu sử dụng ẩn danh',
+  'settings.analyticsHint':
+    'Giúp đội ngũ cải thiện Travla bằng cách chia sẻ các mẫu sử dụng ẩn danh với hệ thống phân tích tự lưu trữ của riêng chúng tôi. Không có gì được chia sẻ với bên thứ ba.',
 };
 
 export default settings;

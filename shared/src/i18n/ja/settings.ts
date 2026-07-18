@@ -457,6 +457,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'その他の支払い方法',
   'settings.paymentSaved': '支払い先情報を保存しました',
+  'settings.analytics': '匿名の利用状況データを共有',
+  'settings.analyticsHint':
+    '匿名の利用パターンを自分たちでホストしている分析基盤に送信することで、Travlaの改善に役立ちます。第三者に共有されることは一切ありません。',
 };
 
 export default settings;

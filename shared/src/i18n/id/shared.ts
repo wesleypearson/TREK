@@ -49,5 +49,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'Tagihan ini melacak bagian Anda dari biaya bersama perjalanan secara real-time.',
   'publicTab.noMethods': '{name} belum menambahkan detail pembayaran — tanyakan langsung cara terbaik untuk membayar.',
   'publicTab.credit': 'Ditalangi untuk grup',
+  'updates.title': 'Yang baru',
+  'updates.open': 'Yang baru',
+  'updates.error': 'Tidak dapat memuat catatan rilis — coba lagi nanti.',
 };
 export default shared;

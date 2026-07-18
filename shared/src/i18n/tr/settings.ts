@@ -481,6 +481,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'Diğer ödeme talimatları',
   'settings.paymentSaved': 'Ödeme bilgileri kaydedildi',
+  'settings.analytics': 'Anonim kullanım analizlerini paylaş',
+  'settings.analyticsHint':
+    'Anonim kullanım kalıplarını kendi barındırdığımız analiz sistemimizle paylaşarak ekibin Travla’yı geliştirmesine yardımcı olur. Üçüncü taraflarla hiçbir şey paylaşılmaz.',
 };
 
 export default settings;

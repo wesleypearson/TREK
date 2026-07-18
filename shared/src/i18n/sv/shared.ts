@@ -49,5 +49,8 @@ const shared: TranslationStrings = {
   'publicTab.noMethods':
     '{name} har inte lagt till några betalningsuppgifter ännu — fråga direkt om bästa sättet att betala.',
   'publicTab.credit': 'Utlägg för gruppen',
+  'updates.title': 'Nyheter',
+  'updates.open': 'Nyheter',
+  'updates.error': 'Kunde inte läsa in versionsnyheterna — försök igen senare.',
 };
 export default shared;

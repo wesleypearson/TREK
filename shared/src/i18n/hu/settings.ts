@@ -485,6 +485,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'Egyéb fizetési útmutató',
   'settings.paymentSaved': 'Fizetési adatok mentve',
+  'settings.analytics': 'Névtelen használati statisztikák megosztása',
+  'settings.analyticsHint':
+    'Segít a csapatnak jobbá tenni a Travlát azzal, hogy névtelen használati mintákat oszt meg a saját üzemeltetésű analitikánkkal. Semmi sem kerül harmadik félhez.',
 };
 
 export default settings;

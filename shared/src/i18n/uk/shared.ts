@@ -50,5 +50,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'Цей рахунок у реальному часі відображає вашу частку в спільних витратах подорожі.',
   'publicTab.noMethods': '{name} ще не додав(ла) платіжні дані — запитайте напряму, як краще заплатити.',
   'publicTab.credit': 'Оплачено за групу',
+  'updates.title': 'Що нового',
+  'updates.open': 'Що нового',
+  'updates.error': 'Не вдалося завантажити нотатки до випуску — спробуйте пізніше.',
 };
 export default shared;

@@ -468,6 +468,9 @@ const settings: TranslationStrings = {
   'settings.paymentVenmo': 'Venmo',
   'settings.paymentOther': 'تعليمات دفع أخرى',
   'settings.paymentSaved': 'تم حفظ بيانات الدفع',
+  'settings.analytics': 'مشاركة تحليلات استخدام مجهولة الهوية',
+  'settings.analyticsHint':
+    'تساعد الفريق على تحسين Travla عبر مشاركة أنماط استخدام مجهولة الهوية مع أداة التحليلات الخاصة بنا المُستضافة ذاتيًا. لا تتم مشاركة أي شيء مع أطراف خارجية.',
 };
 
 export default settings;

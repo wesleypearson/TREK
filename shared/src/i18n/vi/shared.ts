@@ -48,5 +48,8 @@ const shared: TranslationStrings = {
   'publicTab.liveNote': 'Sổ nợ này theo dõi phần của bạn trong các hóa đơn chung của chuyến đi theo thời gian thực.',
   'publicTab.noMethods': '{name} chưa thêm thông tin thanh toán — hãy hỏi trực tiếp cách thanh toán thuận tiện nhất.',
   'publicTab.credit': 'Ứng trước cho nhóm',
+  'updates.title': 'Có gì mới',
+  'updates.open': 'Có gì mới',
+  'updates.error': 'Không thể tải ghi chú phát hành — vui lòng thử lại sau.',
 };
 export default shared;

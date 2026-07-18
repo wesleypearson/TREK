@@ -50,5 +50,8 @@ const shared: TranslationStrings = {
   'publicTab.noMethods':
     '{name} ainda não adicionou dados de pagamento — pergunte diretamente qual a melhor forma de pagar.',
   'publicTab.credit': 'Adiantado para o grupo',
+  'updates.title': 'Novidades',
+  'updates.open': 'Novidades',
+  'updates.error': 'Não foi possível carregar as notas da versão — tente novamente mais tarde.',
 };
 export default shared;

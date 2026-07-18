@@ -52,5 +52,8 @@ const shared: TranslationStrings = {
   'publicTab.noMethods':
     'Ο/Η {name} δεν έχει προσθέσει ακόμη στοιχεία πληρωμής — ρωτήστε απευθείας για τον καλύτερο τρόπο πληρωμής.',
   'publicTab.credit': 'Προκαταβλήθηκε για την ομάδα',
+  'updates.title': 'Τι νέο υπάρχει',
+  'updates.open': 'Τι νέο υπάρχει',
+  'updates.error': 'Δεν ήταν δυνατή η φόρτωση των σημειώσεων έκδοσης — δοκιμάστε ξανά αργότερα.',
 };
 export default shared;

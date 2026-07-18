@@ -3,6 +3,7 @@ import airport from './airport';
 import atlas from './atlas';
 import backup from './backup';
 import budget from './budget';
+import capture from './capture';
 import categories from './categories';
 import collab from './collab';
 import collection from './collection';
@@ -66,6 +67,7 @@ const locale = {
   ...map,
   ...budget,
   ...suppliers,
+  ...capture,
   ...files,
   ...packing,
   ...members,

@@ -51,5 +51,8 @@ const shared: TranslationStrings = {
   'publicTab.noMethods':
     '{name} heeft nog geen betaalgegevens toegevoegd — vraag direct naar de beste manier om te betalen.',
   'publicTab.credit': 'Voorgeschoten voor de groep',
+  'updates.title': 'Wat is er nieuw',
+  'updates.open': 'Wat is er nieuw',
+  'updates.error': 'Kon de release notes niet laden — probeer het later opnieuw.',
 };
 export default shared;
