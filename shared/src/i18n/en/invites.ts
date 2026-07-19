@@ -1,4 +1,6 @@
-export default {
+import type { TranslationStrings } from '../types';
+
+const invites: TranslationStrings = {
   // Public redemption landing
   'invites.landing.title': "You're on the crew list",
   'invites.landing.subtitle': '{inviter} invited you to join {trip} on Travla',
@@ -51,3 +53,5 @@ export default {
   'invites.admin.stage.revoked': 'Revoked',
   'invites.admin.stage.expired': 'Expired',
 };
+
+export default invites;

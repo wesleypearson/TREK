@@ -24,6 +24,12 @@ export const colleagueInviteRequestSchema = z.object({
 export type ColleagueInviteRequest = z.infer<typeof colleagueInviteRequestSchema>;
 
 export const guestInviteStageSchema = z.enum([
-  'created', 'sent', 'opened', 'registered', 'promoted', 'revoked', 'expired',
+  'created',
+  'sent',
+  'opened',
+  'registered',
+  'promoted',
+  'revoked',
+  'expired',
 ]);
 export type GuestInviteStageValue = z.infer<typeof guestInviteStageSchema>;
