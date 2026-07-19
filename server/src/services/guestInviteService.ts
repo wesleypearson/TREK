@@ -41,6 +41,8 @@ export interface GuestInviteRow {
   id: number;
   kind: GuestInviteKind;
   guest_user_id: number | null;
+  /** Display-name snapshot taken at mint time — survives the guest row's deletion on promotion. */
+  guest_name: string | null;
   trip_id: number | null;
   token_hash: string;
   email: string | null;
@@ -70,9 +72,11 @@ export interface InvitePrefill {
 }
 
 export interface FunnelEntry {
-  guest_user_id: number;
+  /** Null once the guest was promoted (the guest row no longer exists). */
+  guest_user_id: number | null;
   guest_name: string;
   contact_email: string | null;
+  registered_user_id?: number | null;
   invite: null | {
     id: number;
     stage: GuestInviteStage;
@@ -182,10 +186,10 @@ export function createOrRegenerateInvite(
     }
     const info = db.prepare(
       `INSERT INTO guest_invites
-         (kind, guest_user_id, trip_id, token_hash, created_by, expires_at, sent_at, last_sent_at, send_count)
-       VALUES ('guest', ?, ?, ?, ?, ?, ?, ?, ?)`
+         (kind, guest_user_id, guest_name, trip_id, token_hash, created_by, expires_at, sent_at, last_sent_at, send_count)
+       VALUES ('guest', ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
-      guestUserId, tripId, hash, createdBy, expiresAt,
+      guestUserId, guest.display_name ?? guest.username, tripId, hash, createdBy, expiresAt,
       prior?.sent_at ?? null, prior?.last_sent_at ?? null, prior?.send_count ?? 0,
     );
     const invite = db.prepare('SELECT * FROM guest_invites WHERE id = ?').get(info.lastInsertRowid) as GuestInviteRow;
@@ -230,12 +234,12 @@ export function resolveInvite(rawToken: string):
     capturePosthog('guest_invite_opened', { trip_id: row.trip_id, invite_id: row.id, kind: row.kind }, `invite:${row.id}`);
   }
 
-  let guestName: string | null = null;
+  let guestName: string | null = row.guest_name;
   let contactEmail: string | null = null;
   if (row.guest_user_id) {
     const guest = db.prepare('SELECT COALESCE(display_name, username) AS name, contact_email FROM users WHERE id = ? AND is_guest = 1')
       .get(row.guest_user_id) as { name: string; contact_email: string | null } | undefined;
-    guestName = guest?.name ?? null;
+    guestName = guest?.name ?? guestName;
     contactEmail = guest?.contact_email ?? row.email;
   }
   const trip = row.trip_id
@@ -260,7 +264,12 @@ export function resolveInvite(rawToken: string):
   };
 }
 
-/** Funnel view for crew admin: every guest of the trip + their latest invite. */
+/**
+ * Funnel view for crew admin: every current guest of the trip + their latest
+ * invite, PLUS converted invites (the guest row is deleted on promotion, so
+ * those live on via the guest_name snapshot — without them the funnel could
+ * never show its own success stage).
+ */
 export function listTripInviteFunnel(tripId: string | number): FunnelEntry[] {
   const guests = db.prepare(
     `SELECT u.id, COALESCE(u.display_name, u.username) AS name, u.contact_email
@@ -269,7 +278,33 @@ export function listTripInviteFunnel(tripId: string | number): FunnelEntry[] {
      ORDER BY m.added_at ASC`
   ).all(tripId) as { id: number; name: string; contact_email: string | null }[];
 
-  return guests.map((g) => {
+  const converted = db.prepare(
+    `SELECT * FROM guest_invites
+     WHERE trip_id = ? AND registered_at IS NOT NULL AND kind = 'guest'
+     ORDER BY registered_at DESC`
+  ).all(tripId) as GuestInviteRow[];
+
+  const convertedEntries: FunnelEntry[] = converted.map((row) => ({
+    guest_user_id: null,
+    guest_name: row.guest_name ?? 'Guest',
+    contact_email: row.email,
+    registered_user_id: row.registered_user_id,
+    invite: {
+      id: row.id,
+      stage: computeStage(row),
+      created_at: row.created_at,
+      sent_at: row.sent_at,
+      last_sent_at: row.last_sent_at,
+      send_count: row.send_count,
+      opened_at: row.opened_at,
+      registered_at: row.registered_at,
+      promoted_at: row.promoted_at,
+      revoked_at: row.revoked_at,
+      expires_at: row.expires_at,
+    },
+  }));
+
+  const currentEntries: FunnelEntry[] = guests.map((g) => {
     const row = db.prepare(
       'SELECT * FROM guest_invites WHERE guest_user_id = ? ORDER BY id DESC LIMIT 1'
     ).get(g.id) as GuestInviteRow | undefined;
@@ -292,6 +327,8 @@ export function listTripInviteFunnel(tripId: string | number): FunnelEntry[] {
       } : null,
     };
   });
+
+  return [...currentEntries, ...convertedEntries];
 }
 
 export interface RedeemBody {
@@ -364,11 +401,14 @@ export function redeemGuestInvite(rawToken: string, body: RedeemBody):
       }
     }
 
-    let promotedAt: string | null = null;
     if (row.kind === 'guest' && row.guest_user_id && row.trip_id) {
+      // Detach BEFORE promoting: promoteGuest deletes the guest users row and
+      // guest_user_id is ON DELETE CASCADE — without this the invite (the
+      // funnel record) would be cascaded away mid-transaction. The name
+      // snapshot on the row keeps the funnel readable afterwards.
+      db.prepare('UPDATE guest_invites SET guest_user_id = NULL WHERE id = ?').run(row.id);
       promoteGuest(row.trip_id, row.guest_user_id, newUserId);
-      promotedAt = new Date().toISOString();
-      db.prepare('UPDATE guest_invites SET promoted_at = ? WHERE id = ?').run(promotedAt, row.id);
+      db.prepare('UPDATE guest_invites SET promoted_at = ? WHERE id = ?').run(new Date().toISOString(), row.id);
     }
     db.prepare('UPDATE guest_invites SET registered_user_id = ? WHERE id = ?').run(newUserId, row.id);
 

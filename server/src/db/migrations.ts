@@ -3869,6 +3869,7 @@ function runMigrations(db: Database.Database): void {
           id INTEGER PRIMARY KEY AUTOINCREMENT,
           kind TEXT NOT NULL DEFAULT 'guest',
           guest_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          guest_name TEXT,
           trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
           token_hash TEXT NOT NULL UNIQUE,
           email TEXT,
