@@ -29,6 +29,13 @@ const rel = (tag: string, name: string, date: string, body: string): TravlaRelea
 });
 
 export const TRAVLA_RELEASES: TravlaRelease[] = [
+  rel('v4.3.0', 'Guest invite links & the sign-up funnel', '2026-07-19', [
+    '- Every temp guest can get a personal one-time invite link: they register on a branded page and their splits, payments and tabs move onto the real account automatically',
+    '- Invite by email straight from crew admin — single or "invite all guests with an email" — with a per-guest funnel: created, sent, opened, registered, promoted',
+    '- Links are single-use, expiring and revocable; tokens are stored hashed, so a copied database leaks no live invite',
+    '- New teammates can tag their company: it lands in the Suppliers book and they can mint invite links for colleagues',
+    '- The whole funnel is tracked in our analytics for follow-up campaigns',
+  ].join('\n')),
   rel('v4.2.0', 'Shift rostering, integrity broadcasts & production reports', '2026-07-19', [
     '- Shifts: a rostering timeclock on every event — geolocated sign-on/off, live on-shift roster, hours per crew member, announced in the event chat',
     '- Timing changes announce themselves: any edit to schedule times (accidental or deliberate) is broadcast to the whole crew — chat, notifications, and email to guests with a contact address',
