@@ -9,8 +9,13 @@ const POSTHOG_API_KEY = 'phc_stBiHVefs88jF6XWGe8ycxJCbbasQorKjhrCsGnBoWJt';
 const POSTHOG_CAPTURE_URL = 'https://ph.artgrp.au/capture/';
 const POSTHOG_TIMEOUT_MS = 3000;
 
-/** Fire-and-forget: never throws, never blocks the caller, no-op outside production. */
-export function capturePosthog(event: string, properties: Record<string, unknown> = {}): void {
+/**
+ * Fire-and-forget: never throws, never blocks the caller, no-op outside production.
+ * distinctId defaults to the server identity; funnel events may pass a stable
+ * per-subject id (e.g. 'invite:<id>' pre-registration, 'user:<id>' after) so
+ * PostHog can stitch a journey without any PII in the id.
+ */
+export function capturePosthog(event: string, properties: Record<string, unknown> = {}, distinctId = 'travla-server'): void {
   if (process.env.NODE_ENV !== 'production') return;
   try {
     void fetch(POSTHOG_CAPTURE_URL, {
@@ -19,7 +24,7 @@ export function capturePosthog(event: string, properties: Record<string, unknown
       body: JSON.stringify({
         api_key: POSTHOG_API_KEY,
         event,
-        distinct_id: 'travla-server',
+        distinct_id: distinctId,
         properties,
       }),
       signal: AbortSignal.timeout(POSTHOG_TIMEOUT_MS),

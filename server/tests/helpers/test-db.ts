@@ -58,6 +58,7 @@ const RESET_TABLES = [
   'suppliers',
   'shifts',
   'schedule_changes',
+  'guest_invites',
   // Photos & files
   'trip_photos',
   'trip_album_links',

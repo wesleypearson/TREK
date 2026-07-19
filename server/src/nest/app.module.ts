@@ -34,6 +34,7 @@ import { ShiftsModule } from './shifts/shifts.module';
 import { ReportsModule } from './reports/reports.module';
 import { ShareModule } from './share/share.module';
 import { TripInviteModule } from './trip-invite/trip-invite.module';
+import { GuestInviteModule } from './guest-invite/guest-invite.module';
 import { ExpenseTabsModule } from './expense-tabs/expense-tabs.module';
 import { TransitModule } from './transit/transit.module';
 import { FeedsModule } from './feeds/feeds.module';
@@ -57,7 +58,7 @@ import { IdempotencyInterceptor } from './common/idempotency.interceptor';
  * migrated.
  */
 @Module({
-  imports: [DatabaseModule, WeatherModule, HelpModule, AirportsModule, ConfigModule, SystemNoticesModule, MapsModule, CategoriesModule, TagsModule, NotificationsModule, AtlasModule, VacayModule, PackingModule, TodoModule, BudgetModule, ReservationsModule, DaysModule, AssignmentsModule, PlacesModule, TripsModule, CollabModule, FilesModule, PhotosModule, MemoriesModule, AirtrailModule, JourneyModule, CollectionsModule, SuppliersModule, ShiftsModule, ReportsModule, ShareModule, TripInviteModule, ExpenseTabsModule, TransitModule, FeedsModule, SettingsModule, BackupModule, AuthModule, OidcModule, OauthModule, AdminModule, AddonsModule, PluginsModule, BookingImportModule, UpdatesModule],
+  imports: [DatabaseModule, WeatherModule, HelpModule, AirportsModule, ConfigModule, SystemNoticesModule, MapsModule, CategoriesModule, TagsModule, NotificationsModule, AtlasModule, VacayModule, PackingModule, TodoModule, BudgetModule, ReservationsModule, DaysModule, AssignmentsModule, PlacesModule, TripsModule, CollabModule, FilesModule, PhotosModule, MemoriesModule, AirtrailModule, JourneyModule, CollectionsModule, SuppliersModule, ShiftsModule, ReportsModule, ShareModule, TripInviteModule, GuestInviteModule, ExpenseTabsModule, TransitModule, FeedsModule, SettingsModule, BackupModule, AuthModule, OidcModule, OauthModule, AdminModule, AddonsModule, PluginsModule, BookingImportModule, UpdatesModule],
   controllers: [HealthController],
   providers: [
     HealthService,
