@@ -49,6 +49,7 @@ interface AuthState {
   login: (email: string, password: string, rememberMe?: boolean) => Promise<LoginResult>
   completeMfaLogin: (mfaToken: string, code: string, rememberMe?: boolean) => Promise<AuthResponse>
   register: (username: string, email: string, password: string, invite_token?: string) => Promise<AuthResponse>
+  adoptSession: (user: AuthResponse['user']) => Promise<void>
   logout: () => Promise<void>
   /** Pass `{ silent: true }` to refresh the user without toggling global isLoading (avoids unmounting protected routes). */
   loadUser: (opts?: { silent?: boolean }) => Promise<void>
@@ -184,6 +185,17 @@ export const useAuthStore = create<AuthState>()(
       set({ isLoading: false, error })
       throw new Error(error)
     }
+  },
+
+  // Adopt a session established outside the store (the invite redemption page
+  // registers via guestInviteApi; the httpOnly cookie is already set server-side).
+  adoptSession: async (user: AuthResponse['user']) => {
+    authSequence++
+    set({ user, isAuthenticated: true, isLoading: false, error: null })
+    await onAuthSuccess(user.id, user.username)
+    connect()
+    tripSyncManager.syncAll().catch(console.error)
+    useSystemNoticeStore.getState().fetch()
   },
 
   logout: async () => {
