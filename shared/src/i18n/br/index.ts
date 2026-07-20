@@ -14,6 +14,7 @@ import dayplan from './dayplan';
 import files from './files';
 import help from './help';
 import inspector from './inspector';
+import invites from './invites';
 import journey from './journey';
 import login from './login';
 import map from './map';
@@ -71,6 +72,7 @@ const locale = {
   ...suppliers,
   ...shifts,
   ...report,
+  ...invites,
   ...capture,
   ...files,
   ...packing,

@@ -3857,6 +3857,44 @@ function runMigrations(db: Database.Database): void {
         ).run();
       }
     },
+    () => {
+      // Guest invite links (custom): one-time registration links per temp guest
+      // with a tracked EDM funnel (created→sent→opened→registered→promoted).
+      // Token stored ONLY as a sha256 hash (password_reset_tokens pattern);
+      // expires_at is an ISO-8601 string compared in JS, never SQL (see
+      // tripInviteService.resolveTripInvite). kind='colleague' rows are
+      // trip-less company invites minted by a redeemed registrant.
+      db.exec(`
+        CREATE TABLE IF NOT EXISTS guest_invites (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          kind TEXT NOT NULL DEFAULT 'guest',
+          guest_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          guest_name TEXT,
+          trip_id INTEGER REFERENCES trips(id) ON DELETE CASCADE,
+          token_hash TEXT NOT NULL UNIQUE,
+          email TEXT,
+          company_name TEXT,
+          company_supplier_id INTEGER REFERENCES suppliers(id) ON DELETE SET NULL,
+          created_by INTEGER REFERENCES users(id) ON DELETE SET NULL,
+          expires_at TEXT,
+          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+          sent_at TEXT,
+          last_sent_at TEXT,
+          send_count INTEGER NOT NULL DEFAULT 0,
+          opened_at TEXT,
+          registered_at TEXT,
+          promoted_at TEXT,
+          revoked_at TEXT,
+          registered_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_guest_invites_token_hash ON guest_invites(token_hash);
+        CREATE INDEX IF NOT EXISTS idx_guest_invites_trip ON guest_invites(trip_id);
+        CREATE INDEX IF NOT EXISTS idx_guest_invites_guest ON guest_invites(guest_user_id);
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_guest_invites_active
+          ON guest_invites(guest_user_id)
+          WHERE revoked_at IS NULL AND registered_at IS NULL AND guest_user_id IS NOT NULL;
+      `);
+    },
   ];
 
   if (currentVersion < migrations.length) {

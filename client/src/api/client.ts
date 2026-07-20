@@ -1187,6 +1187,54 @@ export const tripInviteApi = {
   accept: (token: string) => apiClient.post(`/trip-invites/${token}/accept`).then(r => r.data),
 }
 
+// Guest invite links (custom) — one-time registration links with an EDM funnel.
+export interface GuestInvitePrefill {
+  kind: 'guest' | 'colleague'
+  guest_name: string | null
+  contact_email: string | null
+  trip_title: string | null
+  inviter_name: string | null
+  company_name: string | null
+  expires_at: string | null
+}
+export interface GuestInviteFunnelEntry {
+  guest_user_id: number | null
+  guest_name: string
+  contact_email: string | null
+  registered_user_id?: number | null
+  invite: null | {
+    id: number
+    stage: 'created' | 'sent' | 'opened' | 'registered' | 'promoted' | 'revoked' | 'expired'
+    created_at: string
+    sent_at: string | null
+    last_sent_at: string | null
+    send_count: number
+    opened_at: string | null
+    registered_at: string | null
+    promoted_at: string | null
+    revoked_at: string | null
+    expires_at: string | null
+  }
+}
+export const guestInviteApi = {
+  resolve: (token: string): Promise<GuestInvitePrefill> =>
+    apiClient.get(`/guest-invites/${encodeURIComponent(token)}`).then(r => r.data),
+  register: (token: string, body: { username: string; email: string; password: string; company_name?: string }) =>
+    apiClient.post(`/guest-invites/${encodeURIComponent(token)}/register`, body).then(r => r.data),
+  createColleagues: (count: number): Promise<{ company_name: string; invite_paths: string[] }> =>
+    apiClient.post('/guest-invites/colleagues', { count }).then(r => r.data),
+  funnel: (tripId: number | string): Promise<{ guests: GuestInviteFunnelEntry[] }> =>
+    apiClient.get(`/trips/${tripId}/guest-invites`).then(r => r.data),
+  create: (tripId: number | string, guestUserId: number, body?: { expires_in_days?: number }) =>
+    apiClient.post(`/trips/${tripId}/guest-invites/${guestUserId}`, body ?? {}).then(r => r.data),
+  revoke: (tripId: number | string, guestUserId: number) =>
+    apiClient.delete(`/trips/${tripId}/guest-invites/${guestUserId}`).then(r => r.data),
+  send: (tripId: number | string, guestUserId: number) =>
+    apiClient.post(`/trips/${tripId}/guest-invites/${guestUserId}/send`).then(r => r.data),
+  sendAll: (tripId: number | string): Promise<{ sent: number; skipped_no_email: number; skipped_cooldown: number; skipped_capped: number; failed: number }> =>
+    apiClient.post(`/trips/${tripId}/guest-invites/send-all`).then(r => r.data),
+}
+
 export const notificationsApi = {
   getPreferences: () => apiClient.get('/notifications/preferences').then(r => r.data),
   updatePreferences: (prefs: Record<string, Record<string, boolean>>) => apiClient.put('/notifications/preferences', prefs).then(r => r.data),

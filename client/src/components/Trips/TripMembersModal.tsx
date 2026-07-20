@@ -11,6 +11,7 @@ import { Crown, UserMinus, UserPlus, UserCheck, Users, LogOut, Link2, Trash2, Co
 import { useTranslation } from '../../i18n'
 import { getApiErrorMessage } from '../../types'
 import CustomSelect from '../shared/CustomSelect'
+import { GuestInviteControls, BulkInviteButton, ConvertedInviteRows, useGuestInviteFunnel } from './GuestInviteControls'
 
 interface AvatarProps {
   username: string
@@ -381,6 +382,8 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
   const permTrip = data?.owner ? { owner_id: data.owner.id } : trip
   const canManageMembers = can('member_manage', permTrip)
   const canManageShare = can('share_manage', trip)
+  // Guest invite funnel (one fetch per open, manage-capable users only)
+  const { funnel: inviteFunnel, converted: convertedInvites, refresh: refreshInvites } = useGuestInviteFunnel(tripId, isOpen && canManageMembers)
 
   useEffect(() => {
     if (isOpen && tripId) {
@@ -730,11 +733,15 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
             <span className="text-content" style={sectionTitleStyle}>{t('members.guests')}</span>
             <span className="text-content-faint" style={sectionCountStyle}>{guests.length}</span>
             <InfoDot title={t('members.guestInfoTitle')} size={14}><p style={{ margin: 0 }}>{t('members.guestInfoBody')}</p></InfoDot>
+            {canManageMembers && guests.some(g => g.contact_email) && (
+              <BulkInviteButton tripId={tripId} onDone={refreshInvites} />
+            )}
           </div>
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
             {guests.map(g => (
-              <div key={g.id} className="bg-surface-secondary" style={rowStyle}>
+              <div key={g.id}>
+              <div className="bg-surface-secondary" style={rowStyle}>
                 <Avatar username={g.username} avatarUrl={null} size={34} />
                 {renamingGuestId === g.id ? (
                   <input
@@ -815,8 +822,19 @@ export default function TripMembersModal({ isOpen, onClose, tripId, tripTitle, o
                   </>
                 )}
               </div>
+              {canManageMembers && (
+                <GuestInviteControls
+                  tripId={tripId}
+                  guestUserId={g.id}
+                  hasEmail={!!g.contact_email}
+                  entry={inviteFunnel.get(g.id)}
+                  onChanged={refreshInvites}
+                />
+              )}
+              </div>
             ))}
           </div>
+          {canManageMembers && <ConvertedInviteRows entries={convertedInvites} />}
 
           {canManageMembers && (
             <div style={{ display: 'flex', gap: 8, marginTop: guests.length > 0 ? 10 : 0 }}>
